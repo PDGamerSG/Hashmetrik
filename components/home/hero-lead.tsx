@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { ActionLink } from "@/components/site/button";
 import { Magnetic } from "@/components/motion/magnetic";
 import { gsap, SplitText } from "@/lib/gsap";
-import { introDelay, useIsomorphicLayoutEffect } from "@/lib/motion";
+import { MOTION_QUERY, introDelay, useIsomorphicLayoutEffect } from "@/lib/motion";
 
 /**
  * The hero's argument, and the site's opening move.
@@ -37,7 +37,7 @@ export function HeroLead() {
 
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add(MOTION_QUERY, () => {
       const q = gsap.utils.selector(el);
       const heading = q("h1")[0];
       if (!heading) return;

@@ -1,8 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
-import { EASE_OUT_QUINT } from "@/lib/motion";
+import { EASE_OUT_QUINT, usePrefersReducedMotion } from "@/lib/motion";
 
 /**
  * An entrance driven by visibility rather than by scroll position.
@@ -37,7 +37,7 @@ export function InView({
   /* `initial={false}` rather than a zero-duration transition: that way the
      element is never written to the DOM at opacity 0 at all, so nothing
      depends on an IntersectionObserver firing to make the page readable. */
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
 
   return (
     <motion.div
@@ -75,7 +75,7 @@ export function InViewList({
   delay?: number;
   amount?: number;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
 
   return (
     <motion.ul

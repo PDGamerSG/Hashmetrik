@@ -7,7 +7,7 @@ import { MotionConfig } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
-import { usePrefersReducedMotion } from "@/lib/motion";
+import { RESPECT_REDUCED_MOTION, usePrefersReducedMotion } from "@/lib/motion";
 
 /**
  * Smooth scrolling, and the clock everything else on the page runs on.
@@ -19,7 +19,8 @@ import { usePrefersReducedMotion } from "@/lib/motion";
  * GSAP's ticker drives Lenis, and Lenis pushes each new position into
  * ScrollTrigger before that same frame paints.
  *
- * Under `prefers-reduced-motion` Lenis is not mounted at all. Interpolating
+ * Where the site honours `prefers-reduced-motion` — see `RESPECT_REDUCED_MOTION`
+ * in `lib/motion.ts`, currently off — Lenis is not mounted at all. Interpolating
  * the scrollbar *is* the motion being objected to, and no amount of tuning
  * makes it acceptable to someone who asked for none.
  */
@@ -138,20 +139,40 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
-  /* `reducedMotion="user"` is the global switch for Framer: with it, every
-     `motion` element on the site drops its transform and layout animations
-     when the visitor has asked for less movement, and keeps only opacity.
-     Individual components still opt out of their own effects — a tilt with no
-     transform is not a subtler tilt, it is a dead pointer handler — but this
-     catches anything that would otherwise slip through. */
+  /**
+   * The CSS half of the motion policy.
+   *
+   * `globals.css` cannot read `RESPECT_REDUCED_MOTION`, so the decision is
+   * published to the document as an attribute and every reduced-motion rule
+   * hangs off it. One switch, both languages.
+   */
+  useEffect(() => {
+    const root = document.documentElement;
+    if (reduced) root.dataset.motion = "reduce";
+    else delete root.dataset.motion;
+  }, [reduced]);
+
+  /* Reached only while `RESPECT_REDUCED_MOTION` is on. `reducedMotion="user"`
+     is the global switch for Framer: with it, every `motion` element on the
+     site drops its transform and layout animations when the visitor has asked
+     for less movement, and keeps only opacity. Individual components still opt
+     out of their own effects — a tilt with no transform is not a subtler tilt,
+     it is a dead pointer handler — but this catches anything that would
+     otherwise slip through. */
   if (reduced) {
     return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
   }
 
   return (
-    <ReactLenis root options={LENIS}>
-      <GsapBridge />
-      {children}
-    </ReactLenis>
+    /* `reducedMotion="never"` is the Framer half of the site's motion policy.
+       Framer reads the media query itself for every `motion` element, so
+       without this the animations here would go quiet on exactly the machines
+       the policy is meant to keep animating. */
+    <MotionConfig reducedMotion={RESPECT_REDUCED_MOTION ? "user" : "never"}>
+      <ReactLenis root options={LENIS}>
+        <GsapBridge />
+        {children}
+      </ReactLenis>
+    </MotionConfig>
   );
 }

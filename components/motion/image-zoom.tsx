@@ -6,13 +6,12 @@ import {
   motion,
   useMotionTemplate,
   useMotionValue,
-  useReducedMotion,
   useSpring,
 } from "motion/react";
 import { useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { useIsMounted } from "@/lib/motion";
+import { useIsMounted, usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { PlateVideo } from "@/components/motion/plate-video";
 import { setScrollLocked } from "@/components/motion/smooth-scroll";
@@ -64,7 +63,7 @@ export function ImageZoom({
   zoomScale?: number;
   priority?: boolean;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const layoutId = useId();
   const [open, setOpen] = useState(false);
   const mounted = useIsMounted();

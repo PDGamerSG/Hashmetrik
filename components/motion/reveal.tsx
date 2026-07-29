@@ -3,6 +3,7 @@
 import { useRef, type ReactNode } from "react";
 import { gsap } from "@/lib/gsap";
 import {
+  MOTION_QUERY,
   useIsomorphicLayoutEffect,
   type MotionTag,
   type MotionTagElement,
@@ -63,7 +64,7 @@ export function Reveal({
        the page is open, and reverting restores the finished state exactly. */
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add(MOTION_QUERY, () => {
       const targets = stagger ? Array.from(el.children) : el;
 
       gsap.from(targets, {
@@ -121,7 +122,7 @@ export function Parallax({ as = "div", className, children, speed = 0.12 }: Para
        elements that the drift either does nothing or pushes them off their
        own layout box. */
     mm.add(
-      { motion: "(prefers-reduced-motion: no-preference)", wide: "(min-width: 768px)" },
+      { motion: MOTION_QUERY, wide: "(min-width: 768px)" },
       (context) => {
         if (!context.conditions?.motion || !context.conditions?.wide) return;
 

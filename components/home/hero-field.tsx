@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { gsap } from "@/lib/gsap";
-import { useIsomorphicLayoutEffect } from "@/lib/motion";
+import { MOTION_QUERY, REDUCED_QUERY, useIsomorphicLayoutEffect } from "@/lib/motion";
 
 /**
  * The hero's background: a field of measurement marks, drifting.
@@ -143,7 +143,7 @@ export function HeroField({ className }: { className?: string }) {
 
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add(MOTION_QUERY, () => {
       build();
       /* One paint up front, so the field is present in the very first frame
          rather than fading in a beat after the headline. */
@@ -183,7 +183,7 @@ export function HeroField({ className }: { className?: string }) {
 
     /* Reduced motion still gets the field, just held still: it is texture,
        and removing it would change the composition rather than calm it. */
-    mm.add("(prefers-reduced-motion: reduce)", () => {
+    mm.add(REDUCED_QUERY, () => {
       build();
       draw(0);
       const resize = new ResizeObserver(() => {

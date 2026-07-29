@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useMotionValue, useReducedMotion, useSpring } from "motion/react";
+import { motion, useMotionValue, useSpring } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
+import { usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,7 +26,7 @@ export function Magnetic({
   className?: string;
   strength?: number;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const [fine, setFine] = useState(false);
 
   useEffect(() => {

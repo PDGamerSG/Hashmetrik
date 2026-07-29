@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
-import { introDelay, useIsomorphicLayoutEffect } from "@/lib/motion";
+import { MOTION_QUERY, introDelay, useIsomorphicLayoutEffect } from "@/lib/motion";
 import { PlateVideo } from "@/components/motion/plate-video";
 
 /**
@@ -160,7 +160,7 @@ export function HeroPlates() {
 
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add(MOTION_QUERY, () => {
       const q = gsap.utils.selector(el);
       const outers = q<HTMLElement>("[data-plate]");
       const inners = q<HTMLElement>("[data-plate-inner]");
@@ -194,19 +194,35 @@ export function HeroPlates() {
         });
       });
 
-      /* The hero empties as it leaves: near plates rise fastest and everything
-         fades, so the section hands the page over rather than scrolling off it
-         as a slab. Scrubbed, so it is a pure function of scroll position. */
-      const scroll = gsap.to(outers, {
+      /* The hero empties as it leaves: near plates rise fastest and the whole
+         field fades, so the section hands the page over rather than scrolling
+         off it as a slab. Scrubbed, so it is a pure function of scroll
+         position — including on the way back up.
+
+         The rise and the fade are deliberately on different elements. Both the
+         entrance above and this fade would otherwise be writing `opacity` on
+         the same plates, and a scrubbed tween records its start value when it
+         is *created* — which is mid-entrance, with the plates still at zero.
+         Scrolling back to the top then restored that zero and the field never
+         came back. So the plates own their opacity and the container owns the
+         fade, and neither has to know about the other. */
+      const trigger = {
+        trigger: hero,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      } as const;
+
+      const rise = gsap.to(outers, {
         yPercent: (i) => -26 - Number(outers[i].dataset.depth) * 34,
-        opacity: 0.15,
         ease: "none",
-        scrollTrigger: {
-          trigger: hero,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
+        scrollTrigger: trigger,
+      });
+
+      const fade = gsap.to(el, {
+        opacity: 0.12,
+        ease: "none",
+        scrollTrigger: trigger,
       });
 
       /* Pointer parallax, one `quickTo` pair per plate. `quickTo` writes into
@@ -244,8 +260,11 @@ export function HeroPlates() {
         hero.removeEventListener("pointermove", onPointer);
         hero.removeEventListener("pointerleave", onLeave);
         entrance.kill();
-        scroll.scrollTrigger?.kill();
-        scroll.kill();
+        rise.scrollTrigger?.kill();
+        rise.kill();
+        fade.scrollTrigger?.kill();
+        fade.kill();
+        gsap.set(el, { clearProps: "opacity" });
         for (const float of floats) float.kill();
         ScrollTrigger.refresh();
       };

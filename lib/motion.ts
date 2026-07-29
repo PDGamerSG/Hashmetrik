@@ -12,6 +12,38 @@ import type { ElementType, Ref } from "react";
  * motion is worth as much as one in type.
  */
 
+/**
+ * Whether the site honours `prefers-reduced-motion`.
+ *
+ * Set to `false` at the client's instruction: the site now animates for every
+ * visitor, including those whose operating system asks for less movement.
+ *
+ * This is a real accessibility trade — the preference exists because motion
+ * makes some people ill, and on Windows it is the same toggle as "Animation
+ * effects", which many people turn off for reasons that have nothing to do
+ * with the web. It is a decision rather than an oversight, so it is written
+ * down here as one line rather than deleted from a dozen components: flip this
+ * back to `true` and every guard below, in `globals.css`, and in every GSAP
+ * `matchMedia` on the site starts respecting the preference again. Nothing
+ * else has to change.
+ */
+export const RESPECT_REDUCED_MOTION = false;
+
+/**
+ * The media query every animated component registers under.
+ *
+ * `all` matches unconditionally, which is what makes the switch above work
+ * without rewriting a single `matchMedia` block.
+ */
+export const MOTION_QUERY = RESPECT_REDUCED_MOTION
+  ? "(prefers-reduced-motion: no-preference)"
+  : "all";
+
+/** The complement — for the handful of blocks that set up a *still* version. */
+export const REDUCED_QUERY = RESPECT_REDUCED_MOTION
+  ? "(prefers-reduced-motion: reduce)"
+  : "not all";
+
 /** `cubic-bezier(0.22, 1, 0.36, 1)` — the site's single deceleration curve. */
 export const EASE_OUT_QUINT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
@@ -116,16 +148,26 @@ export type MotionTag =
 export type MotionTagElement = ElementType<{ ref?: Ref<HTMLElement>; className?: string }>;
 
 /**
- * Live reduced-motion preference.
+ * Live reduced-motion preference, as the site chooses to act on it.
  *
- * Returns `false` on the server and for the first client frame, then settles.
- * Callers must therefore treat "no preference" as the state to animate *into*,
- * never as a reason to hide content.
+ * Constant `false` while `RESPECT_REDUCED_MOTION` is off — the whole point of
+ * the switch is that no caller has to know about it. The hook shape is kept so
+ * that turning the policy back on needs no changes here or at any call site.
+ *
+ * When it is on: returns `false` on the server and for the first client frame,
+ * then settles. Callers must therefore treat "no preference" as the state to
+ * animate *into*, never as a reason to hide content.
+ *
+ * Every component on this site reads this rather than Framer's
+ * `useReducedMotion`, which goes straight to the media query and would ignore
+ * the policy above.
  */
 export function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
+    if (!RESPECT_REDUCED_MOTION) return;
+
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => setReduced(query.matches);
     sync();

@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from "react";
 import { gsap } from "@/lib/gsap";
-import { useIsomorphicLayoutEffect } from "@/lib/motion";
+import { MOTION_QUERY, useIsomorphicLayoutEffect } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -35,7 +35,7 @@ export function Overslide({ children, className }: { children: ReactNode; classN
     const mm = gsap.matchMedia();
 
     mm.add(
-      { motion: "(prefers-reduced-motion: no-preference)", stacked: "(min-width: 768px)" },
+      { motion: MOTION_QUERY, stacked: "(min-width: 768px)" },
       (context) => {
         if (!context.conditions?.motion || !context.conditions?.stacked) return;
 

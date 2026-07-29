@@ -4,12 +4,11 @@ import {
   motion,
   useMotionTemplate,
   useMotionValue,
-  useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
-import { POINTER_SPRING } from "@/lib/motion";
+import { POINTER_SPRING, usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -41,7 +40,7 @@ export function TiltCard({
   lift?: number;
   glow?: boolean;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
 
   /* Tilting on a touchscreen means tilting on tap, which fights the scroll and
      leaves the card stuck at an angle with no pointer to leave. */

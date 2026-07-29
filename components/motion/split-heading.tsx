@@ -3,6 +3,7 @@
 import { useRef, type ReactNode } from "react";
 import { gsap, SplitText } from "@/lib/gsap";
 import {
+  MOTION_QUERY,
   useIsomorphicLayoutEffect,
   type MotionTag,
   type MotionTagElement,
@@ -51,7 +52,7 @@ export function SplitHeading({
 
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add(MOTION_QUERY, () => {
       const split = SplitText.create(el, {
         type: "lines",
         mask: "lines",

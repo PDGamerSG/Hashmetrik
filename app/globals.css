@@ -498,48 +498,56 @@
 
 /* ==========================================================================
    Motion preferences
+
+   Keyed off an attribute rather than the media query directly. `SmoothScroll`
+   writes `data-motion="reduce"` onto the document only when the site's policy
+   — `RESPECT_REDUCED_MOTION` in `lib/motion.ts` — is on *and* the visitor has
+   asked for less movement, so CSS and JavaScript are governed by the same
+   single switch instead of disagreeing with each other.
+
+   With the policy off, as it stands now, nothing in this block ever matches
+   and the site animates for everyone. Flip the constant back and every rule
+   here comes into force again untouched.
    ========================================================================== */
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    /* Lenis is not mounted in this mode, so the browser's own smoothing is
-       the best available behaviour for in-page anchors. */
-    scroll-behavior: smooth;
-  }
+html[data-motion="reduce"] {
+  /* Lenis is not mounted in this mode, so the browser's own smoothing is the
+     best available behaviour for in-page anchors. */
+  scroll-behavior: smooth;
+}
 
-  .intro {
-    display: none;
-  }
+html[data-motion="reduce"] .intro {
+  display: none;
+}
 
-  .tape-track,
-  .pulse-dot,
-  .cue-mark,
-  .rise {
-    animation: none !important;
-  }
+html[data-motion="reduce"] .tape-track,
+html[data-motion="reduce"] .pulse-dot,
+html[data-motion="reduce"] .cue-mark,
+html[data-motion="reduce"] .rise {
+  animation: none !important;
+}
 
-  /* The sweep is composition, not movement — it stays, it simply stops
-     arriving and stops drifting. */
-  .hero-sweep,
-  .hero-sweep-drift {
-    animation: none !important;
-    opacity: 1;
-    transform: none;
-  }
+/* The sweep is composition, not movement — it stays, it simply stops arriving
+   and stops drifting. */
+html[data-motion="reduce"] .hero-sweep,
+html[data-motion="reduce"] .hero-sweep-drift {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
 
-  ::view-transition-old(*),
-  ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
-  }
+html[data-motion="reduce"]::view-transition-old(*),
+html[data-motion="reduce"]::view-transition-new(*),
+html[data-motion="reduce"]::view-transition-group(*) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
 
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-  }
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
 }
 
 /* ==========================================================================

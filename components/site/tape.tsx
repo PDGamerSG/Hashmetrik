@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
-import { useIsomorphicLayoutEffect } from "@/lib/motion";
+import { MOTION_QUERY, useIsomorphicLayoutEffect } from "@/lib/motion";
 import { METRICS } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ export function Tape({
 
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add(MOTION_QUERY, () => {
       /* Hand over from the CSS keyframes. Both start at translate 0, so
          there is nothing to reconcile. */
       track.classList.remove("tape-track", "tape-track-reverse");

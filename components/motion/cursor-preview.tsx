@@ -5,7 +5,6 @@ import {
   AnimatePresence,
   motion,
   useMotionValue,
-  useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react";
@@ -19,7 +18,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { EASE_OUT_QUINT, useIsMounted } from "@/lib/motion";
+import { EASE_OUT_QUINT, useIsMounted, usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -52,7 +51,7 @@ export function CursorPreviewSurface({
   children: ReactNode;
   className?: string;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const [fine, setFine] = useState(false);
   const [src, setSrc] = useState<string | null>(null);
 

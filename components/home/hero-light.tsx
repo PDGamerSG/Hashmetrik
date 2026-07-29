@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { gsap } from "@/lib/gsap";
-import { useIsomorphicLayoutEffect } from "@/lib/motion";
+import { MOTION_QUERY, useIsomorphicLayoutEffect } from "@/lib/motion";
 
 /**
  * The light in the room.
@@ -38,7 +38,7 @@ export function HeroLight() {
 
     /* Pointer only. A bloom that cannot be moved is a smudge on the screen,
        so on touch there is simply the sweep. */
-    mm.add("(prefers-reduced-motion: no-preference) and (pointer: fine)", () => {
+    mm.add(`${MOTION_QUERY} and (pointer: fine)`, () => {
       const x = gsap.quickTo(el, "x", { duration: 1.1, ease: "power3.out" });
       const y = gsap.quickTo(el, "y", { duration: 1.1, ease: "power3.out" });
       const fade = gsap.quickTo(el, "opacity", { duration: 0.6, ease: "power2.out" });
