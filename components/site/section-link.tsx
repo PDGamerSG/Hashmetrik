@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { ComponentProps, MouseEvent, ReactNode } from "react";
+import { scrollToElement } from "@/components/motion/smooth-scroll";
 
 /**
  * A link to a section of the home page that does not put a fragment in the
@@ -17,6 +18,9 @@ import type { ComponentProps, MouseEvent, ReactNode } from "react";
 
 const TARGET_KEY = "hm:section";
 
+/** Clearance for the sticky masthead, matching `scroll-padding-top`. */
+const SCROLL_OFFSET = 96;
+
 function sectionOf(href: string) {
   const [path, hash] = href.split("#");
   /* Only same-site anchors into the home page are handled here. */
@@ -25,14 +29,14 @@ function sectionOf(href: string) {
 
 function scrollToSection(id: string) {
   /* Deferred by two frames: the click that closes the mobile menu also
-     releases `body { overflow: hidden }`, and scrolling a locked body does
-     nothing at all. */
+     releases the scroll lock, and scrolling a locked scroller does nothing
+     at all. */
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       const target = document.getElementById(id);
-      if (!target) return;
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+      /* Routed through the smooth scroller rather than `scrollIntoView`, or
+         the browser's jump and Lenis's easing would fight over the page. */
+      if (target) scrollToElement(target, -SCROLL_OFFSET);
     }),
   );
 }

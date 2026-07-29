@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Plus } from "lucide-react";
 import { Section, SectionHead, Accent } from "@/components/site/section";
 import { ActionLink } from "@/components/site/button";
+import { Reveal } from "@/components/motion/reveal";
+import { EASE_OUT_QUINT } from "@/lib/motion";
 import { FAQS } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +35,7 @@ export function Faq() {
             </ActionLink>
           </div>
 
-          <ul className="border-t border-ash">
+          <Reveal as="ul" stagger={0.05} y={18} className="border-t border-ash">
             {FAQS.map((faq, i) => {
               const isOpen = open === i;
               return (
@@ -60,17 +63,32 @@ export function Faq() {
                       />
                     </button>
                   </h3>
-                  <div
-                    id={`faq-panel-${i}`}
-                    hidden={!isOpen}
-                    className="pr-8 pb-7 pl-[3.6rem] text-base leading-relaxed text-slate"
-                  >
-                    {faq.a}
-                  </div>
+                  {/* Height is the one layout property worth animating on
+                      this site: an answer that appears instantly shoves the
+                      questions below it down the page with no indication of
+                      where they went. It is bounded — six short answers, one
+                      open at a time — so the reflow stays cheap. */}
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        key="panel"
+                        id={`faq-panel-${i}`}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.42, ease: EASE_OUT_QUINT }}
+                        className="overflow-hidden"
+                      >
+                        <p className="pr-8 pb-7 pl-[3.6rem] text-base leading-relaxed text-slate">
+                          {faq.a}
+                        </p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </li>
               );
             })}
-          </ul>
+          </Reveal>
         </div>
       </div>
     </Section>

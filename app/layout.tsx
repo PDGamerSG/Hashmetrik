@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ViewTransition } from "react";
 import {
   Bricolage_Grotesque,
   Instrument_Serif,
@@ -9,6 +10,8 @@ import "./globals.css";
 import { Masthead } from "@/components/site/masthead";
 import { Footer } from "@/components/site/footer";
 import { Assistant } from "@/components/site/assistant";
+import { Intro } from "@/components/site/intro";
+import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { SITE } from "@/lib/content";
 
 /* Display: a grotesk with real width and optical-size axes, so headline sizes
@@ -81,11 +84,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <Masthead />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <Intro />
+        {/* Lenis wraps the whole document rather than the main column: the
+            masthead's scroll readout, every ScrollTrigger and the overslide
+            stack all have to be reading the same scroll position. */}
+        <SmoothScroll>
+          <Masthead />
+          {/* Only the page body crossfades between routes. The masthead is
+              held still by name — see `::view-transition-group(masthead)`. */}
+          <ViewTransition>
+            <main id="main" className="flex-1">
+              {children}
+            </main>
+          </ViewTransition>
+          <Footer />
+        </SmoothScroll>
         <Assistant />
       </body>
     </html>

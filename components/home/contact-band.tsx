@@ -2,6 +2,9 @@ import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Section, Accent } from "@/components/site/section";
 import { ActionLink } from "@/components/site/button";
 import { Tape } from "@/components/site/tape";
+import { Reveal } from "@/components/motion/reveal";
+import { SplitHeading } from "@/components/motion/split-heading";
+import { Magnetic } from "@/components/motion/magnetic";
 import { CONTACT } from "@/lib/content";
 
 const ROWS = [
@@ -28,30 +31,42 @@ export function ContactBand() {
               <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-coral">
                 Get in touch
               </p>
-              <h2 className="mt-5 font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[0.95] font-semibold tracking-[-0.04em] text-balance">
-                Let&rsquo;s map your next <Accent>growth quarter</Accent>.
-              </h2>
-              <p className="mt-6 max-w-md text-base leading-relaxed text-bone/65 md:text-lg">
-                Thirty minutes, no obligation. You leave with a written growth thesis for your
-                brand within 48 hours — whether or not you hire us.
-              </p>
+              <SplitHeading
+                as="h2"
+                className="mt-5 font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[0.95] font-semibold tracking-[-0.04em] text-balance"
+              >
+                <>
+                  Let&rsquo;s map your next <Accent>growth quarter</Accent>.
+                </>
+              </SplitHeading>
 
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <ActionLink href="/book" className="h-14 px-7">
-                  Book a free consultation
-                </ActionLink>
-                <ActionLink
-                  href={CONTACT.whatsapp}
-                  variant="ghost-ink"
-                  className="h-14 px-7"
-                  arrow={false}
-                >
-                  <MessageCircle aria-hidden className="size-4" />
-                  WhatsApp us
-                </ActionLink>
-              </div>
+              <Reveal>
+                <p className="mt-6 max-w-md text-base leading-relaxed text-bone/65 md:text-lg">
+                  Thirty minutes, no obligation. You leave with a written growth thesis for your
+                  brand within 48 hours — whether or not you hire us.
+                </p>
 
-              <ul className="mt-12 border-t border-ash-ink">
+                <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                  <Magnetic className="w-full sm:w-auto">
+                    <ActionLink href="/book" className="h-14 w-full px-7">
+                      Book a free consultation
+                    </ActionLink>
+                  </Magnetic>
+                  <Magnetic className="w-full sm:w-auto">
+                    <ActionLink
+                      href={CONTACT.whatsapp}
+                      variant="ghost-ink"
+                      className="h-14 w-full px-7"
+                      arrow={false}
+                    >
+                      <MessageCircle aria-hidden className="size-4" />
+                      WhatsApp us
+                    </ActionLink>
+                  </Magnetic>
+                </div>
+              </Reveal>
+
+              <Reveal as="ul" stagger={0.06} y={16} className="mt-12 border-t border-ash-ink">
                 {ROWS.map((row) => (
                   <li key={row.label} className="border-b border-ash-ink">
                     <a
@@ -70,16 +85,24 @@ export function ContactBand() {
                     </a>
                   </li>
                 ))}
-              </ul>
+              </Reveal>
             </div>
 
-            <div className="lg:pt-16">
+            <Reveal className="lg:pt-16" y={36} scale={0.97}>
               {/* Paper inset on the ink surface. The bone background is load
                   bearing: an embed that is slow, blocked or offline otherwise
                   leaves a black rectangle sitting in the middle of the
                   section. This way the worst case is a blank sheet with the
-                  address still legible beneath it. */}
-              <div className="relative aspect-square overflow-hidden rounded-sheet border border-ash-ink bg-bone">
+                  address still legible beneath it.
+
+                  `data-lenis-prevent` hands the wheel back to the map: Lenis
+                  disables pointer events on every iframe by default so a
+                  scroll over one is never swallowed, and this is the one
+                  iframe on the site that is meant to be panned. */}
+              <div
+                data-lenis-prevent
+                className="relative aspect-square overflow-hidden rounded-sheet border border-ash-ink bg-bone"
+              >
                 <iframe
                   title="Map of the HashMetrik studio in Hayathnagar, Hyderabad"
                   src={`https://www.google.com/maps?q=${CONTACT.mapQuery}&output=embed`}
@@ -91,7 +114,7 @@ export function ContactBand() {
               <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.22em] text-bone/40">
                 Hayathnagar, Hyderabad — visits by appointment
               </p>
-            </div>
+            </Reveal>
           </div>
         </div>
       </Section>

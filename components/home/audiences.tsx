@@ -1,13 +1,24 @@
 import Image from "next/image";
 import { Section, SectionHead, Accent } from "@/components/site/section";
+import { Reveal } from "@/components/motion/reveal";
+import { TiltCard } from "@/components/motion/tilt-card";
 import { AUDIENCES } from "@/lib/content";
 
+/**
+ * Who the work is for.
+ *
+ * The cards tilt towards the pointer and carry a coral bloom on the edge
+ * nearest it. Both are shallow on purpose: this is a grid of eight, and an
+ * effect that reads as playful on one card reads as noise on eight. What the
+ * tilt is actually doing is answering the pointer at all — on a grid this
+ * regular, the only way to tell a card is a target is for it to move.
+ */
 export function Audiences() {
   return (
-    <Section id="audiences" reading="02" label="Who we help">
+    <Section id="audiences" reading="03" label="Who we help">
       <div className="py-20 md:py-28">
         <SectionHead
-          reading="02"
+          reading="03"
           eyebrow="Who we help"
           title={
             <>
@@ -17,27 +28,34 @@ export function Audiences() {
           desc="The playbook changes with the model. A clinic and a D2C brand do not have the same problem, and pretending otherwise is how retainers get wasted."
         />
 
-        <ul className="mt-14 grid grid-cols-2 gap-x-4 gap-y-10 md:mt-20 md:gap-x-6 lg:grid-cols-4">
+        <Reveal
+          as="ul"
+          stagger={0.06}
+          y={32}
+          className="mt-14 grid grid-cols-2 gap-x-4 gap-y-10 md:mt-20 md:gap-x-6 lg:grid-cols-4"
+        >
           {AUDIENCES.map((audience) => (
-            <li key={audience.title} className="reveal group">
-              <div className="relative aspect-4/5 w-full overflow-hidden rounded-sheet bg-ash">
-                <Image
-                  src={audience.image}
-                  alt=""
-                  fill
-                  sizes="(max-width: 1024px) 45vw, 22vw"
-                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]"
-                />
-              </div>
-              <div className="mt-4 border-t border-ash pt-3 transition-colors duration-300 group-hover:border-coral">
-                <h3 className="font-display text-lg leading-tight font-semibold tracking-[-0.02em] md:text-xl">
-                  {audience.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate">{audience.problem}</p>
-              </div>
+            <li key={audience.title}>
+              <TiltCard className="group h-full">
+                <div className="relative aspect-4/5 w-full overflow-hidden rounded-sheet bg-ash">
+                  <Image
+                    src={audience.image}
+                    alt=""
+                    fill
+                    sizes="(max-width: 1024px) 45vw, 22vw"
+                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+                  />
+                </div>
+                <div className="mt-4 border-t border-ash pt-3 transition-colors duration-300 group-hover:border-coral">
+                  <h3 className="font-display text-lg leading-tight font-semibold tracking-[-0.02em] md:text-xl">
+                    {audience.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate">{audience.problem}</p>
+                </div>
+              </TiltCard>
             </li>
           ))}
-        </ul>
+        </Reveal>
       </div>
     </Section>
   );

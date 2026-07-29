@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
 /* ==========================================================================
    HashMetrik — design tokens
@@ -37,7 +38,12 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    /* Lenis animates the scroll position itself; leaving `scroll-behavior`
+       smooth here would have the browser easing towards a target that Lenis
+       is already easing towards, and the two curves fight. The native
+       behaviour is restored under `prefers-reduced-motion`, below, where
+       Lenis is never mounted. */
+    scroll-behavior: auto;
     /* the sticky masthead must not cover an anchored section head */
     scroll-padding-top: 6rem;
   }
@@ -149,21 +155,12 @@
   animation: rise 0.7s var(--ease-out-quint) both;
 }
 
-/**
- * Scroll entrance, driven by the scroll timeline rather than by JavaScript.
- * The element is visible by default and the animation only ever *adds* the
- * entrance, so a browser without `view()` — or one where the bundle failed —
- * still renders the content instead of a blank column.
- */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal {
-      animation: rise linear both;
-      animation-timeline: view();
-      animation-range: entry 4% cover 22%;
-    }
-  }
-}
+/* Scroll entrances used to live here as a `view()` timeline. They are now
+   GSAP ScrollTriggers — see `components/motion/reveal.tsx` — because the
+   parallax, the overslide stack and the pinned sections all have to agree on
+   one scroll position, and only a single scheduler can guarantee that. The
+   no-JavaScript guarantee is unchanged: those are `from` tweens, so the
+   finished state is what the server sends. */
 
 /* The one blinking element on the site: a panel that is powered on. Slow
    enough to read as a pilot light rather than an alert. */
@@ -192,12 +189,199 @@
 }
 
 /* ==========================================================================
+   The opening
+   One sheet of paper over the page, lifted once. Written in CSS rather than
+   JavaScript on purpose: a loading screen driven by a bundle can be left
+   stuck by that bundle failing, and there is no worse first impression than
+   a blank sheet with no way past it. `forwards` fill means this runs to
+   completion whether or not React ever hydrates.
+   ========================================================================== */
+
+/* `inherits: true` is load bearing. The counter is printed by `::after`, and
+   a pseudo-element takes its custom properties by inheritance from the element
+   it hangs off. Declared non-inheriting, the pseudo-element sees the registered
+   initial value — 0 — for the whole animation, and the readout sits at "0%"
+   while the property behind it counts perfectly to a hundred. */
+@property --intro-count {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@layer base {
+  :root {
+    /* Single source of truth for the opening's length. The hero reads this
+       off the document at runtime to time its own entrance, so the headline
+       starts as the sheet clears it rather than on a duplicated guess. */
+    --intro-duration: 1.15s;
+    --intro-lift: 0.8s;
+  }
+}
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: var(--color-bone);
+  animation:
+    intro-lift var(--intro-lift) var(--ease-out-quint) var(--intro-duration) forwards,
+    intro-retire 1ms linear calc(var(--intro-duration) + var(--intro-lift)) forwards;
+}
+
+@keyframes intro-lift {
+  to {
+    /* 101% rather than 100%: a subpixel seam at the bottom edge of the sheet
+       is visible against the ink sections beneath it. */
+    transform: translate3d(0, -101%, 0);
+  }
+}
+
+@keyframes intro-retire {
+  to {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.intro-inner {
+  display: grid;
+  justify-items: center;
+  gap: 1.5rem;
+  /* The contents leave a beat before the sheet does, so the lift reveals the
+     page rather than carrying a wordmark off the top of it. */
+  animation: intro-clear 0.3s ease-in var(--intro-duration) forwards;
+}
+
+@keyframes intro-clear {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
+.intro-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  animation: rise 0.6s var(--ease-out-quint) both;
+}
+
+.intro-meter {
+  width: 11rem;
+  height: 2px;
+  background: var(--color-ash);
+}
+
+/* Linear, unlike everything else on the site. A meter that decelerates has
+   spent most of its travel in the first third, and a readout that reaches 94%
+   in half the time it is on screen reads as a decoration of loading rather
+   than a measurement of it. */
+.intro-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-coral);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: intro-fill var(--intro-duration) linear forwards;
+}
+
+@keyframes intro-fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.intro-readout {
+  color: var(--color-slate);
+}
+
+/* Counting in CSS: `--intro-count` is a registered integer, so the browser
+   interpolates it as a number and `counter()` prints it. No state update, no
+   render per frame, and nothing to go wrong if the bundle is late. */
+.intro-count {
+  animation: intro-count var(--intro-duration) linear forwards;
+}
+
+.intro-count::after {
+  counter-reset: intro var(--intro-count);
+  content: counter(intro) "%";
+}
+
+@keyframes intro-count {
+  to {
+    --intro-count: 100;
+  }
+}
+
+/* ==========================================================================
+   Split headings
+   SplitText clones each line into a wrapper with `overflow: clip`. At the
+   headline's 0.88 leading a descender falls outside that box, so the clip is
+   opened downward and the extra height pulled back out of the layout.
+   ========================================================================== */
+
+.split-line-mask {
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+}
+
+/* ==========================================================================
+   Page transitions
+   Routes crossfade and lift rather than cutting. The masthead is excluded:
+   it is the visitor's fixed reference point, and a header that slides makes
+   the whole viewport feel like it moved.
+   ========================================================================== */
+
+::view-transition-old(root) {
+  animation: 0.18s ease-in both page-out;
+}
+
+::view-transition-new(root) {
+  animation: 0.32s var(--ease-out-quint) 0.1s both page-in;
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+}
+
+::view-transition-group(masthead) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(masthead) {
+  display: none;
+}
+
+::view-transition-new(masthead) {
+  animation: none;
+}
+
+/* ==========================================================================
    Motion preferences
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   html {
-    scroll-behavior: auto;
+    /* Lenis is not mounted in this mode, so the browser's own smoothing is
+       the best available behaviour for in-page anchors. */
+    scroll-behavior: smooth;
+  }
+
+  .intro {
+    display: none;
   }
 
   .tape-track,
@@ -206,10 +390,28 @@
     animation: none !important;
   }
 
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* ==========================================================================
+   Lenis
+   Lenis blanks pointer events on every iframe so a wheel event over one is
+   never swallowed. The studio map is the exception: it is there to be panned,
+   and it stops its own wheel events from reaching the page anyway.
+   ========================================================================== */
+
+.lenis.lenis-smooth [data-lenis-prevent] iframe {
+  pointer-events: auto;
 }

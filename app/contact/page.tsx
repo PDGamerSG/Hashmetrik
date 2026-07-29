@@ -132,8 +132,14 @@ export default function ContactPage() {
         </div>
 
         {/* Bone background so a blocked or slow embed degrades to a blank
-            sheet rather than a black hole in the middle of the page. */}
-        <div className="relative mt-5 h-64 overflow-hidden rounded-sheet border border-ash bg-bone md:h-80">
+            sheet rather than a black hole in the middle of the page.
+            `data-lenis-prevent` gives the map its pointer events back — the
+            smooth scroller disables them on every iframe by default so a
+            wheel over one is never swallowed, and this one is meant to pan. */}
+        <div
+          data-lenis-prevent
+          className="relative mt-5 h-64 overflow-hidden rounded-sheet border border-ash bg-bone md:h-80"
+        >
           <iframe
             title="Map of the HashMetrik studio in Hayathnagar, Hyderabad"
             src={`https://www.google.com/maps?q=${CONTACT.mapQuery}&output=embed`}

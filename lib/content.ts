@@ -7,9 +7,9 @@
 export const SITE = {
   name: "HashMetrik",
   url: "https://hashmetrik.com",
-  tagline: "Measurable growth. Not guesswork.",
+  tagline: "Everything your brand needs. One growth partner.",
   description:
-    "HashMetrik is a Hyderabad-based PR and digital marketing agency. We build the strategy, run the campaigns and report the numbers that move revenue.",
+    "HashMetrik is a Hyderabad-based growth partner. Brand foundation, digital presence, marketing growth and brand reach — built as one customised package and reported as one set of numbers.",
 } as const;
 
 export const CONTACT = {
@@ -35,11 +35,80 @@ export const SOCIALS = [
 ] as const;
 
 export const NAV = [
+  { label: "The package", href: "/#package" },
   { label: "Services", href: "/#services" },
   { label: "Who we help", href: "/#audiences" },
   { label: "Why us", href: "/#why" },
-  { label: "Links", href: "/links" },
   { label: "Contact", href: "/contact" },
+] as const;
+
+/**
+ * The growth package, as four pillars.
+ *
+ * This is the homepage's central claim — that the agency is bought as one
+ * partner rather than as six retainers — so the four pillars are the spine of
+ * the page rather than another card grid. `reading` is the pillar's position
+ * on the tick rule; `code` is the reading that pillar is judged on, the same
+ * convention the services list already uses.
+ */
+export const PILLARS = [
+  {
+    id: "foundation",
+    reading: "01",
+    code: "IDENTITY",
+    name: "Brand Foundation",
+    claim: "Decide what the brand is before spending a rupee telling anyone.",
+    items: [
+      "Brand Strategy",
+      "Brand Positioning",
+      "Logo Design",
+      "Tagline Creation",
+      "Brand Identity",
+      "Brand Guidelines",
+    ],
+    image:
+      "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Brand identity sheets and colour swatches laid out on a studio desk",
+  },
+  {
+    id: "presence",
+    reading: "02",
+    code: "CVR",
+    name: "Digital Presence",
+    claim: "The place every campaign sends people, built to convert them.",
+    items: ["Website Development", "Landing Pages", "UI/UX Design", "Website Optimization"],
+    image:
+      "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "A designer reviewing website layouts on a large display",
+  },
+  {
+    id: "growth",
+    reading: "03",
+    code: "ROAS",
+    name: "Marketing Growth",
+    claim: "Demand, generated and measured on the same dashboard.",
+    items: [
+      "Social Media Management",
+      "SEO",
+      "Performance Marketing",
+      "Content Marketing",
+      "Email Marketing",
+    ],
+    image:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "A performance dashboard showing campaign metrics",
+  },
+  {
+    id: "reach",
+    reading: "04",
+    code: "SOV",
+    name: "Brand Reach",
+    claim: "Everywhere the brand should be seen that you cannot simply buy.",
+    items: ["PR Management", "Influencer Marketing", "Google Business Profile", "Analytics"],
+    image:
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "A press interview being recorded in a studio",
+  },
 ] as const;
 
 /**
@@ -103,7 +172,11 @@ export const AUDIENCES = [
   },
 ] as const;
 
-/** `code` is the reading each service is measured by — it labels the card. */
+/**
+ * `code` is the reading each service is measured by — it labels the row.
+ * `image` is only ever shown under the pointer, one at a time, so these are
+ * chosen to read at thumbnail size rather than to be studied.
+ */
 export const SERVICES = [
   {
     id: "pr",
@@ -111,6 +184,7 @@ export const SERVICES = [
     name: "PR & reputation",
     problem: "Invisible brand, no media presence, crisis handled reactively.",
     outcomes: ["Tier-1 media coverage", "Reputation monitoring", "Crisis playbooks"],
+    image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=680&q=75",
   },
   {
     id: "influencer",
@@ -118,6 +192,7 @@ export const SERVICES = [
     name: "Influencer marketing",
     problem: "Low organic reach and a trust gap with new audiences.",
     outcomes: ["Curated creator partnerships", "Campaign-led launches", "Performance reporting"],
+    image: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?auto=format&fit=crop&w=680&q=75",
   },
   {
     id: "performance",
@@ -125,6 +200,7 @@ export const SERVICES = [
     name: "Performance marketing",
     problem: "High acquisition cost, leaky funnels, untracked spend.",
     outcomes: ["Google, Meta and YouTube ads", "Funnel and landing-page CRO", "Profitable, reported ROAS"],
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=680&q=75",
   },
   {
     id: "seo",
@@ -132,6 +208,7 @@ export const SERVICES = [
     name: "SEO",
     problem: "Absent from search exactly where the intent lives.",
     outcomes: ["Technical and local SEO", "Content engines", "Compounding organic traffic"],
+    image: "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?auto=format&fit=crop&w=680&q=75",
   },
   {
     id: "website",
@@ -139,6 +216,7 @@ export const SERVICES = [
     name: "Website development",
     problem: "Slow, off-brand sites that lose the visitor before the pitch.",
     outcomes: ["Conversion-first builds", "Sub-2s page loads", "Analytics wired in from day one"],
+    image: "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=680&q=75",
   },
   {
     id: "social",
@@ -146,6 +224,7 @@ export const SERVICES = [
     name: "Social media",
     problem: "Inconsistent posting, no strategy, no community.",
     outcomes: ["Content systems", "Community management", "Always-on calendars"],
+    image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=680&q=75",
   },
 ] as const;
 

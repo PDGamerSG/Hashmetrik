@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/hero";
+import { GrowthPackage } from "@/components/home/growth-package";
 import { Audiences } from "@/components/home/audiences";
 import { Services } from "@/components/home/services";
 import { Why } from "@/components/home/why";
@@ -9,7 +10,7 @@ import { SectionScroll } from "@/components/site/section-link";
 import { FAQS, SITE } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "HashMetrik — PR & digital marketing agency in Hyderabad",
+  title: "HashMetrik — everything your brand needs, one growth partner",
   description: SITE.description,
   alternates: { canonical: "/" },
 };
@@ -33,8 +34,11 @@ export default function HomePage() {
           the section without carrying a fragment into the URL. */}
       <SectionScroll />
       <Hero />
-      <Audiences />
+      {/* The package is the homepage's argument, so it comes before the
+          breakdown of what is in it: one purchase, then its parts. */}
+      <GrowthPackage />
       <Services />
+      <Audiences />
       <Why />
       <Faq />
       <ContactBand />
