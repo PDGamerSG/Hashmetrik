@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Accent } from "@/components/site/section";
 import { ActionLink } from "@/components/site/button";
 import { Overslide, OverslidePanel } from "@/components/motion/overslide";
@@ -6,7 +5,7 @@ import { SplitHeading } from "@/components/motion/split-heading";
 import { Reveal } from "@/components/motion/reveal";
 import { InView, InViewList } from "@/components/motion/in-view";
 import { Magnetic } from "@/components/motion/magnetic";
-import { PlateVideo } from "@/components/motion/plate-video";
+import { ImageZoom } from "@/components/motion/image-zoom";
 import { PILLARS } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
@@ -159,24 +158,24 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
           />
         </div>
 
-        <InView
-          delay={0.12}
-          amount={0.2}
-          className="relative aspect-4/3 w-full overflow-hidden rounded-sheet md:aspect-4/5 md:max-h-[62dvh]"
-        >
-          <Image
-            src={pillar.image}
-            alt={pillar.imageAlt}
-            fill
-            sizes="(max-width: 768px) 100vw, 44vw"
-            className="object-cover"
-          />
+        <InView delay={0.12} amount={0.2} className="relative w-full">
           {/* A pinned panel holds the viewport for several seconds, which is
               the one condition under which a loop earns its bandwidth: the
-              plate has time to be watched rather than passed. */}
-          <PlateVideo src={pillar.video} />
-          {/* The reading, burned into the corner of the plate. */}
-          <span className="absolute bottom-4 left-4 rounded-sheet bg-ink/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.24em] tabular text-bone backdrop-blur-sm">
+              plate has time to be watched rather than passed — and the one
+              place where a visitor might want the photograph at full size,
+              which is what the loupe and the lightbox are for. */}
+          <ImageZoom
+            src={pillar.image}
+            video={pillar.video}
+            alt={pillar.imageAlt}
+            caption={`${pillar.reading} — ${pillar.name}`}
+            sizes="(max-width: 768px) 100vw, 44vw"
+            zoomClassName="aspect-4/5 h-[82dvh] w-auto max-w-full"
+            className="aspect-4/3 md:aspect-4/5 md:max-h-[62dvh]"
+          />
+          {/* The reading, burned into the corner of the plate. Transparent to
+              the pointer, or it would punch a hole in the zoom target. */}
+          <span className="pointer-events-none absolute bottom-4 left-4 rounded-sheet bg-ink/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.24em] tabular text-bone backdrop-blur-sm">
             {pillar.reading} — {pillar.name}
           </span>
         </InView>

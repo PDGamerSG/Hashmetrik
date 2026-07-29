@@ -1,84 +1,68 @@
 import { Tape } from "@/components/site/tape";
-import { ImageZoom } from "@/components/motion/image-zoom";
-import { Parallax } from "@/components/motion/reveal";
 import { HeroField } from "./hero-field";
 import { HeroLead } from "./hero-lead";
-import { HeroPanel } from "./hero-panel";
+import { HeroPlates } from "./hero-plates";
 
-/* Three frames of the work itself, set at staggered heights so the row reads
-   as a contact sheet rather than a tidy gallery. The parallax speeds are
-   staggered with them: the tall frame is nearest and moves most.
-
-   Each carries a clip as well as a still. A contact sheet is the one place on
-   the page where motion is the subject rather than an effect — these are three
-   moments from a working day, and a moment is a thing that moves. */
-const FRAMES = [
-  {
-    src: "/frames/strategy.webp",
-    video: "/frames/strategy.mp4",
-    alt: "A strategist pinning a campaign map to a wall of working notes",
-    caption: "Strategy",
-    height: "h-44 sm:h-72 md:h-[26rem]",
-    speed: 0.1,
-  },
-  {
-    src: "/frames/reporting.webp",
-    video: "/frames/reporting.mp4",
-    alt: "A performance dashboard being read beside its printed weekly report",
-    caption: "Reporting",
-    height: "h-32 sm:h-56 md:h-[19rem]",
-    speed: 0.04,
-  },
-  {
-    src: "/frames/review.webp",
-    video: "/frames/review.mp4",
-    alt: "A client review in progress across a table of printed pages",
-    caption: "Review",
-    height: "h-52 sm:h-80 md:h-[30rem]",
-    speed: 0.16,
-  },
-];
-
+/**
+ * The opening screen.
+ *
+ * One claim in the middle of a full viewport, with the studio's own frames
+ * flying around it. It was a two-column layout before — headline left, intake
+ * panel right, a tidy row of three photographs underneath — which is a
+ * perfectly good page and reads as a brochure. The argument for the change is
+ * the argument the copy makes: this is one partner, not a set of columns.
+ *
+ * Everything decorative here is a layer of the same field:
+ *
+ * - `HeroField` — the loose measurement marks, drifting on a canvas.
+ * - the grain — the ruled paper they came off.
+ * - `HeroPlates` — the work itself, cut loose from its contact sheet.
+ *
+ * The height is a screen *minus the masthead* — the bar is sticky and sits
+ * over the hero, so a plain `100svh` would push the tape and the scroll cue a
+ * masthead's worth below the fold and lose the one edge that says the page
+ * continues. `svh` rather than `vh` for the same reason at the other end: a
+ * phone with a retracting URL bar must not open with its CTA underneath it.
+ */
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-bone">
-      {/* Two backgrounds, one idea. The canvas is the loose marks; the grain
-          is the ruled paper they came off. */}
+    <section className="relative flex min-h-[calc(100svh-4rem)] flex-col overflow-hidden bg-bone md:min-h-[calc(100svh-5rem)]">
       <HeroField className="pointer-events-none absolute inset-0 h-full w-full" />
       <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
 
-      {/* Two columns only once there is genuinely room for both: below xl the
-          headline needs the full measure, and the panel goes back under it. */}
-      <div className="shell relative grid gap-10 pt-10 pb-10 md:pt-12 md:pb-12 xl:grid-cols-[minmax(0,1fr)_21rem] xl:gap-12">
+      <HeroPlates />
+
+      <div className="shell relative z-10 flex flex-1 items-center justify-center py-14 md:py-16">
         <HeroLead />
-        <HeroPanel />
       </div>
+
+      <ScrollCue />
 
       <Tape />
-
-      <div className="shell relative pt-10 pb-12 md:pt-14 md:pb-16">
-        <ul className="grid grid-cols-3 items-end gap-3 md:gap-6">
-          {FRAMES.map((frame) => (
-            <Parallax as="li" key={frame.caption} speed={frame.speed}>
-              <ImageZoom
-                src={frame.src}
-                video={frame.video}
-                alt={frame.alt}
-                caption={`${frame.caption} — ${frame.alt}`}
-                sizes="(max-width: 768px) 33vw, 28vw"
-                /* The plates are portrait now, so the lightbox is too —
-                   height-bound rather than width-bound, or a 3:4 frame opens
-                   into a 4:3 box and loses a third of itself. */
-                zoomClassName="aspect-3/4 h-[82dvh] w-auto max-w-full"
-                className={`w-full ${frame.height}`}
-              />
-              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.28em] text-slate md:text-[11px]">
-                {frame.caption}
-              </p>
-            </Parallax>
-          ))}
-        </ul>
-      </div>
     </section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The invitation to keep going.
+ *
+ * A mark travelling down a short rule — the same vocabulary as everything else
+ * on the page, at the smallest size it survives. `aria-hidden`, because
+ * "scroll" is not an instruction anyone needs read aloud, and pure CSS, so it
+ * costs nothing and runs before hydration.
+ */
+function ScrollCue() {
+  return (
+    <div
+      aria-hidden
+      className="relative z-10 hidden flex-col items-center gap-2.5 pb-6 md:flex"
+    >
+      <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-slate">Scroll</span>
+      <span className="relative block h-8 w-px overflow-hidden bg-ash">
+        <span className="cue-mark absolute inset-x-0 top-0 block h-3 bg-coral" />
+      </span>
+    </div>
   );
 }

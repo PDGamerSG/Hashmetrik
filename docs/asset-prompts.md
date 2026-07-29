@@ -6,7 +6,8 @@ near-black ink, a coral accent and measuring-instrument furniture. That mismatch
 is what makes the page read as unfinished — not the layout.
 
 This file is the replacement spec: 21 stills and 4 optional video loops, each
-tied to the slot it fills.
+tied to the slot it fills, plus three extra hero plates (§6) for the flying
+field the home page opens with.
 
 ---
 
@@ -56,13 +57,24 @@ no logos, no captions, no watermark.
 
 ---
 
-## 1. Hero contact sheet — 3 stills
+## 1. Hero flying plates — 3 stills
 
-Replaces `components/home/hero.tsx:11-33`. Three frames at staggered heights,
-under a parallax. They read as a contact sheet, so they must look shot on one
-day in one room.
+Replaces the `PLATES` array in `components/home/hero-plates.tsx`. These are no
+longer a tidy row under the headline: they hang off the corners of a full
+screen, tilted, floating on their own periods and following the pointer, with
+the headline alone in the middle. Three consequences for what you generate:
 
-**Generate 9:16 → crop to 3:4. Keep the subject inside the central 3:4.**
+- **They are small.** 7–13rem wide, and the plate nearest the edge is the
+  biggest thing on it. One clear subject per frame; anything with fine detail
+  turns to mush at this size.
+- **They are tilted 4–6°.** Leave air at the edges of the composition or the
+  rotation crops a head off.
+- **They still have to look shot on one day in one room.** They are seen
+  together, at a glance, on the first screen. Consistency beats any single
+  frame being better.
+
+**Generate 9:16 → crop to 3:4 (strategy) or 16:9 → crop to 4:3 (reporting,
+review). Keep the subject inside the central 60%.**
 Save as `public/frames/strategy.jpg`, `reporting.jpg`, `review.jpg`.
 
 ### 1a — Strategy
@@ -293,12 +305,19 @@ All six + HOUSE BLOCK.
 These need code changes, not just an asset swap — the current slots are
 `next/image`. Highest-value first.
 
-### 5a — Hero contact sheet, as three loops (best value)
+### 5a — Hero flying plates, as three loops (best value)
 
-The three hero frames already parallax at different speeds. Replacing them with
-8-second silent loops turns the strongest part of the page into the strongest
-part of the page. Generate 9:16, crop to 3:4, export ~6–8s, loop seamlessly by
-choosing near-identical first and last frames.
+The three hero plates already float, drift with the scroll and answer the
+pointer; a clip inside them is the difference between a moving decoration and a
+window onto a room that is actually working. This is the highest-value video on
+the site by a distance, and the code is already wired for it — `PlateVideo`
+loads the clip only on screens above `md`, only once the plate is near the
+viewport, and only when the visitor has not asked for reduced motion.
+
+Generate 9:16 (strategy) or 16:9 (reporting, review), crop as in §1, export
+~6–8s, loop seamlessly by choosing near-identical first and last frames. Keep
+the *action small* — these play at 200px wide behind a headline, so a big
+gesture reads as a flicker.
 
 **Strategy:**
 ```
@@ -353,10 +372,72 @@ the two-monitor desk → the review table, each locked-off, cut on action.
 
 ---
 
-## 6. After generating
+## 6. Extra plates — widening the hero's field
+
+The hero currently flies four plates: the three frames from §1 plus the
+`ROAS` pillar from §2c. Four is the floor, not the ceiling — the array in
+`components/home/hero-plates.tsx` takes as many as the composition can hold,
+and every extra one wants a position, a depth, a tilt and a float period of its
+own so the field never pulses in unison.
+
+These three are written for that set. Each is a *small* subject with one clear
+shape, because a plate is 200px wide at most and is competing with a headline.
+
+**Generate 9:16 → crop to 3:4. Keep the subject inside the central 60%.**
+Save as `public/frames/<name>.jpg`.
+
+### 6a — `notes` (a plate for the left edge, under Strategy)
+
+```
+A close overhead frame of a cream desk: an open ruled notebook covered in
+hand-drawn funnel diagrams and figures, a mechanical pencil laid across it, and
+the corner of a printed chart sliding in from the top of frame. One figure on
+the page is circled in coral red pencil. No legible words, only the shape of
+handwriting. Raking daylight from the left throws a soft shadow off the pencil.
+```
++ HOUSE BLOCK
+
+### 6b — `shoot` (a plate for the top edge, opposite Review)
+
+```
+A phone clamped to a small tripod in a warm studio, seen from behind and
+slightly above, framing an out-of-focus person mid-gesture against a cream wall.
+A clip light stands just out of frame. The phone is a dark graphic silhouette
+against the bright room; the person is soft, unreadable, clearly working rather
+than posing.
+```
++ HOUSE BLOCK
+
+### 6c — `press` (a plate for the bottom edge, under Reporting)
+
+```
+A stack of printed pages on a plain light-wood table, seen from a low
+three-quarter angle so the stack recedes: the top sheet is a press release
+layout — dense grey text blocks, no legible words — with one paragraph marked
+in coral pencil. A hand rests at the edge of the stack, about to lift the top
+page. Broad soft daylight, deep quiet shadows behind.
+```
++ HOUSE BLOCK
+
+### 6d — The matching loops
+
+Each of the three, rewritten as one small 6–8 second action, locked-off so it
+loops. Small is the whole instruction — at plate size, anything larger than a
+hand moving reads as a glitch:
+
+- **notes** — a hand writes one figure on the page, then circles it. Nothing else moves.
+- **shoot** — the out-of-focus person shifts weight and gestures once; the phone never moves.
+- **press** — a hand lifts the top sheet, holds it, and sets it back down.
+
+Each + VIDEO HOUSE BLOCK.
+
+---
+
+## 7. After generating
 
 1. Drop files into `public/frames/`, `public/pillars/`, `public/audiences/`, `public/services/`.
-2. Swap the URLs in `lib/content.ts` and `components/home/hero.tsx:11-33` for the local paths.
+2. Swap the URLs in `lib/content.ts` and in the `PLATES` array in
+   `components/home/hero-plates.tsx` for the local paths.
 3. Delete the `remotePatterns` block in `next.config.ts:9-13` — local files under
    `/public` do not need it, and leaving it open is a needless allowance.
 4. Convert to AVIF/WebP before committing. Twenty-one film-grain JPEGs at full

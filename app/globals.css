@@ -175,6 +175,53 @@
 }
 
 /* ==========================================================================
+   Hero plates
+   The flying frames around the headline. Position and width are declared as
+   custom properties rather than utilities because each plate needs a different
+   value on a phone and from `md` up, and there is no `left-[7.5%] md:left-[3%]`
+   pair that reads as one decision the way these two lines do. GSAP owns
+   `transform` on these elements, so nothing here may write to it — the resting
+   tilt is set as `rotate`, which is its own property and composes after.
+   ========================================================================== */
+
+.hero-plate {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  will-change: transform;
+}
+
+@media (width >= 48rem) {
+  .hero-plate {
+    left: var(--x-md, var(--x));
+    top: var(--y-md, var(--y));
+    width: var(--w-md, var(--w));
+  }
+}
+
+/* ==========================================================================
+   Scroll cue
+   A mark travelling down its own rule, once every couple of seconds. The one
+   piece of pure invitation on the page, so it is written to be ignorable:
+   it never covers anything and it stops entirely under reduced motion.
+   ========================================================================== */
+
+@keyframes cue-run {
+  0% {
+    transform: translateY(-100%);
+  }
+  55%,
+  100% {
+    transform: translateY(340%);
+  }
+}
+
+.cue-mark {
+  animation: cue-run 2.4s var(--ease-out-quint) infinite;
+}
+
+/* ==========================================================================
    Paper grain
    A faint ruled grain sized to the tick pitch, so page, rule and texture all
    share one measurement unit.
@@ -386,6 +433,7 @@
 
   .tape-track,
   .pulse-dot,
+  .cue-mark,
   .rise {
     animation: none !important;
   }
