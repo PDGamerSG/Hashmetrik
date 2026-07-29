@@ -7,25 +7,32 @@ import { HeroPanel } from "./hero-panel";
 
 /* Three frames of the work itself, set at staggered heights so the row reads
    as a contact sheet rather than a tidy gallery. The parallax speeds are
-   staggered with them: the tall frame is nearest and moves most. */
+   staggered with them: the tall frame is nearest and moves most.
+
+   Each carries a clip as well as a still. A contact sheet is the one place on
+   the page where motion is the subject rather than an effect — these are three
+   moments from a working day, and a moment is a thing that moves. */
 const FRAMES = [
   {
-    src: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=900&q=80",
-    alt: "Strategists mapping a campaign across a wall of notes",
+    src: "/frames/strategy.webp",
+    video: "/frames/strategy.mp4",
+    alt: "A strategist pinning a campaign map to a wall of working notes",
     caption: "Strategy",
     height: "h-44 sm:h-72 md:h-[26rem]",
     speed: 0.1,
   },
   {
-    src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80",
-    alt: "A performance dashboard showing campaign metrics",
+    src: "/frames/reporting.webp",
+    video: "/frames/reporting.mp4",
+    alt: "A performance dashboard being read beside its printed weekly report",
     caption: "Reporting",
     height: "h-32 sm:h-56 md:h-[19rem]",
     speed: 0.04,
   },
   {
-    src: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=900&q=80",
-    alt: "A client review session in progress",
+    src: "/frames/review.webp",
+    video: "/frames/review.mp4",
+    alt: "A client review in progress across a table of printed pages",
     caption: "Review",
     height: "h-52 sm:h-80 md:h-[30rem]",
     speed: 0.16,
@@ -55,9 +62,14 @@ export function Hero() {
             <Parallax as="li" key={frame.caption} speed={frame.speed}>
               <ImageZoom
                 src={frame.src}
+                video={frame.video}
                 alt={frame.alt}
                 caption={`${frame.caption} — ${frame.alt}`}
                 sizes="(max-width: 768px) 33vw, 28vw"
+                /* The plates are portrait now, so the lightbox is too —
+                   height-bound rather than width-bound, or a 3:4 frame opens
+                   into a 4:3 box and loses a third of itself. */
+                zoomClassName="aspect-3/4 h-[82dvh] w-auto max-w-full"
                 className={`w-full ${frame.height}`}
               />
               <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.28em] text-slate md:text-[11px]">

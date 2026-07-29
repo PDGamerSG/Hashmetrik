@@ -6,6 +6,7 @@ import { SplitHeading } from "@/components/motion/split-heading";
 import { Reveal } from "@/components/motion/reveal";
 import { InView, InViewList } from "@/components/motion/in-view";
 import { Magnetic } from "@/components/motion/magnetic";
+import { PlateVideo } from "@/components/motion/plate-video";
 import { PILLARS } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
@@ -170,6 +171,10 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
             sizes="(max-width: 768px) 100vw, 44vw"
             className="object-cover"
           />
+          {/* A pinned panel holds the viewport for several seconds, which is
+              the one condition under which a loop earns its bandwidth: the
+              plate has time to be watched rather than passed. */}
+          <PlateVideo src={pillar.video} />
           {/* The reading, burned into the corner of the plate. */}
           <span className="absolute bottom-4 left-4 rounded-sheet bg-ink/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.24em] tabular text-bone backdrop-blur-sm">
             {pillar.reading} — {pillar.name}

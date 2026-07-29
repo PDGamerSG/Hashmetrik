@@ -66,9 +66,9 @@ export const PILLARS = [
       "Brand Identity",
       "Brand Guidelines",
     ],
-    image:
-      "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=1200&q=80",
-    imageAlt: "Brand identity sheets and colour swatches laid out on a studio desk",
+    image: "/pillars/foundation.webp",
+    video: "/pillars/foundation.mp4",
+    imageAlt: "Logo studies, torn colour swatches and a type specimen laid out on a studio desk",
   },
   {
     id: "presence",
@@ -77,9 +77,9 @@ export const PILLARS = [
     name: "Digital Presence",
     claim: "The place every campaign sends people, built to convert them.",
     items: ["Website Development", "Landing Pages", "UI/UX Design", "Website Optimization"],
-    image:
-      "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=1200&q=80",
-    imageAlt: "A designer reviewing website layouts on a large display",
+    image: "/pillars/presence.webp",
+    video: "/pillars/presence.mp4",
+    imageAlt: "A designer reviewing website wireframes on a large display, the same layouts marked up on paper beside the keyboard",
   },
   {
     id: "growth",
@@ -94,9 +94,9 @@ export const PILLARS = [
       "Content Marketing",
       "Email Marketing",
     ],
-    image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
-    imageAlt: "A performance dashboard showing campaign metrics",
+    image: "/pillars/growth.webp",
+    video: "/pillars/growth.mp4",
+    imageAlt: "A media buyer reading campaign dashboards at a two-monitor desk, the printed weekly report beside them",
   },
   {
     id: "reach",
@@ -105,9 +105,9 @@ export const PILLARS = [
     name: "Brand Reach",
     claim: "Everywhere the brand should be seen that you cannot simply buy.",
     items: ["PR Management", "Influencer Marketing", "Google Business Profile", "Analytics"],
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
-    imageAlt: "A press interview being recorded in a studio",
+    image: "/pillars/reach.webp",
+    video: "/pillars/reach.mp4",
+    imageAlt: "A founder mid-answer to camera, boom microphone overhead and a softbox out of focus in the foreground",
   },
 ] as const;
 
@@ -133,42 +133,42 @@ export const AUDIENCES = [
   {
     title: "Restaurants & cafés",
     problem: "Empty weekday seats and weak local discovery.",
-    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/restaurants.webp",
   },
   {
     title: "Healthcare & clinics",
     problem: "Patient acquisition and reputation, handled carefully.",
-    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/healthcare.webp",
   },
   {
     title: "Real estate",
     problem: "High-intent pipelines that actually reach site visits.",
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/real-estate.webp",
   },
   {
     title: "Startups",
     problem: "Launch traction and an investor-ready narrative.",
-    image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/startups.webp",
   },
   {
     title: "Ecommerce brands",
     problem: "Scaling spend without giving back the margin.",
-    image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/ecommerce.webp",
   },
   {
     title: "Fashion & jewellery",
     problem: "Aspirational pull that converts into demand.",
-    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/fashion.webp",
   },
   {
     title: "B2B companies",
     problem: "Qualified pipeline, not a bigger list of names.",
-    image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/b2b.webp",
   },
   {
     title: "Personal brands",
     problem: "Authority, press and an audience that compounds.",
-    image: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?auto=format&fit=crop&w=900&q=80",
+    image: "/audiences/personal-brands.webp",
   },
 ] as const;
 
@@ -184,7 +184,7 @@ export const SERVICES = [
     name: "PR & reputation",
     problem: "Invisible brand, no media presence, crisis handled reactively.",
     outcomes: ["Tier-1 media coverage", "Reputation monitoring", "Crisis playbooks"],
-    image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=680&q=75",
+    image: "/services/pr.webp",
   },
   {
     id: "influencer",
@@ -192,7 +192,7 @@ export const SERVICES = [
     name: "Influencer marketing",
     problem: "Low organic reach and a trust gap with new audiences.",
     outcomes: ["Curated creator partnerships", "Campaign-led launches", "Performance reporting"],
-    image: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?auto=format&fit=crop&w=680&q=75",
+    image: "/services/influencer.webp",
   },
   {
     id: "performance",
@@ -200,7 +200,7 @@ export const SERVICES = [
     name: "Performance marketing",
     problem: "High acquisition cost, leaky funnels, untracked spend.",
     outcomes: ["Google, Meta and YouTube ads", "Funnel and landing-page CRO", "Profitable, reported ROAS"],
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=680&q=75",
+    image: "/services/performance.webp",
   },
   {
     id: "seo",
@@ -208,7 +208,7 @@ export const SERVICES = [
     name: "SEO",
     problem: "Absent from search exactly where the intent lives.",
     outcomes: ["Technical and local SEO", "Content engines", "Compounding organic traffic"],
-    image: "https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?auto=format&fit=crop&w=680&q=75",
+    image: "/services/seo.webp",
   },
   {
     id: "website",
@@ -216,7 +216,7 @@ export const SERVICES = [
     name: "Website development",
     problem: "Slow, off-brand sites that lose the visitor before the pitch.",
     outcomes: ["Conversion-first builds", "Sub-2s page loads", "Analytics wired in from day one"],
-    image: "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=680&q=75",
+    image: "/services/website.webp",
   },
   {
     id: "social",
@@ -224,9 +224,45 @@ export const SERVICES = [
     name: "Social media",
     problem: "Inconsistent posting, no strategy, no community.",
     outcomes: ["Content systems", "Community management", "Always-on calendars"],
-    image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=680&q=75",
+    image: "/services/social.webp",
   },
 ] as const;
+
+/**
+ * The consultation, as the visitor actually experiences it.
+ *
+ * The hero panel is the only place these three beats are set out in order —
+ * the FAQ states them in prose and the booking page assumes them. `unit` is
+ * the reading each beat is measured in, the same convention the pillars and
+ * the services list already use.
+ */
+export const INTAKE = [
+  {
+    reading: "00",
+    name: "The call",
+    unit: "30 min",
+    note: "Thirty minutes with a senior strategist. No deck, no pitch team.",
+  },
+  {
+    reading: "01",
+    name: "Growth thesis",
+    unit: "48 hrs",
+    note: "A written plan for your business — sent whether or not you hire us.",
+  },
+  {
+    reading: "02",
+    name: "Milestones",
+    unit: "Week 1",
+    note: "Targets agreed in week one, so there is something to check against.",
+  },
+] as const;
+
+/**
+ * Studio hours in IST, as day numbers from Sunday. The hero panel reads these
+ * to say whether anyone is actually in, and to offer the next bookable slot
+ * out of `TIME_SLOTS` — so a change here moves both.
+ */
+export const STUDIO_DAYS = [1, 2, 3, 4, 5] as const;
 
 export const REASONS = [
   {

@@ -14,6 +14,7 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useIsMounted } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { PlateVideo } from "@/components/motion/plate-video";
 import { setScrollLocked } from "@/components/motion/smooth-scroll";
 
 /**
@@ -29,23 +30,37 @@ import { setScrollLocked } from "@/components/motion/smooth-scroll";
  * The morph is a shared-layout animation: one `layoutId` on both the small and
  * the large image, and the browser interpolates between their boxes. Nothing
  * is cross-faded, and the same DOM node is on screen throughout.
+ *
+ * A `video` puts a clip over the thumbnail. It goes inside the magnified span
+ * rather than beside it, so the loupe pans the moving frame on exactly the same
+ * transform — one node, one origin, no second thing to keep in register. The
+ * lightbox stays photographic: at full size the question is what is in the
+ * frame, and a loop playing under the answer is just noise.
  */
 
 export function ImageZoom({
   src,
   alt,
+  video,
   sizes = "(max-width: 1024px) 45vw, 22vw",
   caption,
   className,
+  /**
+   * The lightbox's shape. Landscape by default; a portrait plate has to say
+   * so, or the full-size view crops harder than the thumbnail it grew from.
+   */
+  zoomClassName = "aspect-4/3 w-full max-w-5xl",
   /** Magnification under the pointer. Past ~2 the source resolution shows. */
   zoomScale = 1.7,
   priority,
 }: {
   src: string;
   alt: string;
+  video?: string;
   sizes?: string;
   caption?: string;
   className?: string;
+  zoomClassName?: string;
   zoomScale?: number;
   priority?: boolean;
 }) {
@@ -122,6 +137,7 @@ export function ImageZoom({
           className="absolute inset-0 block"
         >
           <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className="object-cover" />
+          {video && <PlateVideo src={video} />}
         </motion.span>
       </button>
 
@@ -141,7 +157,10 @@ export function ImageZoom({
                 <motion.figure
                   layoutId={layoutId}
                   onClick={(event) => event.stopPropagation()}
-                  className="relative aspect-4/3 w-full max-w-5xl cursor-default overflow-hidden rounded-sheet"
+                  className={cn(
+                    "relative cursor-default overflow-hidden rounded-sheet",
+                    zoomClassName,
+                  )}
                 >
                   <Image src={src} alt={alt} fill sizes="90vw" className="object-cover" />
                 </motion.figure>
