@@ -175,6 +175,86 @@
 }
 
 /* ==========================================================================
+   Hero light
+   A warm sweep entering top-left as the opening sheet lifts, and a bloom that
+   follows the pointer. Both are gradients on a bone page, so the alphas are
+   tiny — the brief for every photograph on this site is "natural window light
+   on paper", and this is the page holding itself to the same rule. Push these
+   numbers and the section stops being printed matter and starts being glass.
+   ========================================================================== */
+
+.hero-sweep {
+  animation: hero-sweep 2.4s var(--ease-out-quint) var(--intro-duration) both;
+}
+
+@keyframes hero-sweep {
+  from {
+    opacity: 0;
+    transform: translate3d(-7%, -5%, 0) scale(1.1);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The light itself, and the only thing on this page that never settles. 24s
+   is deliberately longer than anyone looks at a hero: it should never be
+   possible to catch it moving, only to notice it has moved. */
+.hero-sweep-drift {
+  background-image:
+    radial-gradient(
+      58% 52% at 20% 14%,
+      color-mix(in oklab, var(--color-bone-2) 92%, white) 0%,
+      color-mix(in oklab, var(--color-bone-2) 40%, transparent) 40%,
+      transparent 72%
+    ),
+    radial-gradient(
+      42% 38% at 82% 74%,
+      color-mix(in oklab, var(--color-coral) 9%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      38% 34% at 74% 12%,
+      color-mix(in oklab, var(--color-gold) 8%, transparent) 0%,
+      transparent 68%
+    ),
+    /* The shade. A light on a page this pale is invisible on its own — bone is
+       already within a few percent of white, so there is nowhere brighter for
+       the sweep to go. What makes it read is the fall-off *away* from it:
+       everything further from the window gets a few percent of ink, and the
+       top-left corner becomes the lit one by comparison. Last in the stack,
+       so it sits under the three blooms above. */
+      radial-gradient(
+        95% 85% at 16% 10%,
+        transparent 38%,
+        color-mix(in oklab, var(--color-ink) 6%, transparent) 100%
+      );
+  animation: hero-drift 24s ease-in-out infinite alternate;
+}
+
+@keyframes hero-drift {
+  to {
+    transform: translate3d(3.5%, 2.5%, 0) scale(1.06);
+  }
+}
+
+/* The pointer bloom. Sized in `rem` rather than `vw` so it stays a pool of
+   light on a laptop instead of becoming a wash on a wide monitor. */
+.hero-bloom {
+  width: 34rem;
+  height: 34rem;
+  margin: -17rem 0 0 -17rem;
+  background-image: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-bone-2) 85%, white) 0%,
+    color-mix(in oklab, var(--color-coral) 6%, transparent) 45%,
+    transparent 78%
+  );
+  will-change: transform;
+}
+
+/* ==========================================================================
    Hero plates
    The flying frames around the headline. Position and width are declared as
    custom properties rather than utilities because each plate needs a different
@@ -436,6 +516,15 @@
   .cue-mark,
   .rise {
     animation: none !important;
+  }
+
+  /* The sweep is composition, not movement — it stays, it simply stops
+     arriving and stops drifting. */
+  .hero-sweep,
+  .hero-sweep-drift {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
   }
 
   ::view-transition-old(*),

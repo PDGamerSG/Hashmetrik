@@ -1,6 +1,7 @@
 import { Tape } from "@/components/site/tape";
 import { HeroField } from "./hero-field";
 import { HeroLead } from "./hero-lead";
+import { HeroLight } from "./hero-light";
 import { HeroPlates } from "./hero-plates";
 
 /**
@@ -15,6 +16,7 @@ import { HeroPlates } from "./hero-plates";
  * Everything decorative here is a layer of the same field:
  *
  * - `HeroField` — the loose measurement marks, drifting on a canvas.
+ * - `HeroLight` — the window light, sweeping in and then following the pointer.
  * - the grain — the ruled paper they came off.
  * - `HeroPlates` — the work itself, cut loose from its contact sheet.
  *
@@ -28,6 +30,9 @@ export function Hero() {
   return (
     <section className="relative flex min-h-[calc(100svh-4rem)] flex-col overflow-hidden bg-bone md:min-h-[calc(100svh-5rem)]">
       <HeroField className="pointer-events-none absolute inset-0 h-full w-full" />
+      {/* Under the grain on purpose: the light falls on the paper, so the
+          paper's own texture has to sit over it. */}
+      <HeroLight />
       <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
 
       <HeroPlates />

@@ -1,6 +1,7 @@
 "use client";
 
 import type Lenis from "lenis";
+import type { LenisOptions } from "lenis";
 import { ReactLenis, useLenis } from "lenis/react";
 import { MotionConfig } from "motion/react";
 import { usePathname } from "next/navigation";
@@ -25,6 +26,39 @@ import { usePrefersReducedMotion } from "@/lib/motion";
 
 /** Module-scope handle, so the helpers below can reach the live instance. */
 let instance: Lenis | null = null;
+
+/**
+ * The feel, in one place.
+ *
+ * `lerp` is the only number here worth arguing about, and it is the whole
+ * character of the site: it is the fraction of the remaining distance the page
+ * covers each frame, applied framerate-independently, so the glide is the same
+ * on a 60Hz laptop and a 144Hz monitor.
+ *
+ * - `0.14+` — barely smoothed. Reads as a slightly mushy native scroll.
+ * - `0.10` — Lenis's own default, and the feel of their demo.
+ * - `0.09` — where this sits. One notch heavier than the default: long enough
+ *   after the wheel stops for the parallaxed plates and the metrics tape to
+ *   settle visibly, which is the point of having them.
+ * - `0.06 and below` — the page keeps travelling after the visitor has stopped
+ *   asking it to, and smooth becomes lag.
+ */
+const LENIS: LenisOptions = {
+  /* Driven by the GSAP ticker in GsapBridge, not by Lenis's own loop. */
+  autoRaf: false,
+  lerp: 0.09,
+  /* Touch already interpolates in the compositor. Smoothing it again costs a
+     frame and buys nothing. */
+  syncTouch: false,
+  touchMultiplier: 1.6,
+  /* A wheel over a scrollable child — the assistant transcript, the mobile
+     menu on a short screen — scrolls that child natively instead of being
+     eaten by the page scroller. Every such element on this site also carries
+     `data-lenis-prevent`, which is the older, per-element spelling of the same
+     intent; this is the general rule behind it, and it covers anything added
+     later that nobody remembers to annotate. */
+  allowNestedScroll: true,
+};
 
 /**
  * Scroll an element into view through whichever scroller is actually running.
@@ -115,21 +149,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ReactLenis
-      root
-      options={{
-        /* Driven by the GSAP ticker in GsapBridge, not by Lenis's own loop. */
-        autoRaf: false,
-        /* Framerate-independent smoothing, so the feel is the same at 60Hz and
-           at 144Hz. 0.11 keeps the page attached to the wheel; much lower and
-           the glide starts to read as lag. */
-        lerp: 0.11,
-        /* Touch already interpolates in the compositor. Smoothing it again
-           costs a frame and buys nothing. */
-        syncTouch: false,
-        touchMultiplier: 1.6,
-      }}
-    >
+    <ReactLenis root options={LENIS}>
       <GsapBridge />
       {children}
     </ReactLenis>
