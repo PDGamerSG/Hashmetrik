@@ -85,14 +85,14 @@ export function Footer() {
           </FooterColumn>
         </div>
 
-        <div className="mt-16 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-ash-ink pt-6">
+        <div className="mt-16 flex flex-wrap items-center gap-x-8 gap-y-1 border-t border-ash-ink pt-4">
           {SOCIALS.map((s) => (
             <a
               key={s.code}
               href={s.href}
               target="_blank"
               rel="noreferrer"
-              className="group font-mono text-[11px] uppercase tracking-[0.22em] text-bone/55 transition-colors hover:text-coral"
+              className="group inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-bone/55 transition-colors hover:text-coral"
             >
               <span className="text-bone/30 transition-colors group-hover:text-coral">
                 {s.code}
@@ -119,11 +119,21 @@ export function Footer() {
   );
 }
 
+/**
+ * A footer column.
+ *
+ * The links are laid out as blocks with their own padding rather than as lines
+ * of text with margins between them. Set as inline text at this size a row is
+ * about 17px tall, which is under the 24px a pointer of "coarse" accuracy is
+ * assumed to have — two adjacent entries in a list of six are then one
+ * mis-tap apart. The padding replaces the gap, so the column is no taller than
+ * it was; the target is simply the whole row rather than the glyphs.
+ */
 function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
       <h2 className="font-mono text-[11px] uppercase tracking-[0.28em] text-bone/40">{title}</h2>
-      <ul className="mt-5 space-y-3 text-sm text-bone/80">{children}</ul>
+      <ul className="mt-3 text-sm text-bone/80 [&_a]:block [&_a]:py-2">{children}</ul>
     </div>
   );
 }

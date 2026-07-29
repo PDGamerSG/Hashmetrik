@@ -19,6 +19,30 @@ const BASE =
   "font-mono text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 " +
   "disabled:pointer-events-none disabled:opacity-45";
 
+/**
+ * The router's own props, which a plain `<a>` has no use for.
+ *
+ * `ActionLink` takes `next/link`'s full prop type so that internal links can be
+ * given `prefetch` or `replace`, but an external href renders a bare anchor —
+ * and React warns about every one of these if it reaches the DOM.
+ */
+const ROUTER_PROPS = [
+  "as",
+  "replace",
+  "scroll",
+  "shallow",
+  "passHref",
+  "prefetch",
+  "legacyBehavior",
+  "onNavigate",
+] as const;
+
+function anchorPropsOf(rest: Record<string, unknown>) {
+  const out: Record<string, unknown> = { ...rest };
+  for (const key of ROUTER_PROPS) delete out[key];
+  return out as ComponentProps<"a">;
+}
+
 /** The arrow travels on hover — the one micro-interaction shared site-wide. */
 function Arrow() {
   return (
@@ -46,8 +70,22 @@ export function ActionLink({
   const classes = cn(BASE, VARIANT[variant], className);
 
   if (external) {
+    /* `mailto:` and `tel:` hand off to another application rather than opening
+       a page, so forcing a new tab only leaves an empty one behind. */
+    const newTab = href.startsWith("http");
+
+    /* Everything the caller passed has to survive the branch — an `onClick`
+       that closes the mobile menu, an `aria-*`, an `id`. This used to render a
+       bare anchor and drop `rest` on the floor, so an external link inside the
+       menu opened its tab and left the menu sitting over the page. */
     return (
-      <a href={href} target="_blank" rel="noreferrer" className={classes}>
+      <a
+        href={href}
+        target={newTab ? "_blank" : undefined}
+        rel={newTab ? "noreferrer" : undefined}
+        className={classes}
+        {...anchorPropsOf(rest)}
+      >
         {children}
         {arrow && <Arrow />}
       </a>

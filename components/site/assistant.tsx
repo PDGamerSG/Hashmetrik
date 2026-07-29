@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageSquare, Send, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,8 +34,30 @@ const PROMPTS = [
   "What does a ₹3L monthly budget buy?",
 ];
 
+/**
+ * Routes the launcher stays off.
+ *
+ * `/book` is a four-step funnel whose Continue button sits bottom-right on a
+ * phone — exactly where this floats. Measured on an iPhone 13 the launcher
+ * covered Continue outright through a 60px band of scroll, so the tap that was
+ * meant to advance the booking opened a chat instead. A floating assistant has
+ * nothing to offer inside a form it cannot fill in, so it stands down there.
+ */
+const HIDDEN_ON = ["/book"];
+
 export function Assistant() {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  /* Which route the panel was opened on, rather than a plain boolean.
+     The launcher lives in the layout and survives navigation, so "open" has to
+     mean "open *here*" — held as a boolean it would follow the visitor to the
+     next page and reappear over it, and a panel opened before a hop to `/book`
+     would spring back the moment they left again. Derived rather than reset in
+     an effect, so there is no render where it is briefly still open. */
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const open = openedOn === pathname;
+  const setOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
@@ -47,8 +70,11 @@ export function Assistant() {
   useEffect(() => {
     if (!open) return;
     inputRef.current?.focus();
+    /* Closed through the setter rather than the `setOpen` helper above: the
+       helper closes over `pathname` and is rebuilt every render, which would
+       put it in this effect's dependencies and re-bind the listener each time. */
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setOpenedOn(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -82,17 +108,31 @@ export function Assistant() {
     }
   }
 
+  if (HIDDEN_ON.includes(pathname)) return null;
+
   return (
     <>
-      {/* Launcher. Sits clear of the WhatsApp-style bottom-right corner on
-          mobile by tucking above the safe area. */}
+      {/* Launcher.
+
+          A square icon button on a phone and a labelled pill from `sm` up. The
+          label costs 130px of width, and at the bottom-right of a 390px screen
+          that is a third of the row — enough to sit on top of whatever control
+          the page has put in its own bottom corner. The wide screens that have
+          room for the words are the ones that keep them.
+
+          Held above the home indicator with `safe-area-inset-bottom`, or on a
+          notched phone the button's lower edge lands under the system gesture
+          bar and the first tap is swallowed by the OS. */}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-controls="assistant-panel"
         className={cn(
-          "fixed right-4 bottom-4 z-50 flex h-13 items-center gap-2.5 rounded-sheet px-4 md:right-8 md:bottom-8",
+          "fixed z-50 flex size-12 items-center justify-center rounded-sheet",
+          "bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))]",
+          "md:bottom-[calc(2rem+env(safe-area-inset-bottom))] md:right-[calc(2rem+env(safe-area-inset-right))]",
+          "sm:size-auto sm:h-13 sm:justify-start sm:gap-2.5 sm:px-4",
           "font-mono text-[11px] uppercase tracking-[0.22em] shadow-[0_10px_30px_-12px_rgba(14,14,15,0.5)]",
           /* A ring, because the launcher floats over every surface on the
              site — including the coral tape, where it would otherwise have
@@ -102,7 +142,7 @@ export function Assistant() {
         )}
       >
         {open ? <X className="size-4" /> : <MessageSquare className="size-4" />}
-        <span className={open ? "sr-only" : undefined}>Ask HashMetrik</span>
+        <span className={open ? "sr-only" : "sr-only sm:not-sr-only"}>Ask HashMetrik</span>
         {open && <span className="sr-only">Close assistant</span>}
       </button>
 
@@ -114,9 +154,10 @@ export function Assistant() {
           aria-modal="false"
           aria-label="Ask HashMetrik"
           className={cn(
-            "fixed right-4 bottom-20 z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col",
+            "fixed z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col",
+            "bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))]",
+            "md:bottom-[calc(6rem+env(safe-area-inset-bottom))] md:right-[calc(2rem+env(safe-area-inset-right))]",
             "rounded-sheet border border-ash bg-bone-2 shadow-[0_24px_60px_-24px_rgba(14,14,15,0.45)]",
-            "md:right-8 md:bottom-24",
           )}
         >
           <header className="flex items-center justify-between border-b border-ash px-5 py-4">

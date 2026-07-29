@@ -18,9 +18,6 @@ import { scrollToElement } from "@/components/motion/smooth-scroll";
 
 const TARGET_KEY = "hm:section";
 
-/** Clearance for the sticky masthead, matching `scroll-padding-top`. */
-const SCROLL_OFFSET = 96;
-
 function sectionOf(href: string) {
   const [path, hash] = href.split("#");
   /* Only same-site anchors into the home page are handled here. */
@@ -35,8 +32,14 @@ function scrollToSection(id: string) {
     requestAnimationFrame(() => {
       const target = document.getElementById(id);
       /* Routed through the smooth scroller rather than `scrollIntoView`, or
-         the browser's jump and Lenis's easing would fight over the page. */
-      if (target) scrollToElement(target, -SCROLL_OFFSET);
+         the browser's jump and Lenis's easing would fight over the page.
+
+         No masthead clearance is passed. That number is already declared once,
+         as `scroll-padding-top` in `globals.css`, and both scrollers read it
+         off the document themselves — Lenis subtracts it when it resolves an
+         element, exactly as the browser does for a native anchor. Passing it
+         again here landed every section a second masthead below the bar. */
+      if (target) scrollToElement(target);
     }),
   );
 }

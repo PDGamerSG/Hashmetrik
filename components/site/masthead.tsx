@@ -178,14 +178,17 @@ export function Masthead() {
               Book a free consultation
             </ActionLink>
 
-            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
+            {/* Set as rows with their own height rather than as a line of
+                text: this list only ever appears on a phone, where the target
+                is a thumb. */}
+            <ul className="mt-6 flex flex-wrap gap-x-6">
               {SOCIALS.map((s) => (
                 <li key={s.code}>
                   <a
                     href={s.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate transition-colors hover:text-coral"
+                    className="inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-slate transition-colors hover:text-coral"
                   >
                     {s.code} · {s.label}
                   </a>

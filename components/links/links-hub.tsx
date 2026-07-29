@@ -253,13 +253,16 @@ function ChannelList({
             {/* The slot is held open on rows with nothing to copy, so every
                 arrow in the stack lands on the same vertical. */}
             {channel.copyValue ? (
+              /* Left at the base size rather than trimmed to `size-10`: this
+                 is a page reached by scanning a printed QR, so every control
+                 on it is hit with a thumb and 44px is the floor. */
               <CopyButton
                 value={channel.copyValue}
                 label={channel.label}
-                className="size-10 border-ash text-slate hover:border-coral hover:text-coral"
+                className="border-ash text-slate hover:border-coral hover:text-coral"
               />
             ) : (
-              <span aria-hidden className="size-10 shrink-0" />
+              <span aria-hidden className="size-11 shrink-0" />
             )}
           </li>
         ))}
