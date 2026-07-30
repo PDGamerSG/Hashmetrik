@@ -164,9 +164,15 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
               plate has time to be watched rather than passed — and the one
               place where a visitor might want the photograph at full size,
               which is what the loupe and the lightbox are for. */}
+          {/* The clip plays on a phone here, unlike in the hero. Below `md`
+              these panels are a single column, so exactly one plate is ever on
+              screen and the observer inside `PlateVideo` has paused the last
+              one before the next begins — one decoder, not four. This is the
+              page's main moving image on a handset. */}
           <ImageZoom
             src={pillar.image}
             video={pillar.video}
+            videoOnPhone
             alt={pillar.imageAlt}
             caption={`${pillar.reading} — ${pillar.name}`}
             sizes="(max-width: 768px) 100vw, 44vw"

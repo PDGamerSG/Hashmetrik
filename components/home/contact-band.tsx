@@ -73,13 +73,13 @@ export function ContactBand() {
                       href={row.href}
                       target={row.href.startsWith("http") ? "_blank" : undefined}
                       rel={row.href.startsWith("http") ? "noreferrer" : undefined}
-                      className="group flex items-start gap-4 py-4 transition-colors hover:text-coral"
+                      className="group flex items-start gap-4 py-4 transition-colors hover:text-coral active:text-coral"
                     >
                       <row.icon aria-hidden className="mt-0.5 size-4 shrink-0 text-gold" />
                       <span className="w-24 shrink-0 font-mono text-[11px] uppercase tracking-[0.22em] text-bone/40">
                         {row.label}
                       </span>
-                      <span className="text-sm leading-relaxed text-bone/85 transition-colors group-hover:text-coral">
+                      <span className="text-sm leading-relaxed text-bone/85 transition-colors group-hover:text-coral group-active:text-coral">
                         {row.value}
                       </span>
                     </a>

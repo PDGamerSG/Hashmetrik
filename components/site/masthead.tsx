@@ -188,7 +188,7 @@ export function Masthead() {
                     href={s.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-slate transition-colors hover:text-coral"
+                    className="inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-slate transition-colors hover:text-coral active:text-coral"
                   >
                     {s.code} · {s.label}
                   </a>

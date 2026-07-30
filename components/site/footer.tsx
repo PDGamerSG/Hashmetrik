@@ -42,7 +42,7 @@ export function Footer() {
           <FooterColumn title="Company">
             {COMPANY.map((item) => (
               <li key={item.label}>
-                <SectionLink href={item.href} className="transition-colors hover:text-coral">
+                <SectionLink href={item.href} className="transition-colors hover:text-coral active:text-coral">
                   {item.label}
                 </SectionLink>
               </li>
@@ -52,7 +52,7 @@ export function Footer() {
           <FooterColumn title="Services">
             {SERVICE_LINKS.map((label) => (
               <li key={label}>
-                <SectionLink href="/#services" className="transition-colors hover:text-coral">
+                <SectionLink href="/#services" className="transition-colors hover:text-coral active:text-coral">
                   {label}
                 </SectionLink>
               </li>
@@ -61,17 +61,17 @@ export function Footer() {
 
           <FooterColumn title="Reach us">
             <li>
-              <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-coral">
+              <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-coral active:text-coral">
                 {CONTACT.email}
               </a>
             </li>
             <li>
-              <a href={`mailto:${CONTACT.emailAlt}`} className="transition-colors hover:text-coral">
+              <a href={`mailto:${CONTACT.emailAlt}`} className="transition-colors hover:text-coral active:text-coral">
                 {CONTACT.emailAlt}
               </a>
             </li>
             <li>
-              <a href={`tel:${CONTACT.phone}`} className="transition-colors hover:text-coral">
+              <a href={`tel:${CONTACT.phone}`} className="transition-colors hover:text-coral active:text-coral">
                 {CONTACT.phoneDisplay}
               </a>
             </li>
@@ -92,9 +92,9 @@ export function Footer() {
               href={s.href}
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-bone/55 transition-colors hover:text-coral"
+              className="group inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-bone/55 transition-colors hover:text-coral active:text-coral"
             >
-              <span className="text-bone/30 transition-colors group-hover:text-coral">
+              <span className="text-bone/30 transition-colors group-hover:text-coral group-active:text-coral">
                 {s.code}
               </span>{" "}
               {s.handle}

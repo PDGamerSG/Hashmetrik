@@ -36,6 +36,11 @@ export function Audiences() {
         >
           {AUDIENCES.map((audience) => (
             <li key={audience.title}>
+              {/* The tilt is pointer-only, and Tailwind gates `group-hover`
+                  behind `(hover: hover)`, so on a phone this card had no
+                  response to a touch of any kind. `group-active` is the same
+                  two moves — the plate pushes in, the rule under it turns
+                  coral — played on the press instead of the approach. */}
               <TiltCard className="group h-full">
                 <div className="relative aspect-4/5 w-full overflow-hidden rounded-sheet bg-ash">
                   <Image
@@ -43,10 +48,10 @@ export function Audiences() {
                     alt=""
                     fill
                     sizes="(max-width: 1024px) 45vw, 22vw"
-                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] group-active:scale-[1.06]"
                   />
                 </div>
-                <div className="mt-4 border-t border-ash pt-3 transition-colors duration-300 group-hover:border-coral">
+                <div className="mt-4 border-t border-ash pt-3 transition-colors duration-300 group-hover:border-coral group-active:border-coral">
                   <h3 className="font-display text-lg leading-tight font-semibold tracking-[-0.02em] md:text-xl">
                     {audience.title}
                   </h3>

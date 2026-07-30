@@ -14,9 +14,20 @@ const VARIANT: Record<Variant, string> = {
   gold: "bg-gold text-ink hover:bg-ink hover:text-gold",
 };
 
+/**
+ * `active:scale` is the touch half of the hover treatments above.
+ *
+ * Tailwind compiles every `hover:` rule inside `@media (hover: hover)`, so on a
+ * phone none of the colour changes below ever run and a tap produces no
+ * acknowledgement at all — the button looks broken for the moment it takes the
+ * next page to answer. A press that gives under the thumb is the one feedback
+ * that works without a pointer, and it is short enough not to read as an
+ * animation on a mouse.
+ */
 const BASE =
   "group inline-flex h-12 items-center justify-center gap-2 rounded-sheet px-6 " +
-  "font-mono text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 " +
+  "font-mono text-[11px] uppercase tracking-[0.22em] " +
+  "transition-[color,background-color,border-color,scale] duration-300 active:scale-[0.97] " +
   "disabled:pointer-events-none disabled:opacity-45";
 
 /**

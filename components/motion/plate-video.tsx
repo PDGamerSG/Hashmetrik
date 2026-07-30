@@ -15,13 +15,12 @@ import { cn } from "@/lib/utils";
  *
  * It is deliberately expensive to trigger:
  *
- * - Nothing renders at all below `md`. A phone gets the still, full stop; three
- *   simultaneous decodes is not a trade a hero should make on a handset.
  * - The `src` is attached by the IntersectionObserver, not by the markup, so a
  *   clip four sections down the page is never fetched by a visitor who does not
  *   reach it.
  * - Playback pauses the moment the plate leaves the viewport. The page is long
  *   and there is no reason to keep four decoders alive behind it.
+ * - On a phone it plays only where `onPhone` says so — see the prop below.
  *
  * The poster is derived from the clip's path rather than passed: both come out
  * of the same encode, where the poster is the clip's own first frame. That is
@@ -32,10 +31,26 @@ export function PlateVideo({
   src,
   poster = src.replace(/\.mp4$/, "-poster.webp"),
   className,
+  onPhone = false,
 }: {
   src: string;
   poster?: string;
   className?: string;
+  /**
+   * Whether this clip may play below `md`.
+   *
+   * The blanket rule used to be "no video on a handset", which was the right
+   * call for the hero — three plates share that screen and three simultaneous
+   * decodes is not a trade an opening should make. It was the wrong call
+   * everywhere else, and it was most of the reason the site read as a set of
+   * still photographs on a phone.
+   *
+   * Where the layout guarantees one clip on screen at a time — the pillar
+   * panels, which are a single column below `md` — the cost is one decoder,
+   * and the observer below has already stopped it before the next one starts.
+   * That is worth paying for; three at once is not.
+   */
+  onPhone?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playable, setPlayable] = useState(false);
@@ -51,7 +66,7 @@ export function PlateVideo({
     return () => query.removeEventListener("change", sync);
   }, []);
 
-  const eligible = mounted && wide && !reduced;
+  const eligible = mounted && (wide || onPhone) && !reduced;
 
   useEffect(() => {
     const el = ref.current;
@@ -71,14 +86,26 @@ export function PlateVideo({
            The still underneath is already the fallback. */
         void el.play().catch(() => {});
       },
-      /* Started a little before the plate arrives, so the fade has run by the
-         time it is properly on screen rather than in front of the visitor. */
-      { rootMargin: "300px 0px" },
+      /* On a wide screen, started a little before the plate arrives so the
+         fade has run by the time it is properly on screen rather than in
+         front of the visitor.
+
+         No margin at all on a phone, which is what actually holds this
+         component to one decoder there. Stacked in a column the pillar panels
+         sit about 850px apart against a 664px viewport, so any pre-roll over
+         ~90px puts two plates inside the root at once and they start together
+         — measured, and the pair of simultaneous decodes is the exact cost
+         `onPhone` promises not to pay. It also means a second clip is never
+         pulled over mobile data for a panel the visitor may never reach. The
+         trade is that the cross-fade begins as the plate touches the edge of
+         the screen instead of just before it, which at a 1s fade is not
+         something you can catch. */
+      { rootMargin: wide ? "300px 0px" : "0px" },
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [eligible, src]);
+  }, [eligible, wide, src]);
 
   if (!eligible) return null;
 

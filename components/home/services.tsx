@@ -48,7 +48,7 @@ export function Services() {
                         different gestures rather than the same fade twice. */}
                     <span
                       aria-hidden
-                      className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-coral transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:origin-left group-hover:scale-x-100"
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-coral transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:origin-left group-hover:scale-x-100 group-active:origin-left group-active:scale-x-100"
                     />
 
                     <p className="font-mono text-[11px] uppercase tracking-[0.28em] tabular text-coral">

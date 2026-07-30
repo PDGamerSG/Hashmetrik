@@ -52,6 +52,8 @@ export function ImageZoom({
   /** Magnification under the pointer. Past ~2 the source resolution shows. */
   zoomScale = 1.7,
   priority,
+  /** Passed through to the clip. See `PlateVideo`. */
+  videoOnPhone = false,
 }: {
   src: string;
   alt: string;
@@ -62,6 +64,7 @@ export function ImageZoom({
   zoomClassName?: string;
   zoomScale?: number;
   priority?: boolean;
+  videoOnPhone?: boolean;
 }) {
   const reduced = usePrefersReducedMotion();
   const layoutId = useId();
@@ -136,7 +139,7 @@ export function ImageZoom({
           className="absolute inset-0 block"
         >
           <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className="object-cover" />
-          {video && <PlateVideo src={video} />}
+          {video && <PlateVideo src={video} onPhone={videoOnPhone} />}
         </motion.span>
       </button>
 

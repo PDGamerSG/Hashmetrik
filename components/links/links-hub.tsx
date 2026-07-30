@@ -173,7 +173,7 @@ export function LinksHub() {
                   <li key={page.label}>
                     <SectionLink
                       href={page.href}
-                      className="inline-flex h-10 items-center rounded-sheet border border-ash px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-slate transition-colors duration-300 hover:border-coral hover:text-coral"
+                      className="inline-flex h-10 items-center rounded-sheet border border-ash px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-slate transition-colors duration-300 hover:border-coral hover:text-coral active:border-coral active:text-coral"
                     >
                       {page.label}
                     </SectionLink>
@@ -228,12 +228,15 @@ function ChannelList({
               rel={channel.external ? "noreferrer" : undefined}
               className="group flex min-w-0 flex-1 items-center gap-3.5 py-3.5"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-sheet border border-ash bg-bone text-slate transition-colors duration-300 group-hover:border-coral group-hover:text-coral">
+              {/* `group-active` alongside every `group-hover`: this page is
+                  reached by scanning a printed QR, so the pointer that never
+                  arrives is the normal case rather than the exception. */}
+              <span className="grid size-9 shrink-0 place-items-center rounded-sheet border border-ash bg-bone text-slate transition-colors duration-300 group-hover:border-coral group-hover:text-coral group-active:border-coral group-active:text-coral">
                 <channel.Icon className="size-4" />
               </span>
 
               <span className="min-w-0 flex-1">
-                <span className="block font-display text-base leading-tight font-semibold tracking-[-0.02em] transition-colors duration-300 group-hover:text-coral">
+                <span className="block font-display text-base leading-tight font-semibold tracking-[-0.02em] transition-colors duration-300 group-hover:text-coral group-active:text-coral">
                   {channel.label}
                 </span>
                 <span className="mt-1 block truncate font-mono text-[11px] tracking-[0.08em] tabular text-slate">
@@ -259,7 +262,7 @@ function ChannelList({
               <CopyButton
                 value={channel.copyValue}
                 label={channel.label}
-                className="border-ash text-slate hover:border-coral hover:text-coral"
+                className="border-ash text-slate hover:border-coral hover:text-coral active:border-coral active:text-coral"
               />
             ) : (
               <span aria-hidden className="size-11 shrink-0" />
