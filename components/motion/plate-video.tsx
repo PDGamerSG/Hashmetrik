@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useIsMounted, usePrefersReducedMotion } from "@/lib/motion";
+import { useIsMounted, usePageLoaded, usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
  *
  * Every photograph on this page that has a clip behind it keeps the photograph:
  * this layer sits *over* a still that is already in the markup, so the server
- * render, the phone, and anyone who has asked for less motion all get a
- * finished composition and nothing here is load bearing. What the clip adds is
- * the one thing a still cannot — evidence that the room is real.
+ * render, the first screen of a cold load, and anyone who has asked for less
+ * motion all get a finished composition and nothing here is load bearing. What
+ * the clip adds is the one thing a still cannot — evidence that the room is
+ * real.
  *
  * It is deliberately expensive to trigger:
  *
@@ -20,7 +21,8 @@ import { cn } from "@/lib/utils";
  *   reach it.
  * - Playback pauses the moment the plate leaves the viewport. The page is long
  *   and there is no reason to keep four decoders alive behind it.
- * - On a phone it plays only where `onPhone` says so — see the prop below.
+ * - On a phone it plays only where `onPhone` says so, and only once the page
+ *   has finished loading — see the prop and the gate below.
  *
  * The poster is derived from the clip's path rather than passed: both come out
  * of the same encode, where the poster is the clip's own first frame. That is
@@ -39,16 +41,18 @@ export function PlateVideo({
   /**
    * Whether this clip may play below `md`.
    *
-   * The blanket rule used to be "no video on a handset", which was the right
-   * call for the hero — three plates share that screen and three simultaneous
-   * decodes is not a trade an opening should make. It was the wrong call
-   * everywhere else, and it was most of the reason the site read as a set of
-   * still photographs on a phone.
+   * The blanket rule used to be "no video on a handset", and it was most of
+   * the reason the site read as a set of still photographs on a phone. What
+   * the rule was actually protecting against is several decoders alive at
+   * once, which is a property of the layout rather than of the screen — so it
+   * is the layout that opts in, one caller at a time.
    *
-   * Where the layout guarantees one clip on screen at a time — the pillar
-   * panels, which are a single column below `md` — the cost is one decoder,
-   * and the observer below has already stopped it before the next one starts.
-   * That is worth paying for; three at once is not.
+   * The pillar panels are a single column below `md`, so the observer below
+   * has stopped one clip before the next one starts: one decoder. The hero
+   * renders two of its four plates on a phone — the other two are `hidden
+   * md:block` and, being `display: none`, never intersect and never fetch — so
+   * it costs two, both of them small. That is worth paying for, and the gate
+   * below is what keeps it from being paid at the wrong moment.
    */
   onPhone?: boolean;
 }) {
@@ -56,6 +60,7 @@ export function PlateVideo({
   const [playable, setPlayable] = useState(false);
   const [wide, setWide] = useState(false);
   const mounted = useIsMounted();
+  const loaded = usePageLoaded();
   const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
@@ -66,7 +71,22 @@ export function PlateVideo({
     return () => query.removeEventListener("change", sync);
   }, []);
 
-  const eligible = mounted && (wide || onPhone) && !reduced;
+  /**
+   * On a phone, nothing starts until the page itself has finished loading.
+   *
+   * A wide screen can start a clip the moment the observer says so: the plates
+   * that matter there are either already past the fold or 300px short of it,
+   * and the connection is rarely the bottleneck. A phone is the opposite case
+   * — the hero's clips are *inside* the first screen, so fetching them on
+   * sight puts a megabyte of video in front of the still that is actually
+   * holding the composition together.
+   *
+   * The cost of waiting is a second or so of stillness at the top of the page,
+   * which is the same second the visitor spends reading the headline. Nothing
+   * here is load bearing and the poster underneath is the finished frame
+   * either way, so it is a second that costs nothing to give up.
+   */
+  const eligible = mounted && (wide || (onPhone && loaded)) && !reduced;
 
   useEffect(() => {
     const el = ref.current;

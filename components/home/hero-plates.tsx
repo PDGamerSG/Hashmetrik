@@ -59,19 +59,47 @@ type Plate = {
   className?: string;
 };
 
-/* Two plates on a phone — the top corners, well clear of the headline. The
-   other two need a screen wide enough that they are not sitting on the copy. */
+/* Two plates on a phone — the top corners, and hung off the top edge rather
+   than sitting inside it.
+ *
+ * The centred column leaves about 56px between the top of the hero and the
+ * first line of type, and a plate that fits inside 56px is a postage stamp. So
+ * the phone offsets are a negative `rem` rather than a percentage: the plate
+ * hangs above the hero's top edge, the container's `overflow-hidden` cuts it,
+ * and what is left on screen is a two-thirds crop that clears the eyebrow with
+ * room to spare. A fixed offset rather than a percentage because the thing
+ * being cleared — the gap under the masthead — is a fixed height, while the
+ * hero's own height is whatever the handset says `svh` is.
+ *
+ * It is also the better composition. These plates are supposed to have come
+ * loose from a contact sheet; one cropped by the edge of the frame reads as
+ * exactly that, where four tidy rectangles inset from the corners read as a
+ * layout.
+ *
+ * The other two plates, and the chips below, wait for `lg` rather than `md`.
+ * Their positions are percentages while the copy they have to miss is a column
+ * with a maximum width, so the gutter they live in only opens up as the screen
+ * grows — and at 768, the narrowest screen `md` covers, it has not opened yet.
+ * Measured there: the ROAS plate and the CVR chip both sat on the body
+ * paragraph and the Reporting plate came out from under the primary button. A
+ * tablet in portrait gets the same two plates a phone does, at the size the
+ * screen can carry. */
 const PLATES: Plate[] = [
   {
     src: "/frames/strategy.webp",
     video: "/frames/strategy.mp4",
     alt: "A strategist pinning a campaign map to a wall of working notes",
     label: "Strategy",
-    x: "0.5%",
-    y: "2.5%",
+    x: "1%",
+    y: "-2.5rem",
     w: "5.25rem",
-    xMd: "3.5%",
-    yMd: "13%",
+    /* High and tight to the left edge. It is the tallest plate on the page and
+       the only one whose corner can reach the script `One`, which is the one
+       word in the headline that cannot afford a photograph behind it — the
+       offsets here are the ones that clear it at 768, where the gutter is
+       narrowest, rather than only at desktop widths. */
+    xMd: "2.5%",
+    yMd: "9%",
     wMd: "clamp(8rem, 13vw, 13rem)",
     ratio: "aspect-3/4",
     depth: 1,
@@ -83,8 +111,8 @@ const PLATES: Plate[] = [
     video: "/frames/review.mp4",
     alt: "A client review in progress across a table of printed pages",
     label: "Review",
-    x: "76%",
-    y: "2%",
+    x: "74%",
+    y: "-1.25rem",
     w: "5rem",
     xMd: "78.5%",
     yMd: "8%",
@@ -109,7 +137,7 @@ const PLATES: Plate[] = [
     depth: 0.58,
     rotate: 4,
     float: { x: 2.4, y: -2.8, seconds: 8.5 },
-    className: "hidden md:block",
+    className: "hidden lg:block",
   },
   {
     src: "/pillars/growth.webp",
@@ -127,7 +155,7 @@ const PLATES: Plate[] = [
     depth: 0.95,
     rotate: -4,
     float: { x: -1.8, y: -3, seconds: 10.5 },
-    className: "hidden md:block",
+    className: "hidden lg:block",
   },
 ];
 
@@ -142,8 +170,10 @@ type Chip = {
   float: { x: number; y: number; seconds: number };
 };
 
-/* The instrument tags, adrift. Wide screens only: on a phone they would be
-   three more things between the visitor and the one sentence that matters. */
+/* The instrument tags, adrift. Wide screens only — see the note above the
+   plates: on a phone they would be three more things between the visitor and
+   the one sentence that matters, and on a tablet in portrait the leftmost of
+   them lands on the paragraph. */
 const CHIPS: Chip[] = [
   { code: "CVR", note: "Measured", x: "5%", y: "47%", depth: 0.4, rotate: 3, float: { x: 3, y: -4, seconds: 6.5 } },
   { code: "SOV", note: "Reported", x: "20%", y: "77%", depth: 0.65, rotate: -3, float: { x: -3.5, y: 3, seconds: 7.8 } },
@@ -317,7 +347,10 @@ export function HeroPlates() {
                 sizes="(max-width: 768px) 30vw, 14vw"
                 className="object-cover"
               />
-              {plate.video && <PlateVideo src={plate.video} />}
+              {/* On a phone this is two clips, not four: the plates that carry
+                  the other two are `hidden md:block`, so their observers never
+                  fire and their sources are never fetched. See `PlateVideo`. */}
+              {plate.video && <PlateVideo src={plate.video} onPhone />}
               <figcaption className="absolute bottom-0 left-0 right-0 flex items-center gap-1.5 bg-gradient-to-t from-ink/70 to-transparent px-2 pt-6 pb-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-bone">
                 <span aria-hidden className="size-1 rounded-full bg-coral" />
                 {plate.label}
@@ -332,7 +365,7 @@ export function HeroPlates() {
           key={chip.code}
           data-plate
           data-depth={chip.depth}
-          className="hero-plate hidden md:block"
+          className="hero-plate hidden lg:block"
           style={{ "--x": chip.x, "--y": chip.y, "--w": "auto" } as React.CSSProperties}
         >
           <div

@@ -109,6 +109,33 @@ export function useIsMounted() {
 }
 
 /**
+ * `true` once the page's own load event has fired.
+ *
+ * For anything that wants to wait its turn rather than compete with the first
+ * screen — currently the phone side of `PlateVideo`, where the hero's clips sit
+ * inside the fold and would otherwise pull a megabyte of video across the
+ * moment the observer sees them.
+ *
+ * Same shape as `useIsMounted` and for the same reason: this is state that
+ * lives on `document`, not in React, and reading it through an effect means a
+ * render pass and a lint rule about cascading renders. `false` on the server,
+ * and on a load that has already finished the first client read is `true`, so
+ * a client-side navigation never waits.
+ */
+const subscribeToLoad = (onChange: () => void) => {
+  window.addEventListener("load", onChange, { once: true });
+  return () => window.removeEventListener("load", onChange);
+};
+
+export function usePageLoaded() {
+  return useSyncExternalStore(
+    subscribeToLoad,
+    () => document.readyState === "complete",
+    () => false,
+  );
+}
+
+/**
  * The elements the polymorphic motion wrappers may render as.
  *
  * A closed list rather than `keyof JSX.IntrinsicElements`, because the whole
