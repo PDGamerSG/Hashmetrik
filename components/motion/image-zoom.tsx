@@ -172,7 +172,7 @@ export function ImageZoom({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ delay: 0.18 }}
-                  className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 px-4 text-center font-mono text-[11px] tracking-[0.24em] text-bone/70 uppercase"
+                  className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 px-4 text-center label text-bone/70"
                 >
                   {caption ?? alt}
                 </motion.p>

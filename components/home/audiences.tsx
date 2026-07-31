@@ -52,7 +52,7 @@ export function Audiences() {
                   />
                 </div>
                 <div className="mt-4 border-t border-ash pt-3 transition-colors duration-300 group-hover:border-coral group-active:border-coral">
-                  <h3 className="font-display text-lg leading-tight font-semibold tracking-[-0.02em] md:text-xl">
+                  <h3 className="font-display text-lg leading-tight font-medium tracking-[-0.012em] md:text-xl">
                     {audience.title}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate">{audience.problem}</p>

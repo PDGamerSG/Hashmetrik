@@ -27,7 +27,7 @@ export function Footer() {
       <div className="shell relative pt-20 pb-10 md:pt-28">
         <div className="grid gap-14 lg:grid-cols-[1.3fr_repeat(3,minmax(0,0.9fr))]">
           <div>
-            <p className="font-display text-3xl leading-[1.05] font-semibold tracking-[-0.03em] text-balance md:text-4xl">
+            <p className="font-display text-3xl leading-[1.08] font-medium tracking-[-0.018em] text-balance md:text-4xl">
               {SITE.tagline}
             </p>
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-bone/60">
@@ -92,17 +92,20 @@ export function Footer() {
               href={s.href}
               target="_blank"
               rel="noreferrer"
-              className="group inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-bone/55 transition-colors hover:text-coral active:text-coral"
+              /* `gap` rather than a space between the two spans: a flex
+                 container drops a whitespace-only child, so the code and the
+                 handle were being printed as one word. */
+              className="group inline-flex min-h-11 items-center gap-1.5 label text-bone/55 transition-colors hover:text-coral active:text-coral"
             >
               <span className="text-bone/30 transition-colors group-hover:text-coral group-active:text-coral">
                 {s.code}
-              </span>{" "}
+              </span>
               {s.handle}
             </a>
           ))}
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 font-mono text-[11px] tracking-[0.18em] text-bone/40 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-3 label text-bone/40 sm:flex-row sm:items-center sm:justify-between">
           <p className="uppercase">© {new Date().getFullYear()} HashMetrik</p>
           <p className="uppercase">Hyderabad, India · 17.33°N 78.60°E</p>
         </div>
@@ -111,7 +114,7 @@ export function Footer() {
       {/* The wordmark, set once at full width and cropped by the viewport —
           the sign-off, and the only place the name is allowed to be this big. */}
       <div aria-hidden className="relative select-none px-4 pb-2 md:px-8">
-        <p className="w-full text-center font-display text-[19vw] leading-[0.78] font-semibold tracking-[-0.055em] text-bone/[0.07]">
+        <p className="w-full text-center font-display text-[19vw] leading-[0.84] font-medium tracking-[-0.03em] text-bone/[0.07]">
           HashMetrik
         </p>
       </div>
@@ -132,7 +135,7 @@ export function Footer() {
 function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.28em] text-bone/40">{title}</h2>
+      <h2 className="label text-bone/40">{title}</h2>
       <ul className="mt-3 text-sm text-bone/80 [&_a]:block [&_a]:py-2">{children}</ul>
     </div>
   );

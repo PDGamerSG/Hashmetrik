@@ -90,7 +90,7 @@ export function Masthead() {
             )}
             priority
           />
-          <span className="font-display text-xl leading-none font-semibold tracking-[-0.04em] md:text-[1.375rem]">
+          <span className="font-display text-xl leading-[1.02] font-medium tracking-[-0.022em] md:text-[1.375rem]">
             HashMetrik
           </span>
         </Link>
@@ -103,7 +103,7 @@ export function Masthead() {
               /* The rule wipes in from the left on hover and out to the right
                  on release, so the gesture has a direction rather than just
                  appearing and vanishing. */
-              className="group relative py-1 font-mono text-[11px] uppercase tracking-[0.22em] text-slate transition-colors hover:text-ink"
+              className="group relative py-1 label text-slate transition-colors hover:text-ink"
             >
               {item.label}
               <span
@@ -119,7 +119,7 @@ export function Masthead() {
               lands, and hiding the only conversion behind a hamburger costs
               more than the few pixels it saves. */}
           <Magnetic strength={5}>
-            <ActionLink href="/book" className="h-11 px-4 sm:px-6">
+            <ActionLink href="/book" size="sm">
               <span className="sm:hidden">Book</span>
               <span className="hidden sm:inline">Book a call</span>
             </ActionLink>
@@ -130,7 +130,7 @@ export function Masthead() {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-controls="site-menu"
-            className="grid size-11 place-items-center rounded-sheet border border-ash text-ink transition-colors hover:border-ink lg:hidden"
+            className="grid size-11 place-items-center rounded-full border border-ink/25 text-ink transition-colors hover:border-ink hover:bg-ink hover:text-bone lg:hidden"
           >
             <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -165,16 +165,16 @@ export function Masthead() {
                 key={item.label}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="flex items-baseline gap-4 border-b border-ash py-5 font-display text-3xl font-semibold tracking-[-0.03em]"
+                className="flex items-baseline gap-4 border-b border-ash py-5 font-display text-3xl font-medium tracking-[-0.018em]"
               >
-                <span className="font-mono text-[11px] tracking-[0.22em] tabular text-slate">
+                <span className="label tabular text-slate">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 {item.label}
               </SectionLink>
             ))}
 
-            <ActionLink href="/book" className="mt-8 h-14" onClick={() => setOpen(false)}>
+            <ActionLink href="/book" size="lg" className="mt-8" onClick={() => setOpen(false)}>
               Book a free consultation
             </ActionLink>
 
@@ -188,7 +188,7 @@ export function Masthead() {
                     href={s.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-11 items-center font-mono text-[11px] uppercase tracking-[0.22em] text-slate transition-colors hover:text-coral active:text-coral"
+                    className="inline-flex min-h-11 items-center label text-slate transition-colors hover:text-coral active:text-coral"
                   >
                     {s.code} · {s.label}
                   </a>

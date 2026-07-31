@@ -64,7 +64,7 @@ function ScrollCue() {
       aria-hidden
       className="relative z-10 hidden flex-col items-center gap-2.5 pb-6 md:flex"
     >
-      <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-slate">Scroll</span>
+      <span className="label-sm text-slate">Scroll</span>
       <span className="relative block h-8 w-px overflow-hidden bg-ash">
         <span className="cue-mark absolute inset-x-0 top-0 block h-3 bg-coral" />
       </span>

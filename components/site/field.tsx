@@ -22,7 +22,7 @@ export function Field({
     <div className={className}>
       <label
         htmlFor={htmlFor}
-        className="font-mono text-[10px] uppercase tracking-[0.24em] text-slate"
+        className="label-sm text-slate"
       >
         {label}
       </label>

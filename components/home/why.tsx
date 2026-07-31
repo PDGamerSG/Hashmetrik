@@ -27,10 +27,10 @@ export function Why() {
             <li key={reason.title}>
               <div className="border-t-2 border-coral pt-5">
                 <div className="flex items-baseline gap-4">
-                  <span className="font-mono text-[11px] tracking-[0.22em] tabular text-slate">
+                  <span className="label tabular text-slate">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="font-display text-xl leading-tight font-semibold tracking-[-0.025em] md:text-2xl">
+                  <h3 className="font-display text-xl leading-tight font-medium tracking-[-0.015em] md:text-2xl">
                     {reason.title}
                   </h3>
                 </div>

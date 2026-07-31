@@ -51,12 +51,12 @@ export function Services() {
                       className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-right scale-x-0 bg-coral transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:origin-left group-hover:scale-x-100 group-active:origin-left group-active:scale-x-100"
                     />
 
-                    <p className="font-mono text-[11px] uppercase tracking-[0.28em] tabular text-coral">
+                    <p className="label tabular text-coral">
                       {service.code}
                     </p>
 
                     <div className="transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:group-hover:translate-x-2">
-                      <h3 className="font-display text-2xl leading-tight font-semibold tracking-[-0.03em] md:text-3xl">
+                      <h3 className="font-display text-2xl leading-tight font-medium tracking-[-0.018em] md:text-3xl">
                         {service.name}
                       </h3>
                       <p className="mt-3 max-w-md text-sm leading-relaxed text-bone/55 md:text-base">

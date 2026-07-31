@@ -118,7 +118,7 @@ export function LinksHub() {
               across it — enough to mark the card, quiet enough to read past. */}
           <div aria-hidden className="h-1 bg-coral" />
 
-          <p className="flex items-center justify-between gap-4 border-b border-ash px-5 py-3.5 font-mono text-[10px] uppercase tracking-[0.28em] text-slate sm:px-7">
+          <p className="flex items-center justify-between gap-4 border-b border-ash px-5 py-3.5 label-sm text-slate sm:px-7">
             <span>All links</span>
             <span>Hyderabad, India</span>
           </p>
@@ -140,10 +140,10 @@ export function LinksHub() {
                 priority
                 className="size-12 rounded-sheet object-cover"
               />
-              <h1 className="mt-5 font-display text-4xl leading-none font-semibold tracking-[-0.04em]">
+              <h1 className="mt-5 font-display text-4xl leading-[1.02] font-medium tracking-[-0.022em]">
                 HashMetrik
               </h1>
-              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.28em] text-coral">
+              <p className="mt-3 label-sm text-coral">
                 PR · Performance · SEO · Social
               </p>
               <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate">
@@ -152,7 +152,7 @@ export function LinksHub() {
             </header>
 
             <div className="rise mt-7 flex flex-col gap-2.5" style={{ animationDelay: "80ms" }}>
-              <ActionLink href="/book" className="h-14 w-full">
+              <ActionLink href="/book" size="lg" className="w-full">
                 Book a free consultation
               </ActionLink>
               {/* Tighter than the site's utility type: two of these have to
@@ -173,7 +173,7 @@ export function LinksHub() {
                   <li key={page.label}>
                     <SectionLink
                       href={page.href}
-                      className="inline-flex h-10 items-center rounded-sheet border border-ash px-4 font-mono text-[11px] uppercase tracking-[0.18em] text-slate transition-colors duration-300 hover:border-coral hover:text-coral active:border-coral active:text-coral"
+                      className="inline-flex h-10 items-center rounded-sheet border border-ash px-4 label text-slate transition-colors duration-300 hover:border-coral hover:text-coral active:border-coral active:text-coral"
                     >
                       {page.label}
                     </SectionLink>
@@ -183,7 +183,7 @@ export function LinksHub() {
             </nav>
           </div>
 
-          <p className="flex items-center justify-between gap-4 border-t border-ash px-5 py-3 font-mono text-[10px] uppercase tracking-[0.28em] text-slate sm:px-7">
+          <p className="flex items-center justify-between gap-4 border-t border-ash px-5 py-3 label-sm text-slate sm:px-7">
             <span className="tabular">{FOLLOW.length + REACH.length} channels</span>
             <span>Replies in 2 hrs</span>
           </p>
@@ -197,7 +197,7 @@ export function LinksHub() {
 function GroupLabel({ title, count }: { title: string; count: number }) {
   return (
     <div className="flex items-center gap-3">
-      <h2 className="font-mono text-[10px] uppercase tracking-[0.32em] text-slate">{title}</h2>
+      <h2 className="label-sm text-slate">{title}</h2>
       <span aria-hidden className="h-px flex-1 bg-ash" />
       <span aria-hidden className="font-mono text-[10px] tabular text-slate/60">
         {String(count).padStart(2, "0")}
@@ -236,7 +236,7 @@ function ChannelList({
               </span>
 
               <span className="min-w-0 flex-1">
-                <span className="block font-display text-base leading-tight font-semibold tracking-[-0.02em] transition-colors duration-300 group-hover:text-coral group-active:text-coral">
+                <span className="block font-display text-base leading-tight font-medium tracking-[-0.012em] transition-colors duration-300 group-hover:text-coral group-active:text-coral">
                   {channel.label}
                 </span>
                 <span className="mt-1 block truncate font-mono text-[11px] tracking-[0.08em] tabular text-slate">
@@ -244,7 +244,7 @@ function ChannelList({
                 </span>
               </span>
 
-              <span className="shrink-0 font-mono text-[10px] tracking-[0.22em] text-slate/60">
+              <span className="shrink-0 label-sm text-slate/60">
                 {channel.code}
               </span>
               <ArrowUpRight

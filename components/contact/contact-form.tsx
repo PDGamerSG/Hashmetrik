@@ -20,7 +20,7 @@ export function ContactForm() {
         <div className="mx-auto grid size-14 place-items-center rounded-sheet bg-gold">
           <Check aria-hidden className="size-6 text-ink" />
         </div>
-        <h2 className="mt-8 font-display text-3xl font-semibold tracking-[-0.03em]">
+        <h2 className="mt-8 font-display text-3xl font-medium tracking-[-0.018em]">
           Message received.
         </h2>
         <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-slate">
@@ -41,7 +41,7 @@ export function ContactForm() {
       {/* Names the card, so it reads as a peer of the aside beside it rather
           than a stack of fields with no title. The brief itself is asked for
           by the message placeholder, which saves a line of height here. */}
-      <h2 className="mb-6 font-display text-2xl font-semibold tracking-[-0.03em]">
+      <h2 className="mb-6 font-display text-2xl font-medium tracking-[-0.018em]">
         Send us a brief
       </h2>
 

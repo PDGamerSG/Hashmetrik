@@ -105,7 +105,7 @@ export function Tape({
       {METRICS.map((metric) => (
         <li
           key={metric}
-          className="flex shrink-0 items-center gap-10 font-mono text-xs uppercase tracking-[0.3em] tabular md:gap-14 md:text-sm"
+          className="flex shrink-0 items-center gap-10 font-mono text-xs uppercase tracking-[0.2em] tabular md:gap-14 md:text-sm"
         >
           {metric}
           <span aria-hidden className="text-base leading-none opacity-50">

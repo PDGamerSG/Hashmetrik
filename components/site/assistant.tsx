@@ -129,16 +129,18 @@ export function Assistant() {
         aria-expanded={open}
         aria-controls="assistant-panel"
         className={cn(
-          "fixed z-50 flex size-12 items-center justify-center rounded-sheet",
+          "fixed z-50 flex size-12 items-center justify-center rounded-full",
           "bottom-[calc(1rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))]",
           "md:bottom-[calc(2rem+env(safe-area-inset-bottom))] md:right-[calc(2rem+env(safe-area-inset-right))]",
-          "sm:size-auto sm:h-13 sm:justify-start sm:gap-2.5 sm:px-4",
-          "font-mono text-[11px] uppercase tracking-[0.22em] shadow-[0_10px_30px_-12px_rgba(14,14,15,0.5)]",
+          "sm:size-auto sm:h-12 sm:justify-start sm:gap-2.5 sm:pl-4 sm:pr-5",
+          /* Drawn as an action, because it is one — same pill, same text face
+             and same inversion on hover as every button on the site. */
+          "font-sans text-[13px] font-medium shadow-[0_10px_30px_-12px_rgba(20,19,18,0.5)]",
           /* A ring, because the launcher floats over every surface on the
              site — including the coral tape, where it would otherwise have
              no edge at all. */
           "ring-2 ring-bone/90 transition-colors duration-300",
-          open ? "bg-ink text-bone" : "bg-coral text-bone hover:bg-ink",
+          open ? "bg-ink text-bone" : "bg-ink text-bone hover:bg-coral hover:text-ink",
         )}
       >
         {open ? <X className="size-4" /> : <MessageSquare className="size-4" />}
@@ -162,10 +164,10 @@ export function Assistant() {
         >
           <header className="flex items-center justify-between border-b border-ash px-5 py-4">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-slate">
+              <p className="label-sm text-slate">
                 Assistant
               </p>
-              <p className="mt-1 font-display text-lg font-semibold tracking-[-0.02em]">
+              <p className="mt-1 font-display text-lg font-medium tracking-[-0.012em]">
                 Ask HashMetrik
               </p>
             </div>
@@ -225,7 +227,7 @@ export function Assistant() {
             </ul>
 
             {pending && (
-              <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.22em] text-slate">
+              <p className="mt-4 label text-slate">
                 Thinking…
               </p>
             )}
@@ -263,7 +265,7 @@ export function Assistant() {
             <button
               type="submit"
               disabled={pending || !draft.trim()}
-              className="grid size-10 shrink-0 place-items-center rounded-sheet bg-coral text-bone transition-colors hover:bg-ink disabled:pointer-events-none disabled:opacity-40"
+              className="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-bone transition-colors hover:bg-coral hover:text-ink disabled:pointer-events-none disabled:opacity-40"
             >
               <span className="sr-only">Send message</span>
               <Send className="size-4" />

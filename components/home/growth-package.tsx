@@ -47,7 +47,7 @@ function Intro() {
       <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
 
       <div className="shell relative py-20 md:py-28">
-        <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.28em] tabular text-slate">
+        <div className="flex items-center gap-3 label tabular text-slate">
           <span>01</span>
           <span aria-hidden className="h-px w-6 bg-current opacity-40" />
           <span className="text-coral">Growth solution</span>
@@ -55,7 +55,7 @@ function Intro() {
 
         <SplitHeading
           as="h2"
-          className="mt-5 max-w-4xl font-display text-[clamp(2rem,5.5vw,3.75rem)] leading-[0.98] font-semibold tracking-[-0.03em] text-balance"
+          className="mt-5 max-w-4xl font-display text-[clamp(2rem,5.5vw,3.75rem)] leading-[1] font-medium tracking-[-0.018em] text-balance"
         >
           One customised growth package. Four pillars, priced as one.
         </SplitHeading>
@@ -73,7 +73,7 @@ function Intro() {
             {PILLARS.map((pillar) => (
               <li
                 key={pillar.id}
-                className="flex items-baseline gap-4 bg-bone py-3 font-mono text-[11px] uppercase tracking-[0.22em]"
+                className="flex items-baseline gap-4 bg-bone py-3 label"
               >
                 <span className="tabular text-coral">{pillar.reading}</span>
                 <span className="flex-1 text-ink">{pillar.name}</span>
@@ -103,7 +103,7 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
           <InView className="flex flex-wrap items-center gap-x-4 gap-y-1" y={12}>
             {/* A sub-scale: these four are readings *within* section 01, not
                 four more sections. Writing the denominator says so. */}
-            <span className="font-mono text-[11px] uppercase tracking-[0.28em] tabular text-coral">
+            <span className="label tabular text-coral">
               Pillar {pillar.reading} / {String(PILLARS.length).padStart(2, "0")}
             </span>
             <span
@@ -112,7 +112,7 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
             />
             <span
               className={cn(
-                "font-mono text-[11px] uppercase tracking-[0.28em] tabular",
+                "label tabular",
                 dark ? "text-bone/50" : "text-slate",
               )}
             >
@@ -121,7 +121,7 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
           </InView>
 
           <InView delay={0.05}>
-            <h3 className="mt-5 font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[0.92] font-semibold tracking-[-0.04em] text-balance">
+            <h3 className="mt-5 font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[0.95] font-medium tracking-[-0.022em] text-balance">
               {pillar.name}
             </h3>
             <p
@@ -181,7 +181,7 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
           />
           {/* The reading, burned into the corner of the plate. Transparent to
               the pointer, or it would punch a hole in the zoom target. */}
-          <span className="pointer-events-none absolute bottom-4 left-4 rounded-sheet bg-ink/70 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.24em] tabular text-bone backdrop-blur-sm">
+          <span className="pointer-events-none absolute bottom-4 left-4 rounded-sheet bg-ink/70 px-3 py-1.5 label-sm tabular text-bone backdrop-blur-sm">
             {pillar.reading} — {pillar.name}
           </span>
         </InView>
@@ -198,12 +198,12 @@ function Close() {
       <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
 
       <Reveal className="shell relative flex flex-col gap-6 py-16 md:flex-row md:items-center md:justify-between md:py-20">
-        <p className="max-w-xl font-display text-2xl leading-tight font-semibold tracking-[-0.03em] text-balance md:text-3xl">
+        <p className="max-w-xl font-display text-2xl leading-tight font-medium tracking-[-0.018em] text-balance md:text-3xl">
           Four pillars, <Accent>one invoice</Accent>, one team accountable for the number at the
           end of it.
         </p>
         <Magnetic className="w-full md:w-auto">
-          <ActionLink href="/book" className="h-14 w-full px-7">
+          <ActionLink href="/book" size="lg" className="w-full">
             Build my package
           </ActionLink>
         </Magnetic>

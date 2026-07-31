@@ -62,7 +62,7 @@ export function Section({
             <div className="sticky top-28 pt-16">
               <span
                 className={cn(
-                  "block pl-4 font-mono text-[11px] uppercase tracking-[0.28em] tabular [writing-mode:vertical-rl]",
+                  "block pl-4 label tabular [writing-mode:vertical-rl]",
                   t.reading,
                 )}
               >
@@ -104,7 +104,7 @@ export function SectionHead({
       <div className="max-w-2xl">
         <div
           className={cn(
-            "flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.28em] tabular",
+            "flex items-center gap-3 label tabular",
             t.reading,
           )}
         >
@@ -113,7 +113,7 @@ export function SectionHead({
           <span className="text-coral">{eyebrow}</span>
         </div>
 
-        <h2 className="mt-5 font-display text-[clamp(2rem,5.5vw,3.75rem)] leading-[0.98] font-semibold tracking-[-0.03em] text-balance">
+        <h2 className="mt-5 font-display text-[clamp(2rem,5.5vw,3.75rem)] leading-[1] font-medium tracking-[-0.018em] text-balance">
           {title}
         </h2>
 
@@ -141,6 +141,6 @@ export function SectionHead({
  */
 export function Accent({ children }: { children: ReactNode }) {
   return (
-    <em className="font-editorial italic font-normal tracking-[-0.01em] text-coral">{children}</em>
+    <em className="font-editorial italic font-normal tracking-[-0.008em] text-coral">{children}</em>
   );
 }

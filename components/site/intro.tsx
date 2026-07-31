@@ -24,7 +24,7 @@ export function Intro() {
       <div className="intro-inner">
         <div className="intro-mark">
           <Image src="/logo-hm.png" alt="" width={64} height={64} className="size-8 rounded-sheet" />
-          <span className="font-display text-2xl leading-none font-semibold tracking-[-0.04em]">
+          <span className="font-display text-2xl leading-[1.02] font-medium tracking-[-0.022em]">
             HashMetrik
           </span>
         </div>
@@ -36,7 +36,7 @@ export function Intro() {
         {/* The word carries the readout on its own where `@property` is not
             supported, since an unregistered custom property makes
             `counter-reset` invalid and the number simply does not print. */}
-        <p className="intro-readout font-mono text-[11px] tracking-[0.28em] tabular uppercase">
+        <p className="intro-readout label tabular">
           Calibrating <span className="intro-count" />
         </p>
       </div>

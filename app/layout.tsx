@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ViewTransition } from "react";
-import {
-  Bricolage_Grotesque,
-  Instrument_Serif,
-  Inter_Tight,
-  JetBrains_Mono,
-} from "next/font/google";
+import { DM_Mono, Geist, Newsreader } from "next/font/google";
 import "./globals.css";
 import { Masthead } from "@/components/site/masthead";
 import { Footer } from "@/components/site/footer";
@@ -14,33 +9,42 @@ import { Intro } from "@/components/site/intro";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { SITE } from "@/lib/content";
 
-/* Display: a grotesk with real width and optical-size axes, so headline sizes
-   are drawn rather than merely scaled up. */
-const bricolage = Bricolage_Grotesque({
+/* Display *and* editorial, from one family.
+ *
+ * This is a press office as much as a media buyer, and a serif says so before
+ * a word of the copy is read. Newsreader carries an optical-size axis, so the
+ * headline at 6rem is drawn with the fine joins and tight spacing of a
+ * masthead while the same face at 1rem opens up and stays readable — the
+ * difference a grotesk can only fake by adding weight.
+ *
+ * Its italic then does the editorial job that used to need a second serif.
+ * One family for both means the emphasised word is a change of voice rather
+ * than a change of typeface, which is the quieter and more expensive effect.
+ */
+const newsreader = Newsreader({
   subsets: ["latin"],
-  variable: "--font-bricolage",
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-newsreader",
   display: "swap",
 });
 
-/* Editorial: high-contrast serif, italic only, one or two words at a time. */
-const instrument = Instrument_Serif({
+/* Text: a neutral grotesk with a tall x-height, deliberately without opinions.
+   The display face is carrying the personality; running copy and interface
+   labels only have to be legible at a glance and get out of the way. */
+const geist = Geist({
   subsets: ["latin"],
-  weight: "400",
-  style: "italic",
-  variable: "--font-instrument",
+  variable: "--font-geist",
   display: "swap",
 });
 
-const interTight = Inter_Tight({
+/* Utility: every reading, code and tick label on the site. A drawn mono
+   rather than a programmer's one — the readings are set as small caps in the
+   margins of a document, not as source code in a terminal. */
+const dmMono = DM_Mono({
   subsets: ["latin"],
-  variable: "--font-inter-tight",
-  display: "swap",
-});
-
-/* Utility: every reading, code and tick label on the site. */
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
+  weight: ["400", "500"],
+  variable: "--font-dm-mono",
   display: "swap",
 });
 
@@ -75,12 +79,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${bricolage.variable} ${instrument.variable} ${interTight.variable} ${jetbrains.variable}`}
+      className={`${newsreader.variable} ${geist.variable} ${dmMono.variable}`}
     >
       <body className="flex min-h-dvh flex-col antialiased">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-60 focus:rounded-sheet focus:bg-ink focus:px-4 focus:py-3 focus:font-mono focus:text-[11px] focus:tracking-[0.22em] focus:text-bone"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-60 focus:label focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-bone"
         >
           Skip to content
         </a>

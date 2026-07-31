@@ -81,7 +81,7 @@ export function BookingFlow() {
         <div className="mx-auto grid size-14 place-items-center rounded-sheet bg-gold">
           <Check aria-hidden className="size-6 text-ink" />
         </div>
-        <h2 className="mt-8 font-display text-[clamp(2rem,5vw,3.25rem)] leading-[0.98] font-semibold tracking-[-0.035em]">
+        <h2 className="mt-8 font-display text-[clamp(2rem,5vw,3.25rem)] leading-[1] font-medium tracking-[-0.02em]">
           Your slot is held.
         </h2>
         <p className="mt-4 text-base leading-relaxed text-slate">
@@ -142,13 +142,13 @@ export function BookingFlow() {
                       >
                         <span
                           className={cn(
-                            "font-mono text-[10px] uppercase tracking-[0.24em] tabular sm:text-[11px]",
+                            "label-sm tabular sm:text-[11px]",
                             active ? "text-gold" : "text-coral",
                           )}
                         >
                           {s.code}
                         </span>
-                        <span className="mt-2 block font-display text-base leading-tight font-semibold tracking-[-0.02em] sm:mt-3 sm:text-lg">
+                        <span className="mt-2 block font-display text-base leading-tight font-medium tracking-[-0.012em] sm:mt-3 sm:text-lg">
                           {s.name}
                         </span>
                         <span
@@ -334,7 +334,7 @@ export function BookingFlow() {
           reading rather than hidden behind a review step. */}
       <aside>
         <div className="rounded-sheet border border-ash bg-bone-2 p-6 lg:sticky lg:top-28">
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-slate">
+          <p className="label-sm text-slate">
             Your booking
           </p>
           <dl className="mt-5 border-t border-ash">
@@ -367,7 +367,7 @@ function Scale({ step }: { step: number }) {
             />
             <p
               className={cn(
-                "mt-3 font-mono text-[10px] uppercase tracking-[0.2em] tabular",
+                "mt-3 label-sm tabular",
                 active ? "text-ink" : "text-slate",
               )}
             >
@@ -392,7 +392,7 @@ function StepBody({
 }) {
   return (
     <div>
-      <h2 className="font-display text-[clamp(1.5rem,3.2vw,2.25rem)] leading-[1.05] font-semibold tracking-[-0.035em]">
+      <h2 className="font-display text-[clamp(1.5rem,3.2vw,2.25rem)] leading-[1.08] font-medium tracking-[-0.02em]">
         {title}
       </h2>
       {hint && <p className="mt-2 text-sm text-slate md:text-base">{hint}</p>}
@@ -407,7 +407,7 @@ function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boo
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-12 items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-slate transition-colors hover:text-ink disabled:pointer-events-none disabled:opacity-30"
+      className="inline-flex h-12 items-center gap-2 label text-slate transition-colors hover:text-ink disabled:pointer-events-none disabled:opacity-30"
     >
       <ArrowLeft aria-hidden className="size-4" />
       Back
@@ -418,7 +418,7 @@ function BackButton({ onClick, disabled }: { onClick: () => void; disabled?: boo
 function Reading({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-ash py-3">
-      <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-slate">{label}</dt>
+      <dt className="label-sm text-slate">{label}</dt>
       <dd
         className={cn(
           "text-right text-sm",

@@ -27,10 +27,10 @@ export default function ContactPage() {
       <section className="relative overflow-hidden border-b border-ash bg-bone">
         <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
         <div className="shell relative flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3 pt-6 pb-5 md:pt-8 md:pb-6">
-          <h1 className="font-display text-4xl leading-none font-semibold tracking-[-0.04em] md:text-5xl">
+          <h1 className="font-display text-4xl leading-[1.02] font-medium tracking-[-0.022em] md:text-5xl">
             Contact
           </h1>
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[11px] uppercase tracking-[0.28em] text-slate">
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-2 label text-slate">
             <span className="text-coral">Replies within two business hours</span>
             {/* Dropped where the line wraps — a rule stranded at the head of
                 the second line reads as a bullet, not a separator. */}
@@ -48,7 +48,7 @@ export default function ContactPage() {
         </div>
 
         <aside className="rounded-sheet bg-ink p-6 text-bone md:p-7">
-          <h2 className="font-display text-xl font-semibold tracking-[-0.03em] md:text-2xl">
+          <h2 className="font-display text-xl font-medium tracking-[-0.018em] md:text-2xl">
             Other ways to reach us
           </h2>
 
@@ -60,7 +60,7 @@ export default function ContactPage() {
                   className="group flex items-center gap-4 py-3.5 transition-colors hover:text-coral"
                 >
                   <row.icon aria-hidden className="size-4 shrink-0 text-gold" />
-                  <span className="w-20 shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] text-bone/40">
+                  <span className="w-20 shrink-0 label-sm text-bone/40">
                     {row.label}
                   </span>
                   <span className="text-sm text-bone/85 transition-colors group-hover:text-coral">
@@ -71,7 +71,7 @@ export default function ContactPage() {
             ))}
             <li className="flex items-start gap-4 border-b border-ash-ink py-3.5">
               <MapPin aria-hidden className="mt-0.5 size-4 shrink-0 text-gold" />
-              <span className="w-20 shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] text-bone/40">
+              <span className="w-20 shrink-0 label-sm text-bone/40">
                 Studio
               </span>
               <span className="text-sm leading-relaxed text-bone/85">
@@ -105,7 +105,7 @@ export default function ContactPage() {
                   href={s.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/50 transition-colors hover:text-coral"
+                  className="label-sm text-bone/50 transition-colors hover:text-coral"
                 >
                   {s.label}
                 </a>
@@ -119,7 +119,7 @@ export default function ContactPage() {
           written to us, so it comes off the card and runs wide below the fold
           — bigger than it ever was in the aside, and free of height up top. */}
       <section className="shell pb-14 md:pb-20">
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-ash pt-4 font-mono text-[10px] uppercase tracking-[0.24em] text-slate">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-ash pt-4 label-sm text-slate">
           <span>Studio · Hayathnagar, Hyderabad</span>
           <a
             href={`https://www.google.com/maps?q=${CONTACT.mapQuery}`}

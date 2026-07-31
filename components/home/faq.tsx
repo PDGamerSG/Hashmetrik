@@ -48,10 +48,10 @@ export function Faq() {
                       aria-controls={`faq-panel-${i}`}
                       className="flex w-full items-start gap-5 py-6 text-left"
                     >
-                      <span className="mt-1.5 font-mono text-[11px] tracking-[0.22em] tabular text-slate">
+                      <span className="mt-1.5 label tabular text-slate">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <span className="flex-1 font-display text-lg leading-snug font-semibold tracking-[-0.02em] md:text-xl">
+                      <span className="flex-1 font-display text-lg leading-snug font-medium tracking-[-0.012em] md:text-xl">
                         {faq.q}
                       </span>
                       <Plus

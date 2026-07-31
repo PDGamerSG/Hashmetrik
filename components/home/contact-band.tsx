@@ -28,12 +28,12 @@ export function ContactBand() {
         <div className="py-20 md:py-28">
           <div className="grid gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-20">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-coral">
+              <p className="label text-coral">
                 Get in touch
               </p>
               <SplitHeading
                 as="h2"
-                className="mt-5 font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[0.95] font-semibold tracking-[-0.04em] text-balance"
+                className="mt-5 font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[0.98] font-medium tracking-[-0.022em] text-balance"
               >
                 <>
                   Let&rsquo;s map your next <Accent>growth quarter</Accent>.
@@ -48,7 +48,7 @@ export function ContactBand() {
 
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                   <Magnetic className="w-full sm:w-auto">
-                    <ActionLink href="/book" className="h-14 w-full px-7">
+                    <ActionLink href="/book" variant="bone" size="lg" className="w-full">
                       Book a free consultation
                     </ActionLink>
                   </Magnetic>
@@ -56,7 +56,8 @@ export function ContactBand() {
                     <ActionLink
                       href={CONTACT.whatsapp}
                       variant="ghost-ink"
-                      className="h-14 w-full px-7"
+                      size="lg"
+                      className="w-full"
                       arrow={false}
                     >
                       <MessageCircle aria-hidden className="size-4" />
@@ -76,7 +77,7 @@ export function ContactBand() {
                       className="group flex items-start gap-4 py-4 transition-colors hover:text-coral active:text-coral"
                     >
                       <row.icon aria-hidden className="mt-0.5 size-4 shrink-0 text-gold" />
-                      <span className="w-24 shrink-0 font-mono text-[11px] uppercase tracking-[0.22em] text-bone/40">
+                      <span className="w-24 shrink-0 label text-bone/40">
                         {row.label}
                       </span>
                       <span className="text-sm leading-relaxed text-bone/85 transition-colors group-hover:text-coral group-active:text-coral">
@@ -111,7 +112,7 @@ export function ContactBand() {
                   className="absolute inset-0 h-full w-full border-0 grayscale-[0.85] contrast-[0.95]"
                 />
               </div>
-              <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.22em] text-bone/40">
+              <p className="mt-4 label text-bone/40">
                 Hayathnagar, Hyderabad — visits by appointment
               </p>
             </Reveal>

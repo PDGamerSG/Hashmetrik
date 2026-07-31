@@ -351,7 +351,7 @@ export function HeroPlates() {
                   the other two are `hidden md:block`, so their observers never
                   fire and their sources are never fetched. See `PlateVideo`. */}
               {plate.video && <PlateVideo src={plate.video} onPhone />}
-              <figcaption className="absolute bottom-0 left-0 right-0 flex items-center gap-1.5 bg-gradient-to-t from-ink/70 to-transparent px-2 pt-6 pb-1.5 font-mono text-[9px] uppercase tracking-[0.22em] text-bone">
+              <figcaption className="absolute bottom-0 left-0 right-0 flex items-center gap-1.5 bg-gradient-to-t from-ink/70 to-transparent px-2 pt-6 pb-1.5 label-xs text-bone">
                 <span aria-hidden className="size-1 rounded-full bg-coral" />
                 {plate.label}
               </figcaption>
@@ -376,7 +376,7 @@ export function HeroPlates() {
             data-float-seconds={chip.float.seconds}
             style={{ rotate: `${chip.rotate}deg` }}
           >
-            <span className="flex items-center gap-2 rounded-sheet border border-ash bg-bone-2/80 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-slate backdrop-blur-sm">
+            <span className="flex items-center gap-2 rounded-sheet border border-ash bg-bone-2/80 px-2.5 py-1.5 label-sm text-slate backdrop-blur-sm">
               <span aria-hidden className="h-2.5 w-px bg-coral" />
               <span className="tabular text-ink">{chip.code}</span>
               {chip.note}

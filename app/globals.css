@@ -10,24 +10,32 @@
 
 @theme {
   /* --- palette ---------------------------------------------------------- */
-  --color-ink: #0e0e0f; /* near-black; pure #000 reads cheap against paper */
-  --color-ink-2: #1a1a1c; /* raised surfaces on ink */
-  --color-bone: #f6f3ec; /* warm paper */
+  /* Every colour here is taken off the mark itself: a warm near-black tile,
+     a salmon-vermilion hash and a soft gold rule. The reds and yellows the
+     site used to run were a half-step brighter than the logo in both cases,
+     which is the difference between a brand colour and a highlighter. */
+  --color-ink: #141312; /* the tile; pure #000 reads cheap against paper */
+  --color-ink-2: #201e1b; /* raised surfaces on ink */
+  --color-bone: #f7f5f0; /* warm paper */
   --color-bone-2: #fffdf8; /* card stock, a shade above the page */
-  --color-coral: #ff4d5e;
-  --color-gold: #f2c94c;
-  --color-slate: #5a5d63; /* secondary text on bone — 5.6:1 */
-  --color-ash: #e2ddd2; /* hairlines on bone */
-  --color-ash-ink: #2b2b2e; /* hairlines on ink */
+  --color-coral: #f2564a;
+  --color-gold: #f6cd63;
+  --color-slate: #58554f; /* secondary text on bone — 7.1:1 */
+  --color-ash: #e4dfd4; /* hairlines on bone */
+  --color-ash-ink: #2c2926; /* hairlines on ink */
 
   /* --- type ------------------------------------------------------------- */
-  --font-display: var(--font-bricolage), "Arial Black", sans-serif;
-  --font-editorial: var(--font-instrument), Georgia, serif;
-  --font-sans: var(--font-inter-tight), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-display: var(--font-newsreader), Georgia, serif;
+  --font-editorial: var(--font-newsreader), Georgia, serif;
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
 
   /* --- rhythm ----------------------------------------------------------- */
-  --radius-sheet: 4px; /* near-square: this is printed matter, not glass */
+  /* Sheets stay near-square, because printed matter is. Actions are the one
+     thing on the page that is not a document, and they are drawn as pills —
+     see `pill`, below. The contrast is the point: everything you read has
+     corners, everything you press does not. */
+  --radius-sheet: 4px;
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -72,6 +80,59 @@
 /* Readings, codes, and any number a reader might compare vertically. */
 @utility tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Labels
+   Every eyebrow, tick label, reading and caption on the site is one of these
+   three sizes. They used to be written out at the call site, which is how the
+   letter-spacing drifted across nine different values between 0.18em and
+   0.32em — at 0.28em a five-word eyebrow stops being a word and becomes a row
+   of letters. One recipe, set once, at the spacing a small mono actually
+   wants.
+   ========================================================================== */
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+@utility label-sm {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@utility label-xs {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Display type
+   A serif at headline size needs the opposite treatment to the grotesk that
+   stood here before: less negative tracking, because the letterforms already
+   fit together, and a little more leading, because the ascenders and
+   descenders are longer and lines set at 0.9 collide.
+   ========================================================================== */
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  font-optical-sizing: auto;
 }
 
 /* ==========================================================================

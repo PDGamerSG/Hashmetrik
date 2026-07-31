@@ -91,7 +91,7 @@ export function HeroLead() {
     <div ref={root} className="relative z-10 flex flex-col items-center text-center">
       <p
         data-hero="eyebrow"
-        className="flex flex-wrap items-center justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.28em] text-slate"
+        className="flex flex-wrap items-center justify-center gap-3 label text-slate"
       >
         <span className="text-coral">Hyderabad</span>
         <span aria-hidden className="hidden h-px w-8 bg-ash sm:block" />
@@ -106,10 +106,10 @@ export function HeroLead() {
           hero is a full screen with plates in its corners, and a headline set
           on width alone pushes the booking CTA past the fold on the one screen
           size where the fold is the whole argument. */}
-      <h1 className="mt-6 max-w-5xl font-display text-[clamp(2.5rem,min(8vw,10.5vh),6.5rem)] leading-[0.9] font-semibold tracking-[-0.045em] text-balance">
+      <h1 className="mt-6 max-w-5xl font-display text-[clamp(2.5rem,min(8vw,10.5vh),6.5rem)] leading-[0.94] font-medium tracking-[-0.025em] text-balance">
         <span className="block">Everything your brand needs.</span>
-        <span className="block text-ink/35">
-          <em className="font-editorial pr-[0.06em] font-normal tracking-[-0.02em] text-coral">
+        <span className="block text-ink/50">
+          <em className="font-editorial pr-[0.06em] font-normal tracking-[-0.012em] text-coral">
             One
           </em>{" "}
           growth partner.
@@ -136,12 +136,12 @@ export function HeroLead() {
         className="mt-9 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row"
       >
         <Magnetic className="w-full sm:w-auto">
-          <ActionLink href="/book" className="h-14 w-full px-7">
+          <ActionLink href="/book" size="lg" className="w-full">
             Book a free consultation
           </ActionLink>
         </Magnetic>
         <Magnetic className="w-full sm:w-auto">
-          <ActionLink href="/#package" variant="outline" className="h-14 w-full px-7" arrow={false}>
+          <ActionLink href="/#package" variant="outline" size="lg" className="w-full" arrow={false}>
             See the package
           </ActionLink>
         </Magnetic>

@@ -77,7 +77,7 @@ export function Calendar({
   return (
     <div className="w-full max-w-sm">
       <div className="flex items-center justify-between">
-        <p className="font-display text-lg font-semibold tracking-[-0.02em]">
+        <p className="font-display text-lg font-medium tracking-[-0.012em]">
           {MONTHS[month]} <span className="tabular text-slate">{year}</span>
         </p>
         <div className="flex gap-1">
@@ -106,7 +106,7 @@ export function Calendar({
           <div
             key={i}
             aria-hidden
-            className="pb-1 text-center font-mono text-[10px] tracking-[0.2em] text-slate"
+            className="pb-1 text-center label-sm text-slate"
           >
             {day}
           </div>
