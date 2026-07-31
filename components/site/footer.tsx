@@ -1,5 +1,6 @@
 import { CONTACT, SITE, SOCIALS } from "@/lib/content";
 import { ActionLink } from "./button";
+import { MarkField } from "./mark-field";
 import { SectionLink } from "./section-link";
 
 const COMPANY = [
@@ -22,7 +23,7 @@ const SERVICE_LINKS = [
 export function Footer() {
   return (
     <footer className="relative overflow-hidden bg-ink text-bone">
-      <div aria-hidden className="pointer-events-none absolute inset-0 grain text-bone" />
+      <MarkField className="pointer-events-none absolute inset-0 text-bone" />
 
       <div className="shell relative pt-20 pb-10 md:pt-28">
         <div className="grid gap-14 lg:grid-cols-[1.3fr_repeat(3,minmax(0,0.9fr))]">

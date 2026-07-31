@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BookingFlow } from "@/components/book/booking-flow";
+import { MarkField } from "@/components/site/mark-field";
 
 export const metadata: Metadata = {
   title: "Book a free consultation",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 export default function BookPage() {
   return (
     <section className="relative overflow-hidden bg-bone">
-      <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
+      <MarkField className="pointer-events-none absolute inset-0 text-ink" />
 
       {/* No hero here on purpose. Everyone arriving on this page has already
           decided to book, so the first step has to be the first thing they

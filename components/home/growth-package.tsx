@@ -1,4 +1,5 @@
 import { Accent } from "@/components/site/section";
+import { MarkField } from "@/components/site/mark-field";
 import { ActionLink } from "@/components/site/button";
 import { Overslide, OverslidePanel } from "@/components/motion/overslide";
 import { SplitHeading } from "@/components/motion/split-heading";
@@ -44,7 +45,7 @@ export function GrowthPackage() {
 function Intro() {
   return (
     <div className="relative overflow-hidden bg-bone text-ink">
-      <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
+      <MarkField className="pointer-events-none absolute inset-0 text-ink" />
 
       <div className="shell relative py-20 md:py-28">
         <div className="flex items-center gap-3 label tabular text-slate">
@@ -92,7 +93,7 @@ function Intro() {
 function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boolean }) {
   return (
     <OverslidePanel className={dark ? "bg-ink text-bone" : "bg-bone text-ink"}>
-      <div aria-hidden className={cn("pointer-events-none absolute inset-0 grain", dark ? "text-bone" : "text-ink")} />
+      <MarkField className={cn("pointer-events-none absolute inset-0", dark ? "text-bone" : "text-ink")} />
 
       <div className="shell relative grid items-center gap-10 py-16 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-14 md:py-0 lg:gap-20">
         <div>
@@ -195,7 +196,7 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
 function Close() {
   return (
     <div className="relative overflow-hidden bg-bone text-ink">
-      <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
+      <MarkField className="pointer-events-none absolute inset-0 text-ink" />
 
       <Reveal className="shell relative flex flex-col gap-6 py-16 md:flex-row md:items-center md:justify-between md:py-20">
         <p className="max-w-xl font-display text-2xl leading-tight font-medium tracking-[-0.018em] text-balance md:text-3xl">

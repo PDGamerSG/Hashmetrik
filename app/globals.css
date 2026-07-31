@@ -140,9 +140,34 @@
    ========================================================================== */
 
 /* The measure is published as custom properties rather than written into this
-   one utility, because the grain has to line its columns up with the text
-   column and a second copy of these numbers is a second chance to drift. See
-   `grain`, below. */
+   one utility, because two other things have to line up with the text column:
+   the CSS column rules and the mark field painted over them. A second copy of
+   these numbers is a second chance to drift. See `rule-field`, below.
+
+   They are *registered* so they compute to absolute values. Unregistered, a
+   custom property comes back from `getComputedStyle` as the literal token
+   written in the stylesheet — "1.25rem" — and `MarkField` would have to carry
+   its own copy of the breakpoints to make sense of it. Initial values are in
+   px because a registered initial value has to be computationally independent,
+   which `rem` is not. */
+@property --shell-max {
+  syntax: "<length>";
+  initial-value: 1344px;
+  inherits: true;
+}
+
+@property --shell-pad {
+  syntax: "<length>";
+  initial-value: 20px;
+  inherits: true;
+}
+
+@property --shell-cols {
+  syntax: "<integer>";
+  initial-value: 4;
+  inherits: true;
+}
+
 @layer base {
   :root {
     --shell-max: 84rem;
@@ -394,61 +419,46 @@
 }
 
 /* ==========================================================================
-   Paper grain
-   The ruled paper every surface is printed on. Two rulings, and they are not
-   the same kind of thing:
+   The rule field
+   The column rules under every surface, and the base layer of the mark field
+   painted over them — this is the canvas element's own background, so the two
+   are one element rather than two stacked.
 
-   - **The column rules** are the page's own measure divided into `--shell-cols`
-     and drawn from the centre outwards, so a rule lands exactly on each edge
-     of the text column and on every column boundary inside it. Every surface
-     is full-bleed and centred, so all of them resolve to the same rules and
-     the columns run the length of the document unbroken — through section
-     joins, through the metrics tape, from the masthead to the footer.
+   The rules are the page's measure divided into `--shell-cols` and drawn from
+   the centre outwards, so one lands exactly on each edge of the text column
+   and on every column boundary inside it. Every surface is full-bleed and
+   centred, so all of them resolve to the same rules: the columns run the
+   length of the document unbroken, through section joins, behind the metrics
+   tape, from the masthead to the footer.
 
-   - **The horizontal ruling** cannot do that. Each surface paints its own
-     grain starting at its own top edge, so the rows restart at every section
-     boundary; the page used to arrive at a join with a half-height row on one
-     side and a full one on the other, which read as two mismatched sheets
-     rather than one. It is masked off before it reaches either edge instead.
-     The rows are strongest in the middle of a surface, where nothing can be
-     compared against, and gone by the time there is a seam to give away.
+   There is no horizontal ruling any more. Each surface paints its own
+   background starting at its own top edge, so rows restarted at every section
+   boundary and the page arrived at a join with a half-height row on one side
+   and a full one on the other — two mismatched sheets rather than one. The
+   horizontal reading is `MarkField`'s job instead, and it is phrased in
+   document coordinates, which cannot go out of register.
 
-   Rows are half a column, so the cell keeps one ratio at every breakpoint
-   rather than being pinned to a pixel size that only suits a laptop.
+   The alpha is baked into the colour rather than set as `opacity`, because
+   the element this lands on is also being painted into. An `opacity` here
+   would dim the marks along with the paper.
    ========================================================================== */
 
-@utility grain {
-  --grain-measure: calc(min(var(--shell-max), 100%) - 2 * var(--shell-pad));
-  --grain-col: calc(var(--grain-measure) / var(--shell-cols));
+@utility rule-field {
+  --rule-measure: calc(min(var(--shell-max), 100%) - 2 * var(--shell-pad));
+  --rule-col: calc(var(--rule-measure) / var(--shell-cols));
 
-  background-image: linear-gradient(to right, currentColor 0 1px, transparent 1px);
-  background-size: var(--grain-col) 100%;
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, currentColor 4%, transparent) 0 1px,
+    transparent 1px
+  );
+  background-size: var(--rule-col) 100%;
   /* A repeating background is positioned by one tile and then tiled both ways
      from it, and `50%` centres that *tile* — which leaves the rules half a
      column off the measure. Adding half a tile back puts a rule on the page's
      centre line, and since the measure is an even number of columns wide, its
      two edges fall on rules from there. */
-  background-position: calc(50% + var(--grain-col) / 2) 0;
-  opacity: 0.055;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(
-      to bottom,
-      color-mix(in srgb, currentColor 70%, transparent) 0 1px,
-      transparent 1px
-    );
-    background-size: 100% calc(var(--grain-col) / 2);
-    mask-image: linear-gradient(
-      to bottom,
-      transparent,
-      #000 5.5rem,
-      #000 calc(100% - 5.5rem),
-      transparent
-    );
-  }
+  background-position: calc(50% + var(--rule-col) / 2) 0;
 }
 
 /* ==========================================================================

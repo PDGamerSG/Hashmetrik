@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { ContactForm } from "@/components/contact/contact-form";
 import { ActionLink } from "@/components/site/button";
+import { MarkField } from "@/components/site/mark-field";
 import { Tape } from "@/components/site/tape";
 import { CONTACT, SOCIALS } from "@/lib/content";
 
@@ -21,13 +22,13 @@ const ROWS = [
 export default function ContactPage() {
   return (
     <>
-      {/* One grained sheet for the whole page rather than one per block. The
-          grain's column rules are the page's measure drawn on the paper, and
+      {/* One ruled sheet for the whole page rather than one per block. The
+          field's column rules are the page's measure drawn on the paper, and
           they only read as that if they run the full height of it — printed on
           the header strip alone they were a band of stripes sitting on bare
           paper. Everything inside is `relative` so it stays over them. */}
       <div className="relative overflow-hidden bg-bone">
-        <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
+        <MarkField className="pointer-events-none absolute inset-0 text-ink" />
 
         {/* A header strip, not a hero. The visitor came to fill in the form, so
             the page names itself in one line and hands the screen to the card:

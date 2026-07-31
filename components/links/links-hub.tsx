@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 import { ArrowUpRight, Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Facebook, Instagram, Linkedin, Youtube } from "@/components/site/brand-icons";
 import { ActionLink } from "@/components/site/button";
+import { MarkField } from "@/components/site/mark-field";
 import { SectionLink } from "@/components/site/section-link";
 import { CopyButton, SaveContactButton, SharePageButton } from "@/components/links/links-actions";
 import { CONTACT, SITE, SOCIALS } from "@/lib/content";
@@ -108,7 +109,7 @@ const PAGES = [
 export function LinksHub() {
   return (
     <div className="relative overflow-hidden bg-bone">
-      <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
+      <MarkField className="pointer-events-none absolute inset-0 text-ink" />
 
       {/* Tight to the masthead: the card is the page, and a band of empty
           paper above it only pushes the first tappable row down the screen. */}

@@ -1,3 +1,4 @@
+import { MarkField } from "@/components/site/mark-field";
 import { Tape } from "@/components/site/tape";
 import { HeroField } from "./hero-field";
 import { HeroLead } from "./hero-lead";
@@ -17,7 +18,7 @@ import { HeroPlates } from "./hero-plates";
  *
  * - `HeroField` — the loose measurement marks, drifting on a canvas.
  * - `HeroLight` — the window light, sweeping in and then following the pointer.
- * - the grain — the ruled paper they came off.
+ * - `MarkField` — the ruled paper they came off, still on its measure.
  * - `HeroPlates` — the work itself, cut loose from its contact sheet.
  *
  * The height is a screen *minus the masthead* — the bar is sticky and sits
@@ -30,10 +31,10 @@ export function Hero() {
   return (
     <section className="relative flex min-h-[calc(100svh-4rem)] flex-col overflow-hidden bg-bone md:min-h-[calc(100svh-5rem)]">
       <HeroField className="pointer-events-none absolute inset-0 h-full w-full" />
-      {/* Under the grain on purpose: the light falls on the paper, so the
-          paper's own texture has to sit over it. */}
+      {/* Under the mark field on purpose: the light falls on the paper, so the
+          paper's own marks have to sit over it. */}
       <HeroLight />
-      <div aria-hidden className="pointer-events-none absolute inset-0 grain text-ink" />
+      <MarkField className="pointer-events-none absolute inset-0 text-ink" />
 
       <HeroPlates />
 

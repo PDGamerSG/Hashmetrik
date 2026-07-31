@@ -7,7 +7,7 @@ import { MOTION_QUERY, useIsomorphicLayoutEffect } from "@/lib/motion";
 /**
  * The light in the room.
  *
- * Two blooms over the hero, under the grain, and nothing else. Both are
+ * Two blooms over the hero, under the mark field, and nothing else. Both are
  * gradients rather than images, so the whole effect costs one composited layer
  * and no bytes.
  *

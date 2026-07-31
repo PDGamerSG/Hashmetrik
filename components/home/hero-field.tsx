@@ -8,9 +8,9 @@ import { MOTION_QUERY, REDUCED_QUERY, useIsomorphicLayoutEffect } from "@/lib/mo
  * The hero's background: a field of measurement marks, drifting.
  *
  * Every other decorative surface on this site is a scale of some kind — the
- * tick rule, the grain, the metrics tape — so the hero's background is the
- * same idea unmoored: the marks have come loose from their rule and are
- * floating. A particle field would have been decoration; this is the brand's
+ * tick rule, the mark field, the metrics tape — so the hero's background is
+ * the same idea unmoored: these marks have come loose from the field behind
+ * them and are floating. A particle field would have been decoration; this is the brand's
  * own vocabulary, moving.
  *
  * It is written to be cheap enough to leave running:

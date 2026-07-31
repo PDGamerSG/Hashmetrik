@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { MarkField } from "./mark-field";
 
 type Tone = "bone" | "ink";
 
@@ -35,8 +36,8 @@ type SectionProps = {
  * The rule is the site's signature: a measuring scale down the left gutter
  * where every section is a labelled reading. It is structural, not
  * decorative — the reading tells you where in the argument you are, and the
- * ticks give the page a single vertical unit that the grain and spacing
- * both inherit.
+ * ticks give the page a single vertical unit that the mark field and the
+ * spacing both inherit.
  */
 export function Section({
   id,
@@ -50,7 +51,7 @@ export function Section({
 
   return (
     <section id={id} className={cn("relative overflow-hidden", t.surface, className)}>
-      <div aria-hidden className={cn("pointer-events-none absolute inset-0 grain", t.rule)} />
+      <MarkField className={cn("pointer-events-none absolute inset-0", t.rule)} />
 
       <div className="shell relative">
         <div className="grid lg:grid-cols-[3.5rem_minmax(0,1fr)]">
