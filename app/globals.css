@@ -139,17 +139,39 @@
    Layout
    ========================================================================== */
 
+/* The measure is published as custom properties rather than written into this
+   one utility, because the grain has to line its columns up with the text
+   column and a second copy of these numbers is a second chance to drift. See
+   `grain`, below. */
+@layer base {
+  :root {
+    --shell-max: 84rem;
+    --shell-pad: 1.25rem;
+    /* Columns the measure is divided into. Fewer on a phone: twelve rules
+       across 350px of paper is a hatch, not a grid. */
+    --shell-cols: 4;
+  }
+
+  @media (width >= 48rem) {
+    :root {
+      --shell-pad: 2rem;
+      --shell-cols: 8;
+    }
+  }
+
+  @media (width >= 64rem) {
+    :root {
+      --shell-pad: 3rem;
+      --shell-cols: 12;
+    }
+  }
+}
+
 @utility shell {
   width: 100%;
-  max-width: 84rem;
+  max-width: var(--shell-max);
   margin-inline: auto;
-  padding-inline: 1.25rem;
-  @media (width >= 48rem) {
-    padding-inline: 2rem;
-  }
-  @media (width >= 64rem) {
-    padding-inline: 3rem;
-  }
+  padding-inline: var(--shell-pad);
 }
 
 /* ==========================================================================
@@ -246,6 +268,15 @@
 
 .hero-sweep {
   animation: hero-sweep 2.4s var(--ease-out-quint) var(--intro-duration) both;
+  /* The shade below is at its full strength by the hero's lower edge, and the
+     hero's lower edge is the metrics tape — so the page stepped from a shaded
+     bone above the tape to a clean one below it, in one hard line, and the
+     tape looked like it had been laid over two different papers. The light is
+     faded out across the last third instead: the hero hands the page on at the
+     same tone it opened with, and the join disappears. The cursor bloom is a
+     sibling and is deliberately not masked — it is allowed anywhere. */
+  mask-image: linear-gradient(to bottom, #000 0 58%, transparent 94%);
+  mask-repeat: no-repeat;
 }
 
 @keyframes hero-sweep {
@@ -364,16 +395,60 @@
 
 /* ==========================================================================
    Paper grain
-   A faint ruled grain sized to the tick pitch, so page, rule and texture all
-   share one measurement unit.
+   The ruled paper every surface is printed on. Two rulings, and they are not
+   the same kind of thing:
+
+   - **The column rules** are the page's own measure divided into `--shell-cols`
+     and drawn from the centre outwards, so a rule lands exactly on each edge
+     of the text column and on every column boundary inside it. Every surface
+     is full-bleed and centred, so all of them resolve to the same rules and
+     the columns run the length of the document unbroken — through section
+     joins, through the metrics tape, from the masthead to the footer.
+
+   - **The horizontal ruling** cannot do that. Each surface paints its own
+     grain starting at its own top edge, so the rows restart at every section
+     boundary; the page used to arrive at a join with a half-height row on one
+     side and a full one on the other, which read as two mismatched sheets
+     rather than one. It is masked off before it reaches either edge instead.
+     The rows are strongest in the middle of a surface, where nothing can be
+     compared against, and gone by the time there is a seam to give away.
+
+   Rows are half a column, so the cell keeps one ratio at every breakpoint
+   rather than being pinned to a pixel size that only suits a laptop.
    ========================================================================== */
 
 @utility grain {
-  background-image:
-    linear-gradient(to right, currentColor 1px, transparent 1px),
-    linear-gradient(to bottom, currentColor 1px, transparent 1px);
-  background-size: 55px 55px;
-  opacity: 0.045;
+  --grain-measure: calc(min(var(--shell-max), 100%) - 2 * var(--shell-pad));
+  --grain-col: calc(var(--grain-measure) / var(--shell-cols));
+
+  background-image: linear-gradient(to right, currentColor 0 1px, transparent 1px);
+  background-size: var(--grain-col) 100%;
+  /* A repeating background is positioned by one tile and then tiled both ways
+     from it, and `50%` centres that *tile* — which leaves the rules half a
+     column off the measure. Adding half a tile back puts a rule on the page's
+     centre line, and since the measure is an even number of columns wide, its
+     two edges fall on rules from there. */
+  background-position: calc(50% + var(--grain-col) / 2) 0;
+  opacity: 0.055;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, currentColor 70%, transparent) 0 1px,
+      transparent 1px
+    );
+    background-size: 100% calc(var(--grain-col) / 2);
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      #000 5.5rem,
+      #000 calc(100% - 5.5rem),
+      transparent
+    );
+  }
 }
 
 /* ==========================================================================
