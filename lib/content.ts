@@ -264,20 +264,33 @@ export const INTAKE = [
  */
 export const STUDIO_DAYS = [1, 2, 3, 4, 5] as const;
 
+/**
+ * Why the practice is shaped the way it is.
+ *
+ * `code` is the same convention the pillars and the services already use: the
+ * one word this claim is actually about, set as a reading. Four bare titles in
+ * a row read as a values page; four titles filed under PLAN, TEAM, AUDIT and
+ * FIT read as a specification, which is the register the rest of the site is
+ * written in.
+ */
 export const REASONS = [
   {
+    code: "PLAN",
     title: "Strategy before spend",
     desc: "Every engagement opens with a written plan built around your business model, margin and stage — not a channel we happen to like.",
   },
   {
+    code: "TEAM",
     title: "Founder-led, start to finish",
     desc: "You work with the senior strategists who pitched you. No handover to a junior pod after the contract is signed.",
   },
   {
+    code: "AUDIT",
     title: "Reporting you can audit",
     desc: "One dashboard, the same definitions every month, and the losses reported as plainly as the wins.",
   },
   {
+    code: "FIT",
     title: "Plans sized to your stage",
     desc: "No templated retainer. We pick the mix of channels, creative and pace that suits where the business actually is.",
   },

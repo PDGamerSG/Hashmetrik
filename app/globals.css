@@ -237,6 +237,24 @@
   will-change: transform;
 }
 
+/* The readings dissolve at both ends instead of being guillotined by the
+   viewport. The mask goes on this static wrapper rather than on the track:
+   a mask is resolved against its own element's box, and the track is twice
+   the width of the page and moving, so the soft edges would travel with it.
+   The coloured band underneath is untouched — fading the surface too would
+   taper the tape into the paper and lose the one hard edge the hero hands
+   the page on. */
+.tape-window {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 4.5rem,
+    #000 calc(100% - 4.5rem),
+    transparent 100%
+  );
+}
+
 .tape-track-reverse {
   animation-direction: reverse;
   animation-duration: 46s;

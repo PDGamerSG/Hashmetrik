@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { Reveal } from "@/components/motion/reveal";
+import { SplitHeading } from "@/components/motion/split-heading";
 import { cn } from "@/lib/utils";
 import { MarkField } from "./mark-field";
 
@@ -100,33 +102,42 @@ export function SectionHead({
 }: SectionHeadProps) {
   const t = TONE[tone];
 
+  /* Every heading on the page is set line by line as it lands — the two that
+     used `SplitHeading` directly (the package intro, the contact band) and now
+     the four that go through this component too. Before, four of the six
+     section heads simply appeared while every list, grid and paragraph beneath
+     them animated, which read as the headings having been forgotten rather
+     than as restraint. The eyebrow leads by a fraction and the standfirst
+     follows, so the head arrives as one gesture in three beats. */
   return (
     <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
       <div className="max-w-2xl">
-        <div
-          className={cn(
-            "flex items-center gap-3 label tabular",
-            t.reading,
-          )}
+        <Reveal
+          y={12}
+          duration={0.7}
+          className={cn("flex items-center gap-3 label tabular", t.reading)}
         >
           <span className="lg:hidden">{reading}</span>
           <span aria-hidden className={cn("h-px w-6 bg-current opacity-40 lg:hidden")} />
           <span className="text-coral">{eyebrow}</span>
-        </div>
+        </Reveal>
 
-        <h2 className="mt-5 font-display text-[clamp(2rem,5.5vw,3.75rem)] leading-[1] font-medium tracking-[-0.018em] text-balance">
+        <SplitHeading className="mt-5 font-display text-[clamp(2rem,5.5vw,3.75rem)] leading-[1] font-medium tracking-[-0.018em] text-balance">
           {title}
-        </h2>
+        </SplitHeading>
 
         {desc && (
-          <p
+          <Reveal
+            as="p"
+            y={16}
+            delay={0.12}
             className={cn(
               "mt-5 max-w-xl text-base leading-relaxed md:text-lg",
               tone === "ink" ? "text-bone/70" : "text-slate",
             )}
           >
             {desc}
-          </p>
+          </Reveal>
         )}
       </div>
 

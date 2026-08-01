@@ -69,15 +69,27 @@ function Intro() {
           </p>
 
           {/* The contents page for the stack below. It doubles as the fallback
-              on phones, where the panels are an ordinary column. */}
+              on phones, where the panels are an ordinary column.
+
+              Each row now carries the reading its pillar is judged on, which
+              is the one thing the index was missing: every other list on this
+              site — the services, the panels these rows summarise — is filed by
+              its measure, and this was filed by name alone. It is held back to
+              `lg`, where the column is wide enough that the code and the count
+              are two readings rather than a collision. */}
           <ul className="grid gap-px self-end border-y border-ash bg-ash">
             {PILLARS.map((pillar) => (
               <li
                 key={pillar.id}
-                className="flex items-baseline gap-4 bg-bone py-3 label"
+                className="group flex items-baseline gap-4 bg-bone py-3 label transition-colors duration-300 ease-[var(--ease-out-quint)] hover:bg-bone-2"
               >
                 <span className="tabular text-coral">{pillar.reading}</span>
                 <span className="flex-1 text-ink">{pillar.name}</span>
+                <span className="hidden tabular text-slate/60 lg:block">{pillar.code}</span>
+                <span
+                  aria-hidden
+                  className="hidden h-px w-4 origin-left scale-x-0 bg-coral transition-transform duration-300 ease-[var(--ease-out-quint)] group-hover:scale-x-100 lg:block"
+                />
                 <span className="tabular text-slate">{pillar.items.length} deliverables</span>
               </li>
             ))}
@@ -193,22 +205,51 @@ function Panel({ pillar, dark }: { pillar: (typeof PILLARS)[number]; dark: boole
 
 /* -------------------------------------------------------------------------- */
 
+/**
+ * The band that closes section 01.
+ *
+ * The claim it makes — one team accountable for *the number at the end of it* —
+ * was being asserted over an empty strip of paper, which is the one place on
+ * this page where a promise about measurement should be able to point at the
+ * measurements. So the four readings the pillars are judged on are printed
+ * above it, in the order the visitor has just scrolled through them: the
+ * sentence now names something the page has already shown.
+ */
 function Close() {
   return (
     <div className="relative overflow-hidden bg-bone text-ink">
       <MarkField className="pointer-events-none absolute inset-0 text-ink" />
 
-      <Reveal className="shell relative flex flex-col gap-6 py-16 md:flex-row md:items-center md:justify-between md:py-20">
-        <p className="max-w-xl font-display text-2xl leading-tight font-medium tracking-[-0.018em] text-balance md:text-3xl">
-          Four pillars, <Accent>one invoice</Accent>, one team accountable for the number at the
-          end of it.
-        </p>
-        <Magnetic className="w-full md:w-auto">
-          <ActionLink href="/book" size="lg" className="w-full">
-            Build my package
-          </ActionLink>
-        </Magnetic>
-      </Reveal>
+      <div className="shell relative py-16 md:py-20">
+        {/* The readings, on their own rule. Set as a row of measures rather
+            than a sentence — this is the scale the claim below is made
+            against, and a scale is read across, not through. */}
+        <Reveal
+          as="ul"
+          stagger={0.07}
+          y={14}
+          className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-ash pt-5 md:gap-x-10"
+        >
+          {PILLARS.map((pillar) => (
+            <li key={pillar.id} className="flex items-baseline gap-2.5 label tabular">
+              <span className="text-coral">{pillar.reading}</span>
+              <span className="text-slate">{pillar.code}</span>
+            </li>
+          ))}
+        </Reveal>
+
+        <Reveal className="mt-9 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <p className="max-w-xl font-display text-2xl leading-tight font-medium tracking-[-0.018em] text-balance md:text-3xl">
+            Four pillars, <Accent>one invoice</Accent>, one team accountable for the number at the
+            end of it.
+          </p>
+          <Magnetic className="w-full md:w-auto">
+            <ActionLink href="/book" size="lg" className="w-full">
+              Build my package
+            </ActionLink>
+          </Magnetic>
+        </Reveal>
+      </div>
     </div>
   );
 }

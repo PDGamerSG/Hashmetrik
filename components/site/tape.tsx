@@ -118,12 +118,14 @@ export function Tape({
 
   return (
     <div className={cn("relative overflow-hidden py-3.5 md:py-4", surface, className)}>
-      <div
-        ref={trackRef}
-        className={cn("flex w-max tape-track", reverse && "tape-track-reverse")}
-      >
-        {list(false)}
-        {list(true)}
+      <div className="tape-window">
+        <div
+          ref={trackRef}
+          className={cn("flex w-max tape-track", reverse && "tape-track-reverse")}
+        >
+          {list(false)}
+          {list(true)}
+        </div>
       </div>
     </div>
   );
