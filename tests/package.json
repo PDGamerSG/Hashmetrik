@@ -1,0 +1,4 @@
+{
+  "//": "ESM for the test files alone. The root package.json stays typeless because Next's own config files are resolved as CommonJS; scoping the module type here keeps Node from reparsing every test and warning about it.",
+  "type": "module"
+}

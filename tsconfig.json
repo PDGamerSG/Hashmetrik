@@ -9,6 +9,9 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    /* Node runs the tests and the seed script straight from TypeScript, and its
+       ESM resolver needs the real file extension. Safe alongside `noEmit`. */
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",

@@ -1,0 +1,70 @@
+// Slice 1 of the backend: leads, the assistant's rate limiter, and the one
+// account type that can read them. The wider product model — clients, projects,
+// deliverables, calendar, KPIs — lands in later slices and is deliberately absent
+// here rather than stubbed.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+// Prisma 7 keeps the connection URL out of the schema: migrations read it from
+// `prisma.config.ts`, and the client gets it through the driver adapter in
+// `lib/db.ts`.
+datasource db {
+  provider = "postgresql"
+}
+
+/// Staff account. Created by the seed script, never by public signup.
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+/// Every enquiry from the site. Mirrors the `Lead` type in `app/actions.ts`,
+/// which is what both the booking funnel and the contact form already send.
+///
+/// `kind` and `status` are strings rather than enums on purpose: the sales
+/// vocabulary is still moving, and renaming a stage should not cost a migration.
+/// `kind` is booking | contact. `status` is new | contacted | qualified | closed.
+model Lead {
+  id            String    @id @default(cuid())
+  kind          String
+  name          String
+  email         String
+  phone         String?
+  company       String?
+  website       String?
+  industry      String?
+  service       String?
+  budget        String?
+  preferredDate String?
+  preferredTime String?
+  message       String?
+  status        String    @default("new")
+  /// When the team notification email went out. Null means the lead is saved
+  /// but nobody has been told — worth surfacing rather than retrying blindly.
+  notifiedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+/// One row per key per time window, for the assistant's rate limit.
+///
+/// Serverless instances share no memory, so an in-process counter would reset
+/// on every cold start and let a scripted client through at will. A row is the
+/// cheapest thing that actually holds across instances.
+model RateHit {
+  id        String   @id @default(cuid())
+  key       String
+  window    String
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([key, window])
+  @@index([createdAt])
+}

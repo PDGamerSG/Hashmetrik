@@ -8,24 +8,37 @@ import { cn } from "@/lib/utils";
 type Message = { role: "user" | "assistant"; text: string };
 
 /**
- * Slot for the AI assistant.
+ * A failure the server wrote a sentence for — a rate limit, a payload the route
+ * refused. Those sentences say something the generic notice cannot, so they are
+ * marked as safe to show rather than being flattened into "that didn't send".
+ */
+class AssistantError extends Error {}
+
+/**
+ * The one call this panel makes.
  *
- * The shell is finished — launcher, panel, transcript, composer, empty state,
- * keyboard handling — and it is wired to a single function, `sendMessage`
- * below. Replace that function's body with a call to your backend and the
- * feature is live; nothing else in this file needs to change.
+ * `NOT_CONNECTED` is kept as a distinct failure rather than folded into the
+ * generic error: a 503 means the endpoint is there but has no API key behind
+ * it, and the visitor is better told the assistant is off than told to try
+ * again at something that cannot work yet.
  */
 async function sendMessage(history: Message[]): Promise<string> {
-  // TODO: point this at the assistant endpoint, e.g.
-  //   const res = await fetch("/api/assistant", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({ messages: history }),
-  //   });
-  //   if (!res.ok) throw new Error("Assistant unavailable");
-  //   return (await res.json()).reply;
-  void history;
-  throw new Error("NOT_CONNECTED");
+  const res = await fetch("/api/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: history }),
+  });
+
+  if (res.status === 503) throw new Error("NOT_CONNECTED");
+
+  const body = (await res.json().catch(() => null)) as
+    | { reply?: string; error?: string }
+    | null;
+
+  if (res.status === 429 && body?.error) throw new AssistantError(body.error);
+  if (!res.ok || !body?.reply) throw new Error("Assistant unavailable");
+
+  return body.reply;
 }
 
 const PROMPTS = [
@@ -99,9 +112,11 @@ export function Assistant() {
       setMessages([...history, { role: "assistant", text: reply }]);
     } catch (err) {
       setNotice(
-        err instanceof Error && err.message === "NOT_CONNECTED"
-          ? "The assistant isn't connected yet. Book a call and a strategist will answer this directly."
-          : "That didn't send. Try again, or email info@hashmetrik.in.",
+        err instanceof AssistantError
+          ? err.message
+          : err instanceof Error && err.message === "NOT_CONNECTED"
+            ? "The assistant isn't connected yet. Book a call and a strategist will answer this directly."
+            : "That didn't send. Try again, or email info@hashmetrik.in.",
       );
     } finally {
       setPending(false);

@@ -1,52 +1,25 @@
 import type { Metadata, Viewport } from "next";
 import { ViewTransition } from "react";
-import { DM_Mono, Geist, Newsreader } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { Masthead } from "@/components/site/masthead";
 import { Footer } from "@/components/site/footer";
 import { Assistant } from "@/components/site/assistant";
 import { Intro } from "@/components/site/intro";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { SITE } from "@/lib/content";
+import { fontVariables } from "@/lib/fonts";
 
-/* Display *and* editorial, from one family.
+/**
+ * The public site's root layout.
  *
- * This is a press office as much as a media buyer, and a serif says so before
- * a word of the copy is read. Newsreader carries an optical-size axis, so the
- * headline at 6rem is drawn with the fine joins and tight spacing of a
- * masthead while the same face at 1rem opens up and stays readable — the
- * difference a grotesk can only fake by adding weight.
+ * A group root rather than `app/layout.tsx` because `/admin` needs a document
+ * of its own: the intro animation, Lenis, the masthead and the chat bubble are
+ * all right for a marketing page and all wrong over a table of leads. Two root
+ * layouts is how Next.js does that; the cost is a full page load when crossing
+ * between them, which is a boundary nobody crosses mid-task.
  *
- * Its italic then does the editorial job that used to need a second serif.
- * One family for both means the emphasised word is a change of voice rather
- * than a change of typeface, which is the quieter and more expensive effect.
+ * The faces moved to `lib/fonts.ts` when the second root arrived — see there.
  */
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  axes: ["opsz"],
-  variable: "--font-newsreader",
-  display: "swap",
-});
-
-/* Text: a neutral grotesk with a tall x-height, deliberately without opinions.
-   The display face is carrying the personality; running copy and interface
-   labels only have to be legible at a glance and get out of the way. */
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-  display: "swap",
-});
-
-/* Utility: every reading, code and tick label on the site. A drawn mono
-   rather than a programmer's one — the readings are set as small caps in the
-   margins of a document, not as source code in a terminal. */
-const dmMono = DM_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-dm-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -77,10 +50,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${newsreader.variable} ${geist.variable} ${dmMono.variable}`}
-    >
+    <html lang="en" className={fontVariables}>
       <body className="flex min-h-dvh flex-col antialiased">
         <a
           href="#main"

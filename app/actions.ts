@@ -3,68 +3,56 @@
 /**
  * Lead capture.
  *
- * Validation and the server boundary are done. Persistence is the one thing
- * left to wire: drop your store or transactional-email call into `deliver`
- * below and both the booking flow and the contact form start recording.
+ * The booking funnel and the contact form both land here. Validation is shared
+ * with the admin side through `lib/leads/schema`, the row is written by
+ * `lib/leads/store`, and the team is emailed after the write rather than before
+ * it — see `deliver` below for why the order matters.
  */
 
-export type LeadKind = "booking" | "contact";
+import { sendLeadNotification } from "@/lib/email";
+import { createLead, markNotified } from "@/lib/leads/store";
+import { normalizeLead, validateLead, type LeadInput } from "@/lib/leads/schema";
 
-export type Lead = {
-  kind: LeadKind;
-  name: string;
-  email: string;
-  phone?: string;
-  company?: string;
-  website?: string;
-  industry?: string;
-  service?: string;
-  budget?: string;
-  preferredDate?: string;
-  preferredTime?: string;
-  message?: string;
-};
+export type LeadKind = LeadInput["kind"];
+export type Lead = LeadInput;
 
 export type LeadResult = { ok: true } | { ok: false; error: string };
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/**
+ * Saves the lead, then tries to tell the team.
+ *
+ * The write is the part that must not be lost, so it happens first and alone.
+ * The email is best-effort: an unconfigured or unreachable Resend leaves
+ * `notifiedAt` null on a row that is already safe, which is a state the
+ * dashboard can show and somebody can act on. Failing the whole submission
+ * because a mail API blinked would throw away the lead instead.
+ */
+async function deliver(lead: LeadInput) {
+  const saved = await createLead(lead);
 
-function clean(value: unknown, max: number) {
-  return typeof value === "string" ? value.trim().slice(0, max) : "";
-}
-
-async function deliver(lead: Lead) {
-  // TODO: persist the lead and notify the team, e.g. write to your database
-  // and send a transactional email to info@hashmetrik.in.
-  console.info("[lead]", lead.kind, lead.email);
+  const sent = await sendLeadNotification(lead);
+  if (sent.ok) {
+    /* Best-effort too: if this update fails the lead is still recorded, and the
+       worst case is a notified lead that looks un-notified in the dashboard. */
+    await markNotified(saved.id).catch((error) => {
+      console.error("[lead] notified flag not written", saved.id, error);
+    });
+  } else if (sent.reason === "failed") {
+    console.error("[lead] notification email failed", saved.id, sent.detail);
+  }
 }
 
 export async function submitLead(input: Lead): Promise<LeadResult> {
-  const lead: Lead = {
-    kind: input.kind === "booking" ? "booking" : "contact",
-    name: clean(input.name, 100),
-    email: clean(input.email, 255),
-    phone: clean(input.phone, 20),
-    company: clean(input.company, 120),
-    website: clean(input.website, 200),
-    industry: clean(input.industry, 80),
-    service: clean(input.service, 80),
-    budget: clean(input.budget, 40),
-    preferredDate: clean(input.preferredDate, 20),
-    preferredTime: clean(input.preferredTime, 20),
-    message: clean(input.message, 1000),
-  };
+  const lead = normalizeLead(input);
 
-  if (!lead.name) return { ok: false, error: "Add your name so we know who to reply to." };
-  if (!EMAIL.test(lead.email)) return { ok: false, error: "That email address looks incomplete." };
-  if (lead.kind === "booking" && !lead.phone) {
-    return { ok: false, error: "Add a phone number — the call is easier to confirm that way." };
-  }
+  const problem = validateLead(lead);
+  if (problem) return { ok: false, error: problem };
 
   try {
     await deliver(lead);
     return { ok: true };
-  } catch {
+  } catch (error) {
+    console.error("[lead] not saved", error);
     return { ok: false, error: "That didn't send. Try again, or email info@hashmetrik.in." };
   }
 }
