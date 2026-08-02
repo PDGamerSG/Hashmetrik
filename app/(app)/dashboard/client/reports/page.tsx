@@ -27,7 +27,6 @@ export default async function ClientReportsPage() {
   return (
     <>
       <PageHeader
-        eyebrow={client.companyName ?? "Client"}
         title="Reports"
         meta={`Last ${periods.length} months · ${series.length} metric${series.length === 1 ? "" : "s"}`}
       />

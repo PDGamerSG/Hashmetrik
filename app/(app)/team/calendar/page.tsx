@@ -6,6 +6,7 @@ import { NewCalendarForm } from "@/components/app/team-forms";
 import { editCalendarEntry, removeCalendarEntry } from "../actions";
 import { Input, Textarea } from "@/components/site/field";
 import {
+  Alert,
   Card,
   Empty,
   PageHeader,
@@ -45,7 +46,6 @@ export default async function TeamCalendarPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Team"
         title="Content calendar"
         meta={`${entries.length} planned · ${changes.length} needing changes`}
       />
@@ -79,9 +79,9 @@ export default async function TeamCalendarPage() {
               </div>
 
               {entry.note && (
-                <p className="mt-3 border-l-2 border-coral pl-3 text-sm text-ink">
-                  Client asked for: {entry.note}
-                </p>
+                <div className="mt-3">
+                  <Alert>Client asked for: {entry.note}</Alert>
+                </div>
               )}
 
               {/* Editing in place rather than behind a modal: the caption is

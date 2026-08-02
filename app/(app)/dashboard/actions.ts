@@ -40,17 +40,29 @@ export async function askForConsultation(
   return { ok: "Requested. A strategist will confirm a time by email." };
 }
 
+/**
+ * Marking a notice read.
+ *
+ * `"layout"`, not the default `"page"`. These two are called from
+ * `/dashboard/notifications`, and `revalidatePath("/dashboard")` on its own
+ * invalidates the `/dashboard` page and nothing under it — so the row stayed
+ * unread on screen, the button looked broken, and the only way to see the write
+ * had landed was to reload by hand. The layout form invalidates every page
+ * beneath `/dashboard`, which is also what refreshes the unread count in the
+ * nav: that badge is rendered by `dashboard/layout.tsx`, so a page-level
+ * revalidation could never have moved it either.
+ */
 export async function readNotification(formData: FormData): Promise<void> {
   const viewer = await verifySession();
   const id = String(formData.get("id") ?? "");
   if (id) await markRead(viewer.id, id);
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
 }
 
 export async function readAllNotifications(): Promise<void> {
   const viewer = await verifySession();
   await markAllRead(viewer.id);
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
 }
 
 // ---------------------------------------------------------------------------

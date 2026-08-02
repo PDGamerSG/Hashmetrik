@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { AppNav, type NavLink } from "@/components/app/nav";
 import { logout } from "@/app/(app)/actions";
 import { verifySession } from "@/lib/auth/dal";
@@ -22,10 +21,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
     prisma.client.findUnique({ where: { userId: viewer.id }, select: { id: true } }).catch(() => null),
   ]);
 
-  /* Set by `proxy.ts`: a layout cannot otherwise see the URL it is rendering,
-     and the nav needs it to mark the current link. */
-  const pathname = (await headers()).get("x-pathname") ?? "";
-
   const links: NavLink[] = [
     { href: "/dashboard", label: "Overview" },
     ...(client
@@ -44,7 +39,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
         area={client ? "Client" : "Account"}
         email={viewer.email}
         links={links}
-        current={pathname}
         signOut={logout}
       />
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 md:px-10">{children}</div>

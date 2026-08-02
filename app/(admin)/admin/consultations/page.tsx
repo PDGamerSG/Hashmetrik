@@ -40,7 +40,6 @@ export default async function AdminConsultationsPage({
   return (
     <>
       <PageHeader
-        eyebrow="Admin"
         title="Consultations"
         meta={`${consultations.length} shown · ${open} awaiting a time`}
       />
@@ -106,7 +105,7 @@ export default async function AdminConsultationsPage({
                         id={`st-${c.id}`}
                         name="status"
                         defaultValue={c.status}
-                        className="mt-2 h-10 rounded-sheet border border-ash bg-bone px-3 text-sm text-ink"
+                        className="mt-2 h-10 rounded-sheet border border-ash bg-bone-2 px-3 text-sm text-ink transition-colors hover:border-ink/40 focus:border-ink focus:outline-none"
                       >
                         {CONSULTATION_STATUSES.map((s) => (
                           <option key={s} value={s}>
@@ -125,7 +124,7 @@ export default async function AdminConsultationsPage({
                         name="scheduledAt"
                         type="datetime-local"
                         defaultValue={toLocalInput(c.scheduledAt)}
-                        className="mt-2 h-10 rounded-sheet border border-ash bg-bone px-3 text-sm text-ink"
+                        className="mt-2 h-10 rounded-sheet border border-ash bg-bone-2 px-3 text-sm text-ink transition-colors hover:border-ink/40 focus:border-ink focus:outline-none"
                       />
                     </div>
 

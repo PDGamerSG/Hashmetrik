@@ -50,7 +50,6 @@ export default async function TeamProjectsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Team"
         title="Projects"
         meta={`${projects.length} open across ${clientOptions.length} account${clientOptions.length === 1 ? "" : "s"}`}
       />
@@ -86,7 +85,7 @@ export default async function TeamProjectsPage() {
                     id={`status-${project.id}`}
                     name="status"
                     defaultValue={project.status}
-                    className="h-10 rounded-sheet border border-ash bg-bone px-3 text-sm text-ink"
+                    className="h-10 rounded-sheet border border-ash bg-bone-2 px-3 text-sm text-ink transition-colors hover:border-ink/40 focus:border-ink focus:outline-none"
                   >
                     {PROJECT_STATUSES.map((s) => (
                       <option key={s} value={s}>

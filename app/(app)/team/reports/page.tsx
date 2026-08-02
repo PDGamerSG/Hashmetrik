@@ -47,7 +47,6 @@ export default async function TeamReportsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Team"
         title="Reports"
         meta={`Recording for ${currentPeriod()} · ${clients.length} account${clients.length === 1 ? "" : "s"}`}
       />

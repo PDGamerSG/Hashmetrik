@@ -47,7 +47,6 @@ export default async function AdminUsersPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Admin"
         title="Accounts"
         meta={`${users.length} registered · ${clients.length} client${clients.length === 1 ? "" : "s"}`}
       />

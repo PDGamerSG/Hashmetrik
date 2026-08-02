@@ -53,7 +53,7 @@ export default async function AdminOverviewPage() {
 
   return (
     <>
-      <PageHeader eyebrow="HashMetrik" title="Overview" meta={`Signed in as ${admin.email}`} />
+      <PageHeader title="Overview" meta={`Signed in as ${admin.email}`} />
 
       {failure ? (
         <div className="mt-10">

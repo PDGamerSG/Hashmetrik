@@ -34,7 +34,6 @@ export default async function AdminClientsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Admin"
         title="Clients"
         meta={`${clients.length} active · ${managers.length} account manager${managers.length === 1 ? "" : "s"}`}
       />
@@ -72,7 +71,7 @@ export default async function AdminClientsPage() {
                       id={`am-${client.id}`}
                       name="accountManagerId"
                       defaultValue={client.accountManager?.id ?? ""}
-                      className="h-10 rounded-sheet border border-ash bg-bone px-3 text-sm text-ink"
+                      className="h-10 rounded-sheet border border-ash bg-bone-2 px-3 text-sm text-ink transition-colors hover:border-ink/40 focus:border-ink focus:outline-none"
                     >
                       <option value="">Unassigned</option>
                       {managers.map((m) => (

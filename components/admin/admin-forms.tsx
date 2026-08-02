@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { Field, Input, Select, Textarea } from "@/components/site/field";
-import { SubmitButton } from "@/components/app/ui";
+import { Alert } from "@/components/app/ui";
+import { Button, SubmitButton } from "@/components/app/button";
 import {
   activateUser,
   addStaff,
@@ -13,20 +14,8 @@ import { saveContent, type ContentState } from "@/app/(admin)/admin/cms/actions"
 type Option = { id: string; name: string };
 
 function Result({ state }: { state: { error?: string; ok?: string } }) {
-  if (state.error) {
-    return (
-      <p role="alert" className="border-l-2 border-coral pl-3 text-sm text-ink">
-        {state.error}
-      </p>
-    );
-  }
-  if (state.ok) {
-    return (
-      <p role="status" className="border-l-2 border-gold pl-3 text-sm text-ink">
-        {state.ok}
-      </p>
-    );
-  }
+  if (state.error) return <Alert>{state.error}</Alert>;
+  if (state.ok) return <Alert tone="good">{state.ok}</Alert>;
   return null;
 }
 
@@ -54,13 +43,9 @@ export function ActivateForm({
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="h-10 rounded-sheet bg-ink px-4 text-[13px] text-bone transition-colors hover:bg-coral hover:text-ink"
-      >
+      <Button type="button" onClick={() => setOpen(true)}>
         Make a client
-      </button>
+      </Button>
     );
   }
 
@@ -103,14 +88,10 @@ export function ActivateForm({
       </fieldset>
 
       <div className="flex flex-wrap items-center gap-4">
-        <SubmitButton pending={pending}>{pending ? "Activating…" : "Activate"}</SubmitButton>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="text-sm text-slate underline underline-offset-2"
-        >
+        <SubmitButton pending={pending} busyLabel="Activating…">Activate</SubmitButton>
+        <Button type="button" variant="quiet" onClick={() => setOpen(false)}>
           Cancel
-        </button>
+        </Button>
         <Result state={state} />
       </div>
     </form>
@@ -158,7 +139,7 @@ export function StaffForm() {
       </Field>
 
       <div className="flex items-center gap-4 sm:col-span-2">
-        <SubmitButton pending={pending}>{pending ? "Creating…" : "Create account"}</SubmitButton>
+        <SubmitButton pending={pending} busyLabel="Creating…">Create account</SubmitButton>
         <Result state={state} />
       </div>
     </form>
@@ -265,7 +246,7 @@ export function ContentForm({
       </div>
 
       <div className="flex items-center gap-4 sm:col-span-2">
-        <SubmitButton pending={pending}>{pending ? "Saving…" : "Save"}</SubmitButton>
+        <SubmitButton pending={pending} busyLabel="Saving…">Save</SubmitButton>
         <Result state={state} />
       </div>
     </form>

@@ -26,7 +26,6 @@ export default async function AdminTeamPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Admin"
         title="Staff"
         meta={`${members.length} team · ${admins.length} administrator${admins.length === 1 ? "" : "s"}`}
       />

@@ -6,6 +6,7 @@ import { listLeadsForUser } from "@/lib/leads/store";
 import { prisma } from "@/lib/db";
 import { ConsultationRequest, ProfileForm } from "@/components/app/account-forms";
 import {
+  ButtonLink,
   Card,
   Details,
   Detail,
@@ -53,7 +54,6 @@ export default async function DashboardPage() {
   return (
     <>
       <PageHeader
-        eyebrow="HashMetrik"
         title={profile?.name ? `Hello, ${profile.name.split(" ")[0]}` : "Your account"}
         meta={
           client
@@ -62,19 +62,9 @@ export default async function DashboardPage() {
         }
         actions={
           client ? (
-            <Link
-              href="/dashboard/client"
-              className="h-10 rounded-sheet bg-ink px-4 text-[13px] leading-10 text-bone transition-colors hover:bg-coral hover:text-ink"
-            >
-              Go to your work
-            </Link>
+            <ButtonLink href="/dashboard/client">Go to your work</ButtonLink>
           ) : (
-            <Link
-              href="/book"
-              className="h-10 rounded-sheet bg-ink px-4 text-[13px] leading-10 text-bone transition-colors hover:bg-coral hover:text-ink"
-            >
-              Book a consultation
-            </Link>
+            <ButtonLink href="/book">Book a consultation</ButtonLink>
           )
         }
       />

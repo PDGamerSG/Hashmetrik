@@ -51,7 +51,6 @@ export default async function ClientWorkPage() {
   return (
     <>
       <PageHeader
-        eyebrow={client.companyName ?? "Client"}
         title="Your work"
         meta={
           waiting > 0

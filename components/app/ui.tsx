@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
+import { CircleAlert, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+/* The action controls live in their own `"use client"` module — they read the
+   surrounding form's pending state — and are re-exported here so a page still
+   has one import for the whole kit. */
+export { Button, ButtonLink, SubmitButton } from "./button";
 
 /**
  * The pieces every dashboard is built from.
@@ -14,25 +20,28 @@ import { cn } from "@/lib/utils";
  * it still reads as the same company.
  */
 
+/**
+ * The head of every signed-in page.
+ *
+ * The monospace caption that used to sit above the title is gone. It said
+ * "Admin", "Team" or the company name — which the nav one row above already
+ * says, in the same face, at the same size — so the top of every page opened
+ * with the same word twice and the heading arrived third.
+ */
 export function PageHeader({
-  eyebrow,
   title,
   meta,
   actions,
 }: {
-  eyebrow?: string;
   title: string;
   meta?: ReactNode;
   actions?: ReactNode;
 }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4 border-b border-ash pb-6">
+    <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-b border-ash pb-6">
       <div className="min-w-0">
-        {eyebrow && <p className="label-sm text-slate">{eyebrow}</p>}
-        <h1 className="mt-2 font-display text-3xl font-medium tracking-[-0.015em] text-ink">
-          {title}
-        </h1>
-        {meta && <div className="mt-2 text-sm text-slate">{meta}</div>}
+        <h1 className="font-display text-3xl font-medium tracking-[-0.015em] text-ink">{title}</h1>
+        {meta && <div className="mt-2 text-sm leading-relaxed text-slate">{meta}</div>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </header>
@@ -96,16 +105,29 @@ export function Empty({ children }: { children: ReactNode }) {
   return <p className="mt-10 text-sm leading-relaxed text-slate">{children}</p>;
 }
 
+/**
+ * What a page or a form says went wrong, or went right.
+ *
+ * Bounded rather than the bare coloured rule this used to be. A 2px edge with
+ * text beside it is the same shape the site uses for a pull quote, and it was
+ * the only thing marking the difference between "saved" and "that failed" —
+ * two states a person has to be able to tell apart at a glance, from across a
+ * desk, without having to read the sentence first.
+ */
 export function Alert({ children, tone = "warn" }: { children: ReactNode; tone?: "warn" | "good" }) {
+  const warn = tone === "warn";
+  const Icon = warn ? CircleAlert : CircleCheck;
+
   return (
     <p
-      role="alert"
+      role={warn ? "alert" : "status"}
       className={cn(
-        "border-l-2 pl-4 text-sm leading-relaxed",
-        tone === "warn" ? "border-coral text-ink" : "border-gold text-ink",
+        "flex items-start gap-2.5 rounded-sheet border px-3.5 py-3 text-sm leading-relaxed text-ink",
+        warn ? "border-coral/45 bg-coral/10" : "border-gold/60 bg-gold/15",
       )}
     >
-      {children}
+      <Icon aria-hidden className={cn("mt-0.5 size-4 shrink-0", warn ? "text-coral" : "text-ink")} />
+      <span className="min-w-0">{children}</span>
     </p>
   );
 }
@@ -125,32 +147,6 @@ export function Details({ children }: { children: ReactNode }) {
     <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-ash pt-4 sm:grid-cols-4">
       {children}
     </dl>
-  );
-}
-
-/** The submit button used across every dashboard form. */
-export function SubmitButton({
-  children,
-  pending,
-  variant = "primary",
-}: {
-  children: ReactNode;
-  pending?: boolean;
-  variant?: "primary" | "quiet";
-}) {
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className={cn(
-        "h-10 rounded-sheet px-4 text-[13px] transition-colors disabled:pointer-events-none disabled:opacity-40",
-        variant === "primary"
-          ? "bg-ink text-bone hover:bg-coral hover:text-ink"
-          : "border border-ash text-ink hover:border-ink hover:bg-bone-2",
-      )}
-    >
-      {children}
-    </button>
   );
 }
 

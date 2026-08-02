@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireTeamMember } from "@/lib/auth/dal";
 import { listClients, listClientsForManager } from "@/lib/clients/store";
 import { listPendingDeliverables } from "@/lib/projects/store";
 import { listCalendarForManager } from "@/lib/calendar/store";
 import {
+  ButtonLink,
   Card,
   Detail,
   Details,
@@ -42,7 +42,6 @@ export default async function TeamQueuePage() {
   return (
     <>
       <PageHeader
-        eyebrow={member?.roleTitle ?? (viewer.role === "ADMIN" ? "Administrator" : "Team")}
         title="Queue"
         meta={
           scope
@@ -56,22 +55,22 @@ export default async function TeamQueuePage() {
         {needingWork.length === 0 ? (
           <Empty>Nothing has been sent back. </Empty>
         ) : (
+          /* The urgency is already carried by the section this list sits under
+             and by the note the client wrote. A coral slab down each card's
+             edge as well made every row in the queue shout. */
           <ul className="mt-4 space-y-3">
             {needingWork.map((d) => (
-              <Card as="li" key={d.id} className="border-l-2 border-l-coral">
-                <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <p className="text-sm text-ink">
+              <Card as="li" key={d.id}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="min-w-0 text-sm text-ink">
                     <span className="font-medium">{d.title}</span>{" "}
                     <span className="text-slate">
                       · {d.project.client.companyName ?? "Client"} · {d.project.name}
                     </span>
                   </p>
-                  <Link
-                    href="/team/projects"
-                    className="label-sm rounded-full border border-ash px-3 py-1.5 text-slate transition-colors hover:border-ink hover:text-ink"
-                  >
+                  <ButtonLink href="/team/projects" variant="quiet" size="sm">
                     Open
-                  </Link>
+                  </ButtonLink>
                 </div>
               </Card>
             ))}

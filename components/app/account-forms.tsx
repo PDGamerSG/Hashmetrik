@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { Field, Input, Textarea } from "@/components/site/field";
-import { SubmitButton } from "@/components/app/ui";
+import { Alert } from "@/components/app/ui";
+import { SubmitButton } from "@/components/app/button";
 import { askForConsultation, type FormState } from "@/app/(app)/dashboard/actions";
 import { saveProfile, type FormState as ProfileState } from "@/app/(app)/actions";
 
@@ -15,20 +16,8 @@ import { saveProfile, type FormState as ProfileState } from "@/app/(app)/actions
  */
 
 function Result({ state }: { state: { error?: string; ok?: string } }) {
-  if (state.error) {
-    return (
-      <p role="alert" className="border-l-2 border-coral pl-3 text-sm text-ink">
-        {state.error}
-      </p>
-    );
-  }
-  if (state.ok) {
-    return (
-      <p role="status" className="border-l-2 border-gold pl-3 text-sm text-ink">
-        {state.ok}
-      </p>
-    );
-  }
+  if (state.error) return <Alert>{state.error}</Alert>;
+  if (state.ok) return <Alert tone="good">{state.ok}</Alert>;
   return null;
 }
 
@@ -49,7 +38,7 @@ export function ConsultationRequest() {
       </Field>
 
       <Result state={state} />
-      <SubmitButton pending={pending}>{pending ? "Sending…" : "Request a call"}</SubmitButton>
+      <SubmitButton pending={pending} busyLabel="Sending…">Request a call</SubmitButton>
     </form>
   );
 }
@@ -64,7 +53,7 @@ export function ProfileForm({
   const [state, formAction, pending] = useActionState<ProfileState, FormData>(saveProfile, {});
 
   return (
-    <form action={formAction} className="grid grid-cols-2 gap-4">
+    <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Field label="Name" htmlFor="profile-name">
         <Input id="profile-name" name="name" defaultValue={defaults.name} required maxLength={100} />
       </Field>
@@ -89,7 +78,7 @@ export function ProfileForm({
         />
       </Field>
 
-      <Field label="Industry" htmlFor="profile-industry" className="col-span-2">
+      <Field label="Industry" htmlFor="profile-industry" className="sm:col-span-2">
         <Input
           id="profile-industry"
           name="businessType"
@@ -98,8 +87,8 @@ export function ProfileForm({
         />
       </Field>
 
-      <div className="col-span-2 flex items-center gap-4">
-        <SubmitButton pending={pending}>{pending ? "Saving…" : "Save"}</SubmitButton>
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+        <SubmitButton pending={pending} busyLabel="Saving…">Save</SubmitButton>
         <Result state={state} />
       </div>
     </form>

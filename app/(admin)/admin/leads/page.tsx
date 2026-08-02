@@ -53,7 +53,6 @@ export default async function AdminLeadsPage({
   return (
     <>
       <PageHeader
-        eyebrow="Admin"
         title="Leads"
         meta={`${total} in total${status || kind ? ` · ${leads.length} shown` : ""}`}
       />
@@ -118,7 +117,7 @@ export default async function AdminLeadsPage({
                     id={`status-${lead.id}`}
                     name="status"
                     defaultValue={lead.status}
-                    className="h-10 rounded-sheet border border-ash bg-bone px-3 text-sm text-ink"
+                    className="h-10 rounded-sheet border border-ash bg-bone-2 px-3 text-sm text-ink transition-colors hover:border-ink/40 focus:border-ink focus:outline-none"
                   >
                     {LEAD_STATUSES.map((s) => (
                       <option key={s} value={s}>

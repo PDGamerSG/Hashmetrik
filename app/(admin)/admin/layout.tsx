@@ -22,6 +22,12 @@ const LINKS: NavLink[] = [
 ];
 
 export default async function AdminChromeLayout({ children }: { children: React.ReactNode }) {
+  /* Set by `proxy.ts`. Still read here, and only here: a layout renders once and
+     is not re-run on navigation, so a pathname taken from the request is only
+     trustworthy for a decision that is settled on a full render. This is one —
+     `/admin/login` is reached by a redirect or a typed URL, never by a link from
+     inside the admin area. Marking the current *nav* link is the opposite case,
+     which is why that moved into a client component. */
   const pathname = (await headers()).get("x-pathname") ?? "";
 
   /* The login page is inside this segment and must render for a signed-out
@@ -33,13 +39,7 @@ export default async function AdminChromeLayout({ children }: { children: React.
 
   return (
     <>
-      <AppNav
-        area="Admin"
-        email={admin.email}
-        links={LINKS}
-        current={pathname}
-        signOut={logout}
-      />
+      <AppNav area="Admin" email={admin.email} links={LINKS} signOut={logout} />
       <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 md:px-10">{children}</div>
     </>
   );

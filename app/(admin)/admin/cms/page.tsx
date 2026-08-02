@@ -32,7 +32,6 @@ export default async function AdminCmsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Admin"
         title="Content"
         meta={`${entries.length} entries · ${published} published`}
       />

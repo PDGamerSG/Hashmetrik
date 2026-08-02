@@ -2,7 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { Field, Input, Select, Textarea } from "@/components/site/field";
-import { SubmitButton } from "@/components/app/ui";
+import { Alert } from "@/components/app/ui";
+import { Button, SubmitButton } from "@/components/app/button";
 import {
   newCalendarEntry,
   newDeliverable,
@@ -23,20 +24,8 @@ import {
 type Option = { id: string; name: string };
 
 function Result({ state }: { state: FormState }) {
-  if (state.error) {
-    return (
-      <p role="alert" className="border-l-2 border-coral pl-3 text-sm text-ink">
-        {state.error}
-      </p>
-    );
-  }
-  if (state.ok) {
-    return (
-      <p role="status" className="border-l-2 border-gold pl-3 text-sm text-ink">
-        {state.ok}
-      </p>
-    );
-  }
+  if (state.error) return <Alert>{state.error}</Alert>;
+  if (state.ok) return <Alert tone="good">{state.ok}</Alert>;
   return null;
 }
 
@@ -44,14 +33,9 @@ function Disclosure({ label, children }: { label: string; children: React.ReactN
   const [open, setOpen] = useState(false);
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="h-10 rounded-sheet border border-ash px-4 text-[13px] text-ink transition-colors hover:border-ink hover:bg-bone-2"
-      >
+      <Button type="button" variant="quiet" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
         {open ? "Close" : label}
-      </button>
+      </Button>
       {open && <div className="mt-4">{children}</div>}
     </div>
   );
@@ -68,7 +52,7 @@ export function NewProjectForm({
 
   return (
     <Disclosure label="New project">
-      <form action={formAction} className="grid grid-cols-2 gap-4">
+      <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Client" htmlFor="np-client">
           <Select id="np-client" name="clientId" required defaultValue="">
             <option value="" disabled>
@@ -95,7 +79,7 @@ export function NewProjectForm({
           </Select>
         </Field>
 
-        <Field label="Name" htmlFor="np-name" className="col-span-2">
+        <Field label="Name" htmlFor="np-name" className="sm:col-span-2">
           <Input id="np-name" name="name" required maxLength={120} placeholder="Q3 always-on social" />
         </Field>
 
@@ -107,8 +91,8 @@ export function NewProjectForm({
           <Input id="np-end" name="endDate" type="date" />
         </Field>
 
-        <div className="col-span-2 flex items-center gap-4">
-          <SubmitButton pending={pending}>{pending ? "Creating…" : "Create project"}</SubmitButton>
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+          <SubmitButton pending={pending} busyLabel="Creating…">Create project</SubmitButton>
           <Result state={state} />
         </div>
       </form>
@@ -121,8 +105,8 @@ export function NewDeliverableForm({ projects }: { projects: Option[] }) {
 
   return (
     <Disclosure label="Add a deliverable">
-      <form action={formAction} className="grid grid-cols-2 gap-4">
-        <Field label="Project" htmlFor="nd-project" className="col-span-2">
+      <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Project" htmlFor="nd-project" className="sm:col-span-2">
           <Select id="nd-project" name="projectId" required defaultValue="">
             <option value="" disabled>
               Choose…
@@ -152,18 +136,18 @@ export function NewDeliverableForm({ projects }: { projects: Option[] }) {
         <Field
           label="Link to the file"
           htmlFor="nd-url"
-          className="col-span-2"
+          className="sm:col-span-2"
           hint="Drive, Dropbox, Figma — anywhere the client can open it."
         >
           <Input id="nd-url" name="fileUrl" type="url" required maxLength={500} placeholder="https://" />
         </Field>
 
-        <div className="col-span-2 flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
           <label className="flex items-center gap-2 text-sm text-ink">
             <input type="checkbox" name="submit" value="true" defaultChecked className="size-4" />
             Send for approval now
           </label>
-          <SubmitButton pending={pending}>{pending ? "Saving…" : "Add"}</SubmitButton>
+          <SubmitButton pending={pending} busyLabel="Saving…">Add</SubmitButton>
           <Result state={state} />
         </div>
       </form>
@@ -178,8 +162,8 @@ export function ReplyForm({ deliverableId }: { deliverableId: string }) {
       <label htmlFor={`reply-${deliverableId}`} className="label-sm text-slate">
         Reply
       </label>
-      <Textarea id={`reply-${deliverableId}`} name="body" rows={2} maxLength={2000} />
-      <SubmitButton variant="quiet">Post</SubmitButton>
+      <Textarea id={`reply-${deliverableId}`} name="body" rows={2} required maxLength={2000} />
+      <SubmitButton variant="quiet" busyLabel="Posting…">Post</SubmitButton>
     </form>
   );
 }
@@ -195,7 +179,7 @@ export function NewCalendarForm({
 
   return (
     <Disclosure label="Plan a post">
-      <form action={formAction} className="grid grid-cols-2 gap-4">
+      <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Client" htmlFor="nc-client">
           <Select id="nc-client" name="clientId" required defaultValue="">
             <option value="" disabled>
@@ -219,20 +203,20 @@ export function NewCalendarForm({
           </Select>
         </Field>
 
-        <Field label="Publish date" htmlFor="nc-date" className="col-span-2">
+        <Field label="Publish date" htmlFor="nc-date" className="sm:col-span-2">
           <Input id="nc-date" name="publishDate" type="datetime-local" required />
         </Field>
 
-        <Field label="Caption" htmlFor="nc-caption" className="col-span-2">
+        <Field label="Caption" htmlFor="nc-caption" className="sm:col-span-2">
           <Textarea id="nc-caption" name="caption" rows={3} maxLength={2000} />
         </Field>
 
-        <Field label="Creative link" htmlFor="nc-creative" className="col-span-2">
+        <Field label="Creative link" htmlFor="nc-creative" className="sm:col-span-2">
           <Input id="nc-creative" name="creativeUrl" type="url" maxLength={500} placeholder="https://" />
         </Field>
 
-        <div className="col-span-2 flex items-center gap-4">
-          <SubmitButton pending={pending}>{pending ? "Adding…" : "Add to calendar"}</SubmitButton>
+        <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+          <SubmitButton pending={pending} busyLabel="Adding…">Add to calendar</SubmitButton>
           <Result state={state} />
         </div>
       </form>
@@ -252,8 +236,8 @@ export function KpiForm({
   const [state, formAction, pending] = useActionState<FormState, FormData>(recordKpi, {});
 
   return (
-    <form action={formAction} className="grid grid-cols-2 gap-4 lg:grid-cols-6">
-      <Field label="Client" htmlFor="kpi-client" className="col-span-2">
+    <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+      <Field label="Client" htmlFor="kpi-client" className="sm:col-span-2">
         <Select id="kpi-client" name="clientId" required defaultValue="">
           <option value="" disabled>
             Choose…
@@ -266,7 +250,7 @@ export function KpiForm({
         </Select>
       </Field>
 
-      <Field label="Service" htmlFor="kpi-service" className="col-span-2">
+      <Field label="Service" htmlFor="kpi-service" className="sm:col-span-2">
         <Select id="kpi-service" name="serviceId" defaultValue="">
           <option value="">Overall</option>
           {services.map((s) => (
@@ -277,11 +261,11 @@ export function KpiForm({
         </Select>
       </Field>
 
-      <Field label="Period" htmlFor="kpi-period" className="col-span-2">
+      <Field label="Period" htmlFor="kpi-period" className="sm:col-span-2">
         <Input id="kpi-period" name="period" required defaultValue={period} pattern="\d{4}-\d{2}" />
       </Field>
 
-      <Field label="Metric" htmlFor="kpi-metric" className="col-span-2">
+      <Field label="Metric" htmlFor="kpi-metric" className="sm:col-span-2">
         <Input id="kpi-metric" name="metricName" required maxLength={80} placeholder="Impressions" />
       </Field>
 
@@ -293,8 +277,8 @@ export function KpiForm({
         <Input id="kpi-unit" name="unit" maxLength={20} placeholder="₹, %, —" />
       </Field>
 
-      <div className="col-span-2 flex items-center gap-4 lg:col-span-6">
-        <SubmitButton pending={pending}>{pending ? "Saving…" : "Record"}</SubmitButton>
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-6">
+        <SubmitButton pending={pending} busyLabel="Saving…">Record</SubmitButton>
         <Result state={state} />
       </div>
     </form>

@@ -24,7 +24,6 @@ export default async function AdminSettingsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Admin"
         title="Settings"
         meta="Values an administrator can change without a deploy"
       />

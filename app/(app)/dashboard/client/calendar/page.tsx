@@ -50,7 +50,6 @@ export default async function ClientCalendarPage() {
   return (
     <>
       <PageHeader
-        eyebrow={client.companyName ?? "Client"}
         title="Content calendar"
         meta={
           waiting > 0

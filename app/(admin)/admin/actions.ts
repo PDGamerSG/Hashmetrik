@@ -91,6 +91,16 @@ export async function logout(): Promise<void> {
 // Leads
 // ---------------------------------------------------------------------------
 
+/**
+ * Moves an enquiry along the pipeline.
+ *
+ * `"layout"`, not the default `"page"`. Both of these are driven from
+ * `/admin/leads`, and `revalidatePath("/admin")` invalidates the overview page
+ * alone — nothing under it. The row on screen kept the old status, the select
+ * snapped back to its previous `defaultValue`, and "Save" read as a button that
+ * does nothing. The layout form covers the overview, which counts leads, and
+ * every page beneath it.
+ */
 export async function updateLeadStatus(formData: FormData): Promise<void> {
   await requireAdmin();
 
@@ -99,7 +109,7 @@ export async function updateLeadStatus(formData: FormData): Promise<void> {
   if (!id || !isLeadStatus(status)) return;
 
   await setLeadStatus(id, status);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /** Ties an enquiry to the account of the person who sent it. */
@@ -114,7 +124,7 @@ export async function matchLeadToAccount(formData: FormData): Promise<void> {
   if (!user) return;
 
   await linkLeadToUser(leadId, user.id);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------------------------------------------------------------------
