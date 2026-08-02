@@ -168,6 +168,9 @@ those rows and nothing else.
   leave anything a person entered alone.
 - **Email beyond the lead notification.** Activation, approvals and scheduled calls all
   produce an in-app notification; none of them sends mail. `lib/email.ts` is the place.
-- **Password reset.** The seed script resets an admin's; there is no self-serve flow.
+- **Self-serve password reset.** There is no emailed reset link. An administrator can set
+  anybody's password from `/admin/users` — audited as `account.resetPassword`, because
+  whoever runs it can sign in as that account afterwards — and the seed script resets an
+  admin's. The emailed flow is what is missing, and it needs the mail sender above.
 - **Pagination.** Every list is capped at 200 rows. That is a working queue, not a
   scaling decision — revisit when a table actually runs long.

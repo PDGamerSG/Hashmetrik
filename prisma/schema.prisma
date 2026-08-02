@@ -55,6 +55,13 @@ model User {
   phone        String?
   businessName String?
   businessType String?
+  /// Set when an admin suspends the account, null when it is in good standing.
+  ///
+  /// A column rather than a third `UserStatus`: status says where someone sits
+  /// commercially, and suspending a client would otherwise erase the fact that
+  /// they are one. The data access layer refuses a suspended account on every
+  /// gated request, so a live session ends on the next page load.
+  suspendedAt  DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -65,6 +72,7 @@ model User {
   comments      Comment[]
   leads         Lead[]
   auditEntries  AuditLog[]
+  assistantChats AssistantConversation[]
 
   @@index([role])
   @@index([status])
@@ -78,7 +86,29 @@ model TeamMember {
   roleTitle String?
   createdAt DateTime @default(now())
 
+  /// The accounts this person is the *named contact* for. One each.
   managedClients Client[]
+  /// The accounts they work on. Many each, and independent of the above — a
+  /// designer is on six accounts and the named contact for none of them.
+  assignments    ClientAssignment[]
+}
+
+/// A team member working on a client, beyond the single account manager.
+///
+/// A join table rather than more columns on `Client`: the PRD asks for "assign
+/// team members" and the number of them is not fixed, so the alternative would
+/// be a fixed set of slots that runs out. The account manager stays its own
+/// relation because it is a different fact — one person answers the phone.
+model ClientAssignment {
+  id           String     @id @default(cuid())
+  client       Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId     String
+  member       TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  teamMemberId String
+  createdAt    DateTime   @default(now())
+
+  @@unique([clientId, teamMemberId])
+  @@index([teamMemberId])
 }
 
 /// A paying client. One per user, created when an admin activates them.
@@ -97,6 +127,7 @@ model Client {
   projects        Project[]
   calendarEntries ContentCalendarEntry[]
   kpis            KPIRecord[]
+  assignments     ClientAssignment[]
 
   @@index([accountManagerId])
 }
@@ -370,6 +401,43 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// The assistant
+// ---------------------------------------------------------------------------
+
+/// One visitor's conversation with the growth assistant.
+///
+/// Kept so the admin side can read what people actually ask — which is the
+/// cheapest market research the agency has, and the only way to notice that the
+/// assistant is answering something wrong. `userId` is set when the visitor
+/// happened to be signed in and null otherwise; nothing here identifies a guest
+/// beyond what they typed, and no IP address is stored.
+model AssistantConversation {
+  id            String   @id @default(cuid())
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId        String?
+  /// Bumped on every exchange, so the list can be ordered by activity rather
+  /// than by when a conversation happened to start.
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  messages AssistantMessage[]
+
+  @@index([lastMessageAt])
+}
+
+/// One turn. `role` is user | assistant, matching what the panel sends.
+model AssistantMessage {
+  id             String                @id @default(cuid())
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  role           String
+  body           String
+  createdAt      DateTime              @default(now())
+
+  @@index([conversationId, createdAt])
 }
 
 /// One row per key per time window, for the assistant's rate limit.

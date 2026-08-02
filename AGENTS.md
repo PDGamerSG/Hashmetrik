@@ -9,7 +9,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 It is inside this app — no second service. Setup: `docs/backend-setup.md`. Design and
 what is deliberately not built yet: `docs/superpowers/specs/`.
 
-Four things that are not what you would guess:
+Five things that are not what you would guess:
 
 - **`middleware.ts` does not exist here.** Next 16 renamed it; the file is `proxy.ts`.
   It authenticates — is there a live, correctly signed session — and routes. It does
@@ -25,6 +25,11 @@ Four things that are not what you would guess:
   committed, so `npm run build` runs `prisma generate` first.
 - **There are three root layouts**: `app/(site)`, `app/(app)` and `app/(admin)`. That is
   why the 404 for unmatched URLs is `app/global-not-found.tsx`, not `not-found.tsx`.
+- **A suspended account is refused by the guards, and sent to `/suspended`.** Not to
+  `/login`: the session is still valid, so the proxy reads them as signed in and bounces
+  them off the auth pages, and any gated page bounces them back — `/suspended` is neither,
+  which is what ends the loop. `User.suspendedAt` is a column rather than a third
+  `UserStatus` so suspending a client does not erase that they are one.
 
 Two conventions worth keeping:
 
@@ -33,7 +38,10 @@ Two conventions worth keeping:
   cannot resolve the `@/` alias, so anything worth testing goes in the pure file.
 - **Client-reachable queries are scoped inside the `where`.** `{ id, project: { clientId } }`,
   never fetch-then-check. The check cannot be forgotten and someone else's row returns
-  nothing, which is also the right answer to give back.
+  nothing, which is also the right answer to give back. Staff scoping goes through
+  `clientVisibleTo(teamMemberId)` in `lib/clients/store.ts` — account manager **or**
+  `ClientAssignment` — so the client, project, calendar and deliverable lists on `/team`
+  cannot disagree about whose work it is.
 
 Auth is hand-rolled `jose` sessions, not Auth.js, following Next 16's own
 authentication guide.

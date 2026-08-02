@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/dal";
 import { countLeadsByStatus, listLeads } from "@/lib/leads/store";
-import { LEAD_STATUSES, isLeadStatus } from "@/lib/leads/schema";
+import { LEAD_STATUSES, LEAD_STATUS_LABELS, isLeadStatus } from "@/lib/leads/schema";
 import { matchLeadToAccount, updateLeadStatus } from "../actions";
 import {
   Alert,
@@ -57,12 +57,16 @@ export default async function AdminLeadsPage({
         meta={`${total} in total${status || kind ? ` · ${leads.length} shown` : ""}`}
       />
 
+      {/* The pipeline the PRD names, drawn in its own order rather than sorted
+          by volume: the point of a pipeline is that it is a sequence, and a
+          board that reorders itself as the numbers move cannot be read at a
+          glance twice running. */}
       <nav aria-label="Filter leads" className="mt-6 flex flex-wrap gap-2">
         <FilterLink label="All" href="/admin/leads" active={!status && !kind} />
         {LEAD_STATUSES.map((s) => (
           <FilterLink
             key={s}
-            label={`${s}${counts[s] ? ` (${counts[s]})` : ""}`}
+            label={`${LEAD_STATUS_LABELS[s]}${counts[s] ? ` (${counts[s]})` : ""}`}
             href={`/admin/leads?status=${s}`}
             active={status === s}
           />
@@ -121,7 +125,7 @@ export default async function AdminLeadsPage({
                   >
                     {LEAD_STATUSES.map((s) => (
                       <option key={s} value={s}>
-                        {s}
+                        {LEAD_STATUS_LABELS[s]}
                       </option>
                     ))}
                   </select>
@@ -138,7 +142,12 @@ export default async function AdminLeadsPage({
                 />
                 <Detail label="Website" value={lead.website} />
                 <Detail label="Industry" value={lead.industry} />
-                <Detail label="Status" value={lead.status} />
+                <Detail
+                  label="Stage"
+                  value={
+                    isLeadStatus(lead.status) ? LEAD_STATUS_LABELS[lead.status] : lead.status
+                  }
+                />
               </Details>
 
               {lead.message && (

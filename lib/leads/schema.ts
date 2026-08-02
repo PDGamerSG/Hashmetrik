@@ -23,11 +23,48 @@ export type LeadInput = {
   message?: string;
 };
 
-export const LEAD_STATUSES = ["new", "contacted", "qualified", "closed"] as const;
+/**
+ * The pipeline, in the order the PRD names it: Lead, Qualified, Consultation,
+ * Proposal, Negotiation, Client — plus `lost`, which every pipeline needs and
+ * no diagram ever draws.
+ *
+ * Order matters: the admin CRM board renders these as columns left to right, so
+ * the array is the stage sequence and not just a set of allowed values.
+ */
+export const LEAD_STATUSES = [
+  "new",
+  "qualified",
+  "consultation",
+  "proposal",
+  "negotiation",
+  "client",
+  "lost",
+] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
+
+/** What each stage is called on screen. Lower case reads as a label, not a shout. */
+export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {
+  new: "Lead",
+  qualified: "Qualified",
+  consultation: "Consultation",
+  proposal: "Proposal",
+  negotiation: "Negotiation",
+  client: "Client",
+  lost: "Lost",
+};
+
+/** The stages a lead is still live in — everything before it converts or dies. */
+export const OPEN_LEAD_STATUSES = LEAD_STATUSES.filter(
+  (s) => s !== "client" && s !== "lost",
+);
 
 export function isLeadStatus(value: unknown): value is LeadStatus {
   return typeof value === "string" && (LEAD_STATUSES as readonly string[]).includes(value);
+}
+
+/** Where a stage sits in the pipeline, or -1 for a value written before a rename. */
+export function leadStageIndex(value: string): number {
+  return (LEAD_STATUSES as readonly string[]).indexOf(value);
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

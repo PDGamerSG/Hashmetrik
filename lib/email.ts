@@ -29,17 +29,36 @@ const LABELS: Array<[keyof LeadInput, string]> = [
   ["message", "Message"],
 ];
 
+/**
+ * The wording an administrator can change, from `/admin/settings`.
+ *
+ * Optional, and the shape is deliberately a prefix and an opening line rather
+ * than a whole template: the part that must not be editable is the field list,
+ * because a template with a placeholder somebody deleted is a notification that
+ * quietly stops carrying the phone number.
+ */
+export type LeadEmailWording = { subjectPrefix?: string; intro?: string };
+
 /** Plain text, because the recipient is the team's own inbox and it has to be scannable. */
-export function buildLeadEmail(lead: LeadInput): { subject: string; text: string } {
+export function buildLeadEmail(
+  lead: LeadInput,
+  wording: LeadEmailWording = {},
+): { subject: string; text: string } {
   const source = lead.kind === "booking" ? "Booking request" : "Contact form";
   const lines = LABELS.flatMap(([field, label]) => {
     const value = lead[field];
     return typeof value === "string" && value.length > 0 ? [`${label}: ${value}`] : [];
   });
 
+  /* The source label stays in the subject when nothing is configured: sorting
+     bookings from contact-form enquiries at a glance is the job the subject
+     does, and a single fixed string for both would take it away. */
+  const prefix = wording.subjectPrefix?.trim() || source;
+  const intro = wording.intro?.trim() || `${source} from hashmetrik.com`;
+
   return {
-    subject: `${source} — ${lead.name}`,
-    text: [`${source} from hashmetrik.com`, "", ...lines].join("\n"),
+    subject: `${prefix} — ${lead.name}`,
+    text: [intro, "", ...lines].join("\n"),
   };
 }
 
@@ -50,11 +69,14 @@ export function buildLeadEmail(lead: LeadInput): { subject: string; text: string
  * key or a bad response is a degraded notification, not a failed submission —
  * the caller records that and moves on.
  */
-export async function sendLeadNotification(lead: LeadInput): Promise<SendResult> {
+export async function sendLeadNotification(
+  lead: LeadInput,
+  wording: LeadEmailWording = {},
+): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return { ok: false, reason: "unconfigured" };
 
-  const { subject, text } = buildLeadEmail(lead);
+  const { subject, text } = buildLeadEmail(lead, wording);
 
   try {
     const res = await fetch(ENDPOINT, {

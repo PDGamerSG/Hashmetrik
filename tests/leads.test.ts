@@ -1,7 +1,10 @@
 import { strict as assert } from "node:assert";
 import { describe, it } from "node:test";
 import {
+  LEAD_STATUSES,
+  OPEN_LEAD_STATUSES,
   isLeadStatus,
+  leadStageIndex,
   normalizeLead,
   validateLead,
   type LeadInput,
@@ -67,12 +70,45 @@ describe("validateLead", () => {
 });
 
 describe("isLeadStatus", () => {
-  it("accepts the four stages and nothing else", () => {
-    for (const status of ["new", "contacted", "qualified", "closed"]) {
+  it("accepts the pipeline the PRD names and nothing else", () => {
+    for (const status of [
+      "new",
+      "qualified",
+      "consultation",
+      "proposal",
+      "negotiation",
+      "client",
+      "lost",
+    ]) {
       assert.equal(isLeadStatus(status), true);
     }
-    for (const status of ["NEW", "won", "", null, 3, undefined]) {
+    /* `contacted` and `closed` were the old vocabulary. The migration rewrote
+       every row that had them, so accepting them here would be accepting a
+       value nothing writes any more. */
+    for (const status of ["NEW", "won", "contacted", "closed", "", null, 3, undefined]) {
       assert.equal(isLeadStatus(status), false);
     }
+  });
+});
+
+describe("the pipeline order", () => {
+  it("runs from first contact to converted, in the order the board draws", () => {
+    assert.deepEqual(
+      [...LEAD_STATUSES],
+      ["new", "qualified", "consultation", "proposal", "negotiation", "client", "lost"],
+    );
+  });
+
+  it("counts only the stages a lead can still move out of as open", () => {
+    assert.equal(OPEN_LEAD_STATUSES.includes("client" as never), false);
+    assert.equal(OPEN_LEAD_STATUSES.includes("lost" as never), false);
+    assert.equal(OPEN_LEAD_STATUSES.length, 5);
+  });
+
+  it("reports -1 for a stage written before a rename, rather than 0", () => {
+    /* 0 would be `new`, which is a real stage — a stale value must not silently
+       read as the first column of the board. */
+    assert.equal(leadStageIndex("contacted"), -1);
+    assert.equal(leadStageIndex("new"), 0);
   });
 });

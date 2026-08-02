@@ -16,6 +16,26 @@ describe("buildLeadEmail", () => {
     assert.equal(contact.subject, "Contact form — Asha Rao");
   });
 
+  it("takes the subject prefix and opening line an admin configured", () => {
+    const { subject, text } = buildLeadEmail(
+      normalizeLead({ kind: "booking", name: "Asha Rao", email: "asha@example.com" }),
+      { subjectPrefix: "New enquiry", intro: "Someone wants a call." },
+    );
+    assert.equal(subject, "New enquiry — Asha Rao");
+    assert.match(text, /^Someone wants a call\./);
+  });
+
+  it("falls back to naming the source when the setting is blank or whitespace", () => {
+    /* A setting saved as an empty string is the ordinary state — nobody has
+       edited it — and it must not produce a subject that is just a dash. */
+    const { subject, text } = buildLeadEmail(
+      normalizeLead({ kind: "contact", name: "Asha Rao", email: "asha@example.com" }),
+      { subjectPrefix: "   ", intro: "" },
+    );
+    assert.equal(subject, "Contact form — Asha Rao");
+    assert.match(text, /^Contact form from hashmetrik\.com/);
+  });
+
   it("lists only the fields that were filled in", () => {
     const { text } = buildLeadEmail(
       normalizeLead({

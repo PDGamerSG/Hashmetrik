@@ -50,11 +50,16 @@ async function seedAdmin(prisma: PrismaClient) {
 
   /* `update` sets the role as well as the password: this is also the way to
      promote an account that was made as an ordinary user, and the way back
-     into an admin account whose password has been lost. */
+     into an admin account whose password has been lost.
+
+     `suspendedAt: null` for the same reason. This script is the last door into
+     the platform when every other one is shut, and a suspension it could not
+     lift would be one that leaves the database as the only way back — which is
+     exactly the state this exists to prevent. */
   const admin = await prisma.user.upsert({
     where: { email },
     create: { email, passwordHash, role: "ADMIN", status: "NON_CLIENT", name: "Administrator" },
-    update: { passwordHash, role: "ADMIN" },
+    update: { passwordHash, role: "ADMIN", suspendedAt: null },
   });
 
   console.log(`Admin ready: ${admin.email}`);

@@ -15,12 +15,18 @@ export type ChatResult =
   | { ok: true; reply: string }
   | { ok: false; reason: "unconfigured" | "upstream"; detail?: string };
 
-export async function chat(history: ChatMessage[]): Promise<ChatResult> {
+export async function chat(
+  history: ChatMessage[],
+  /* The admin-editable half of the prompt, read by the caller. Passed in rather
+     than fetched here so this module stays one HTTP call with no database
+     behind it, and so a test can drive it without a settings table. */
+  extras: { knowledge?: string; instructions?: string } = {},
+): Promise<ChatResult> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return { ok: false, reason: "unconfigured" };
 
   const messages = [
-    { role: "system" as const, content: buildSystemPrompt() },
+    { role: "system" as const, content: buildSystemPrompt(extras) },
     ...history.slice(-MAX_HISTORY).map((m) => ({
       role: m.role,
       content: m.text.slice(0, MAX_MESSAGE_LENGTH),

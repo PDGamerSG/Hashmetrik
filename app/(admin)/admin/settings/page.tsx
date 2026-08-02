@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth/dal";
-import { SETTINGS, readSettings } from "@/lib/settings/store";
+import { readSettings, settingsIn } from "@/lib/settings/store";
 import { listAudit } from "@/lib/audit";
 import { saveSettings } from "./actions";
-import { Field, Input } from "@/components/site/field";
+import { Field, Input, Textarea } from "@/components/site/field";
+import { ROLE_POWERS } from "@/lib/auth/permissions";
 import {
   Card,
   Empty,
@@ -34,7 +35,7 @@ export default async function AdminSettingsPage() {
             and five separate Save buttons is five chances to change one and
             walk away from the rest. */}
         <form action={saveSettings} className="mt-4 grid gap-4 sm:grid-cols-2">
-          {SETTINGS.map((setting) => (
+          {settingsIn("company").map((setting) => (
             <Field
               key={setting.key}
               label={setting.label}
@@ -45,7 +46,7 @@ export default async function AdminSettingsPage() {
                 id={setting.key}
                 name={setting.key}
                 defaultValue={values[setting.key]}
-                maxLength={200}
+                maxLength={setting.max}
               />
             </Field>
           ))}
@@ -54,6 +55,91 @@ export default async function AdminSettingsPage() {
           </div>
         </form>
       </Card>
+
+      <Card className="mt-6">
+        <SectionTitle>Notifications and email</SectionTitle>
+        <p className="mt-2 text-sm leading-relaxed text-slate">
+          The wording the platform sends out. Transactional email beyond the team&rsquo;s lead
+          notification is not built yet — everything else reaches people as an in-app
+          notification, which is why these read as sentences rather than templates with
+          placeholders in them.
+        </p>
+        <form action={saveSettings} className="mt-4 grid gap-4">
+          {settingsIn("email").map((setting) => (
+            <Field
+              key={setting.key}
+              label={setting.label}
+              htmlFor={setting.key}
+              hint={setting.hint}
+            >
+              {setting.multiline ? (
+                <Textarea
+                  id={setting.key}
+                  name={setting.key}
+                  rows={3}
+                  defaultValue={values[setting.key]}
+                  maxLength={setting.max}
+                />
+              ) : (
+                <Input
+                  id={setting.key}
+                  name={setting.key}
+                  defaultValue={values[setting.key]}
+                  maxLength={setting.max}
+                />
+              )}
+            </Field>
+          ))}
+          <div>
+            <SubmitButton>Save wording</SubmitButton>
+          </div>
+        </form>
+      </Card>
+
+      <section className="mt-10">
+        <SectionTitle count={ROLE_POWERS.length}>Roles and permissions</SectionTitle>
+        <p className="mt-2 text-sm leading-relaxed text-slate">
+          Read-only, and deliberately: permissions here are code, not configuration. Every gated
+          page and every server action calls one of the guards in{" "}
+          <code className="text-ink">lib/auth/dal.ts</code> against the live database row, so a
+          role change takes effect on somebody&rsquo;s next page load. A settings screen that
+          could rewrite this table would be a settings screen that can grant itself anything.
+          Roles are changed per account on the Accounts page.
+        </p>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[40rem] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-ash text-left">
+                <th scope="col" className="label-sm py-2 text-slate">Role</th>
+                <th scope="col" className="label-sm py-2 text-slate">Can</th>
+                <th scope="col" className="label-sm py-2 text-slate">Cannot</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ROLE_POWERS.map((row) => (
+                <tr key={row.role} className="border-b border-ash/60 align-top">
+                  <td className="py-3 pr-4 text-ink">{row.label}</td>
+                  <td className="py-3 pr-4 text-slate">
+                    <ul className="space-y-1">
+                      {row.can.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="py-3 text-slate">
+                    <ul className="space-y-1">
+                      {row.cannot.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="mt-10">
         <SectionTitle count={trail.length}>Audit trail</SectionTitle>

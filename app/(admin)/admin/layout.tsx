@@ -16,8 +16,10 @@ const LINKS: NavLink[] = [
   { href: "/admin/consultations", label: "Calls" },
   { href: "/admin/users", label: "Accounts" },
   { href: "/admin/clients", label: "Clients" },
+  { href: "/admin/projects", label: "Projects" },
   { href: "/admin/team", label: "Staff" },
   { href: "/admin/cms", label: "Content" },
+  { href: "/admin/assistant", label: "Assistant" },
   { href: "/admin/settings", label: "Settings" },
 ];
 

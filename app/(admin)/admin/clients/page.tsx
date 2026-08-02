@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth/dal";
 import { listClients, listServices, listTeamMembers } from "@/lib/clients/store";
-import { assignAccountManager, assignServices } from "../actions";
+import { assignAccountManager, assignServices, assignTeam } from "../actions";
 import {
   Card,
   Detail,
@@ -46,6 +46,7 @@ export default async function AdminClientsPage() {
         <ul className="mt-8 space-y-6">
           {clients.map((client) => {
             const assigned = new Set(client.services.map((s) => s.service.id));
+            const team = new Set(client.assignments.map((a) => a.teamMemberId));
 
             return (
               <Card as="li" key={client.id}>
@@ -88,7 +89,52 @@ export default async function AdminClientsPage() {
                   <Detail label="Client since" value={formatDate(client.onboardedAt)} />
                   <Detail label="Projects" value={String(client._count.projects)} />
                   <Detail label="Services" value={String(client.services.length)} />
+                  <Detail
+                    label="Team"
+                    value={
+                      client.assignments
+                        .map((a) => a.member.user.name ?? a.member.user.email)
+                        .join(", ") || null
+                    }
+                  />
                 </Details>
+
+                {/* Who works on the account, as against who answers the phone.
+                    A person has to be able to see a client to do anything for
+                    them: `/team` scopes every list by exactly this set plus the
+                    account manager. */}
+                <form action={assignTeam} className="mt-4 border-t border-ash pt-4">
+                  <input type="hidden" name="clientId" value={client.id} />
+                  <fieldset>
+                    <legend className="label-sm text-slate">Team on this account</legend>
+                    {managers.length === 0 ? (
+                      <p className="mt-3 text-sm text-slate">
+                        No team members yet. Add one on the Staff page.
+                      </p>
+                    ) : (
+                      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        {managers.map((member) => (
+                          <label
+                            key={member.id}
+                            className="flex items-center gap-2 text-sm text-ink"
+                          >
+                            <input
+                              type="checkbox"
+                              name="teamMemberIds"
+                              value={member.id}
+                              defaultChecked={team.has(member.id)}
+                              className="size-4"
+                            />
+                            {member.user.name ?? member.user.email}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </fieldset>
+                  <div className="mt-4">
+                    <SubmitButton>Save team</SubmitButton>
+                  </div>
+                </form>
 
                 <form action={assignServices} className="mt-4 border-t border-ash pt-4">
                   <input type="hidden" name="clientId" value={client.id} />

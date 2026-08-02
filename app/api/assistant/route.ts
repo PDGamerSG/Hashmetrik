@@ -1,4 +1,6 @@
 import { chat } from "@/lib/ai/groq";
+import { readAssistantConfig, recordExchange } from "@/lib/ai/store";
+import { optionalSession } from "@/lib/auth/dal";
 import {
   MAX_HISTORY,
   MAX_MESSAGE_LENGTH,
@@ -53,7 +55,7 @@ export async function POST(request: Request) {
     console.error("[assistant] rate limit unavailable", error);
   }
 
-  const result = await chat(messages);
+  const result = await chat(messages, await readAssistantConfig());
 
   if (!result.ok) {
     if (result.reason === "unconfigured") {
@@ -64,5 +66,24 @@ export async function POST(request: Request) {
     return Response.json({ error: "The assistant is unavailable." }, { status: 502 });
   }
 
-  return Response.json({ reply: result.reply });
+  /* Recorded after the answer exists, and never allowed to fail the response:
+     the visitor has their reply either way, and an admin missing one line of
+     history is a smaller loss than a working answer turned into an error.
+
+     The conversation id comes back so the panel can post it with the next
+     question and the thread reads as one. It is a server-generated cuid that
+     only identifies a transcript, so echoing it to the client gives away
+     nothing — `recordExchange` still refuses to trust it and starts a fresh
+     conversation for an id that does not exist. */
+  const session = await optionalSession();
+  const conversationId = await recordExchange({
+    conversationId: typeof (body as { conversationId?: unknown })?.conversationId === "string"
+      ? ((body as { conversationId: string }).conversationId)
+      : null,
+    userId: session?.userId ?? null,
+    question: messages[messages.length - 1]?.text ?? "",
+    answer: result.reply,
+  });
+
+  return Response.json({ reply: result.reply, conversationId });
 }

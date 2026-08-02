@@ -28,6 +28,7 @@ import { attachLeadsToUser } from "@/lib/leads/store";
 import { consume } from "@/lib/rate-limit/store";
 import { clientKey } from "@/lib/rate-limit/window";
 import { notify } from "@/lib/notifications/store";
+import { readSettings } from "@/lib/settings/store";
 
 export type FormState = { error?: string; ok?: string };
 
@@ -82,9 +83,17 @@ export async function signup(_prev: FormState, formData: FormData): Promise<Form
       console.error("[auth] earlier enquiries not attached", user.id, error);
     });
 
+    /* The wording is editable from `/admin/settings`; the fallback is the same
+       sentence it always was, so an unreachable settings table changes nothing
+       a new account sees. */
+    const welcome = await readSettings()
+      .then((values) => values["email.welcome"])
+      .catch(() => "");
+
     await notify(
       user.id,
-      "Welcome to HashMetrik. Book a consultation and a strategist will take it from there.",
+      welcome ||
+        "Welcome to HashMetrik. Book a consultation and a strategist will take it from there.",
       { href: "/book" },
     ).catch(() => {});
   } catch (error) {

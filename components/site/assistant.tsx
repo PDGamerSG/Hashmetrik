@@ -22,23 +22,30 @@ class AssistantError extends Error {}
  * it, and the visitor is better told the assistant is off than told to try
  * again at something that cannot work yet.
  */
-async function sendMessage(history: Message[]): Promise<string> {
+async function sendMessage(
+  history: Message[],
+  /* Null on the first question. The server hands one back and it is posted with
+     everything after it, so the transcript an administrator reads is one thread
+     rather than one row per question. It identifies a transcript and nothing
+     else — no account, no session. */
+  conversationId: string | null,
+): Promise<{ reply: string; conversationId: string | null }> {
   const res = await fetch("/api/assistant", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages: history }),
+    body: JSON.stringify({ messages: history, conversationId }),
   });
 
   if (res.status === 503) throw new Error("NOT_CONNECTED");
 
   const body = (await res.json().catch(() => null)) as
-    | { reply?: string; error?: string }
+    | { reply?: string; error?: string; conversationId?: string | null }
     | null;
 
   if (res.status === 429 && body?.error) throw new AssistantError(body.error);
   if (!res.ok || !body?.reply) throw new Error("Assistant unavailable");
 
-  return body.reply;
+  return { reply: body.reply, conversationId: body.conversationId ?? conversationId };
 }
 
 const PROMPTS = [
@@ -72,6 +79,9 @@ export function Assistant() {
   const setOpen = (next: boolean) => setOpenedOn(next ? pathname : null);
 
   const [messages, setMessages] = useState<Message[]>([]);
+  /* Held in state rather than storage: it should last as long as the tab and no
+     longer, which is exactly how long a conversation lasts. */
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -108,8 +118,9 @@ export function Assistant() {
     setPending(true);
 
     try {
-      const reply = await sendMessage(history);
-      setMessages([...history, { role: "assistant", text: reply }]);
+      const answer = await sendMessage(history, conversationId);
+      setMessages([...history, { role: "assistant", text: answer.reply }]);
+      setConversationId(answer.conversationId);
     } catch (err) {
       setNotice(
         err instanceof AssistantError

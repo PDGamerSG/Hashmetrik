@@ -31,7 +31,30 @@ export type Viewer = {
   role: Role;
   status: UserStatus;
   name: string | null;
+  suspendedAt: Date | null;
 };
+
+/**
+ * Where a suspended account is sent.
+ *
+ * Deliberately not `/login`: the session is valid, so the gate in `proxy.ts`
+ * would see a signed-in visitor on an auth page and bounce them back to their
+ * own area, which bounces them here again. A page that is neither gated nor an
+ * auth page is the only end of that loop, and it is also the only place that can
+ * explain what happened and offer a way out.
+ */
+const SUSPENDED = "/suspended";
+
+/**
+ * Ends the request for an account an admin has suspended.
+ *
+ * Checked next to the live row rather than in the token, for the same reason
+ * every other authorisation decision is: suspending someone has to take effect
+ * on their next page load, not on their next sign-in.
+ */
+function refuseIfSuspended(viewer: Viewer): void {
+  if (viewer.suspendedAt) redirect(SUSPENDED);
+}
 
 /** Identity only, straight from the cookie. No database. */
 export const optionalSession = cache(async (): Promise<SessionPayload | null> => {
@@ -45,7 +68,14 @@ export const currentViewer = cache(async (): Promise<Viewer | null> => {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { id: true, email: true, role: true, status: true, name: true },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      status: true,
+      name: true,
+      suspendedAt: true,
+    },
   });
 
   /* A valid token for an account that no longer exists. Deleting a user is
@@ -57,6 +87,7 @@ export const currentViewer = cache(async (): Promise<Viewer | null> => {
 export const verifySession = cache(async (): Promise<Viewer> => {
   const viewer = await currentViewer();
   if (!viewer) redirect("/login");
+  refuseIfSuspended(viewer);
   return viewer;
 });
 
@@ -70,6 +101,7 @@ export const verifySession = cache(async (): Promise<Viewer> => {
 export const requireAdmin = cache(async (): Promise<Viewer> => {
   const viewer = await currentViewer();
   if (!viewer) redirect("/admin/login");
+  refuseIfSuspended(viewer);
   if (viewer.role !== "ADMIN") redirect(homeFor(viewer));
   return viewer;
 });
@@ -78,6 +110,7 @@ export const requireAdmin = cache(async (): Promise<Viewer> => {
 export const requireStaff = cache(async (): Promise<Viewer> => {
   const viewer = await currentViewer();
   if (!viewer) redirect("/login");
+  refuseIfSuspended(viewer);
   if (viewer.role !== "TEAM_MEMBER" && viewer.role !== "ADMIN") redirect(homeFor(viewer));
   return viewer;
 });
@@ -118,6 +151,7 @@ export const requireTeamMember = cache(async () => {
 export const requireClient = cache(async () => {
   const viewer = await currentViewer();
   if (!viewer) redirect("/login");
+  refuseIfSuspended(viewer);
 
   const client = await prisma.client.findUnique({
     where: { userId: viewer.id },

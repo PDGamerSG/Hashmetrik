@@ -6,7 +6,11 @@ import { Alert } from "@/components/app/ui";
 import { Button, SubmitButton } from "@/components/app/button";
 import {
   activateUser,
-  addStaff,
+  addAccount,
+  changeRole,
+  editAccount,
+  resetPassword,
+  toggleSuspension,
   type ActionState,
 } from "@/app/(admin)/admin/actions";
 import { saveContent, type ContentState } from "@/app/(admin)/admin/cms/actions";
@@ -98,26 +102,50 @@ export function ActivateForm({
   );
 }
 
-export function StaffForm() {
-  const [state, formAction, pending] = useActionState<ActionState, FormData>(addStaff, {});
+/**
+ * Creating an account by hand.
+ *
+ * One form for all three roles, with the role list narrowed by the page that
+ * renders it: `/admin/team` offers staff only, `/admin/users` offers everything.
+ * The job title appears only when a team member is being created, because a
+ * field that does nothing for the option you picked reads as a field you forgot
+ * to fill in.
+ */
+const ROLE_LABELS: Record<string, string> = {
+  REGISTERED_USER: "Registered user",
+  TEAM_MEMBER: "Team member",
+  ADMIN: "Administrator",
+};
+
+export function AccountForm({
+  roles = ["REGISTERED_USER", "TEAM_MEMBER", "ADMIN"],
+  defaultRole = "TEAM_MEMBER",
+  idPrefix = "new",
+}: {
+  roles?: readonly string[];
+  defaultRole?: string;
+  idPrefix?: string;
+}) {
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(addAccount, {});
+  const [role, setRole] = useState(defaultRole);
 
   return (
     <form action={formAction} className="grid gap-4 sm:grid-cols-2">
-      <Field label="Name" htmlFor="staff-name">
-        <Input id="staff-name" name="name" required maxLength={100} />
+      <Field label="Name" htmlFor={`${idPrefix}-name`}>
+        <Input id={`${idPrefix}-name`} name="name" required maxLength={100} />
       </Field>
 
-      <Field label="Email" htmlFor="staff-email">
-        <Input id="staff-email" name="email" type="email" required maxLength={255} />
+      <Field label="Email" htmlFor={`${idPrefix}-email`}>
+        <Input id={`${idPrefix}-email`} name="email" type="email" required maxLength={255} />
       </Field>
 
       <Field
         label="Password"
-        htmlFor="staff-password"
+        htmlFor={`${idPrefix}-password`}
         hint="At least 12 characters. Send it to them by a channel that isn't email."
       >
         <Input
-          id="staff-password"
+          id={`${idPrefix}-password`}
           name="password"
           type="password"
           required
@@ -127,21 +155,245 @@ export function StaffForm() {
         />
       </Field>
 
-      <Field label="Role" htmlFor="staff-role">
-        <Select id="staff-role" name="role" defaultValue="TEAM_MEMBER">
-          <option value="TEAM_MEMBER">Team member</option>
-          <option value="ADMIN">Administrator</option>
+      <Field label="Role" htmlFor={`${idPrefix}-role`}>
+        <Select
+          id={`${idPrefix}-role`}
+          name="role"
+          value={role}
+          onChange={(event) => setRole(event.target.value)}
+        >
+          {roles.map((r) => (
+            <option key={r} value={r}>
+              {ROLE_LABELS[r] ?? r}
+            </option>
+          ))}
         </Select>
       </Field>
 
-      <Field label="Job title" htmlFor="staff-title" className="sm:col-span-2">
-        <Input id="staff-title" name="roleTitle" maxLength={80} placeholder="Account manager" />
-      </Field>
+      {role === "TEAM_MEMBER" ? (
+        <Field label="Job title" htmlFor={`${idPrefix}-title`} className="sm:col-span-2">
+          <Input
+            id={`${idPrefix}-title`}
+            name="roleTitle"
+            maxLength={80}
+            placeholder="Account manager"
+          />
+        </Field>
+      ) : (
+        <>
+          <Field label="Phone" htmlFor={`${idPrefix}-phone`}>
+            <Input id={`${idPrefix}-phone`} name="phone" type="tel" maxLength={20} />
+          </Field>
+          <Field label="Business" htmlFor={`${idPrefix}-business`}>
+            <Input id={`${idPrefix}-business`} name="businessName" maxLength={120} />
+          </Field>
+        </>
+      )}
 
       <div className="flex items-center gap-4 sm:col-span-2">
         <SubmitButton pending={pending} busyLabel="Creating…">Create account</SubmitButton>
         <Result state={state} />
       </div>
+    </form>
+  );
+}
+
+/** The narrower form `/admin/team` has always shown. */
+export function StaffForm() {
+  return (
+    <AccountForm roles={["TEAM_MEMBER", "ADMIN"]} defaultRole="TEAM_MEMBER" idPrefix="staff" />
+  );
+}
+
+/**
+ * Everything an administrator can do to one account, behind one disclosure.
+ *
+ * Collapsed by default and deliberately so: these are the destructive controls,
+ * and a directory that shows a "Suspend" button on every row invites the mis-click
+ * that a confirmation dialog then has to defend against. Opening it is the
+ * confirmation.
+ */
+export function ManageAccount({
+  user,
+  isSelf,
+}: {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: string;
+    phone: string | null;
+    businessName: string | null;
+    businessType: string | null;
+    suspended: boolean;
+  };
+  isSelf: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (!open) {
+    return (
+      <Button type="button" variant="quiet" onClick={() => setOpen(true)}>
+        Manage
+      </Button>
+    );
+  }
+
+  return (
+    <div className="mt-4 w-full space-y-6 border-t border-ash pt-4">
+      <RoleForm userId={user.id} role={user.role} isSelf={isSelf} />
+      <SuspensionForm userId={user.id} suspended={user.suspended} isSelf={isSelf} />
+      <EditAccountForm user={user} />
+      <PasswordResetForm userId={user.id} />
+
+      <Button type="button" variant="quiet" onClick={() => setOpen(false)}>
+        Close
+      </Button>
+    </div>
+  );
+}
+
+function RoleForm({ userId, role, isSelf }: { userId: string; role: string; isSelf: boolean }) {
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(changeRole, {});
+
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-3">
+      <input type="hidden" name="userId" value={userId} />
+      <Field label="Role" htmlFor={`role-${userId}`}>
+        <Select id={`role-${userId}`} name="role" defaultValue={role} disabled={isSelf}>
+          {Object.entries(ROLE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <SubmitButton pending={pending} busyLabel="Changing…" disabled={isSelf}>
+        Change role
+      </SubmitButton>
+      {isSelf && (
+        <p className="text-sm text-slate">
+          You cannot change your own role — ask another administrator.
+        </p>
+      )}
+      <Result state={state} />
+    </form>
+  );
+}
+
+function SuspensionForm({
+  userId,
+  suspended,
+  isSelf,
+}: {
+  userId: string;
+  suspended: boolean;
+  isSelf: boolean;
+}) {
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(toggleSuspension, {});
+
+  return (
+    <form action={formAction} className="flex flex-wrap items-center gap-3">
+      <input type="hidden" name="userId" value={userId} />
+      <input type="hidden" name="suspend" value={suspended ? "false" : "true"} />
+      <SubmitButton
+        pending={pending}
+        busyLabel={suspended ? "Restoring…" : "Suspending…"}
+        variant={suspended ? "primary" : "danger"}
+        disabled={isSelf && !suspended}
+      >
+        {suspended ? "Restore access" : "Suspend account"}
+      </SubmitButton>
+      <p className="text-sm text-slate">
+        {suspended
+          ? "They are locked out now. Nothing has been deleted."
+          : "Signs them out on their next page load. Nothing is deleted."}
+      </p>
+      <Result state={state} />
+    </form>
+  );
+}
+
+function EditAccountForm({
+  user,
+}: {
+  user: {
+    id: string;
+    name: string | null;
+    phone: string | null;
+    businessName: string | null;
+    businessType: string | null;
+  };
+}) {
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(editAccount, {});
+
+  return (
+    <form action={formAction} className="grid gap-4 sm:grid-cols-2">
+      <input type="hidden" name="userId" value={user.id} />
+
+      <Field label="Name" htmlFor={`name-${user.id}`}>
+        <Input id={`name-${user.id}`} name="name" defaultValue={user.name ?? ""} maxLength={100} />
+      </Field>
+      <Field label="Phone" htmlFor={`phone-${user.id}`}>
+        <Input
+          id={`phone-${user.id}`}
+          name="phone"
+          type="tel"
+          defaultValue={user.phone ?? ""}
+          maxLength={20}
+        />
+      </Field>
+      <Field label="Business" htmlFor={`biz-${user.id}`}>
+        <Input
+          id={`biz-${user.id}`}
+          name="businessName"
+          defaultValue={user.businessName ?? ""}
+          maxLength={120}
+        />
+      </Field>
+      <Field label="Industry" htmlFor={`ind-${user.id}`}>
+        <Input
+          id={`ind-${user.id}`}
+          name="businessType"
+          defaultValue={user.businessType ?? ""}
+          maxLength={80}
+        />
+      </Field>
+
+      <div className="flex items-center gap-4 sm:col-span-2">
+        <SubmitButton pending={pending} busyLabel="Saving…" variant="quiet">
+          Save details
+        </SubmitButton>
+        <Result state={state} />
+      </div>
+    </form>
+  );
+}
+
+function PasswordResetForm({ userId }: { userId: string }) {
+  const [state, formAction, pending] = useActionState<ActionState, FormData>(resetPassword, {});
+
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-3">
+      <input type="hidden" name="userId" value={userId} />
+      <Field
+        label="New password"
+        htmlFor={`pw-${userId}`}
+        hint="There is no emailed reset link yet. Send this by a channel that isn't email."
+      >
+        <Input
+          id={`pw-${userId}`}
+          name="password"
+          type="password"
+          minLength={12}
+          maxLength={72}
+          autoComplete="new-password"
+        />
+      </Field>
+      <SubmitButton pending={pending} busyLabel="Setting…" variant="quiet">
+        Set password
+      </SubmitButton>
+      <Result state={state} />
     </form>
   );
 }

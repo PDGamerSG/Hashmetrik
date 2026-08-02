@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db";
+import { clientVisibleTo } from "@/lib/clients/store";
 
 /**
  * Projects, milestones and deliverables.
@@ -29,7 +30,14 @@ export const DELIVERABLE_TYPES = [
   "other",
 ] as const;
 
-export const PROJECT_STATUSES = ["active", "paused", "complete"] as const;
+/**
+ * `archived` is the end of the line: the work is over and the project should
+ * stop appearing in the queues without being deleted, because the milestones and
+ * deliverables under it are the record of what was done. Every count of "active"
+ * work in the product filters on `status: "active"`, so an archived project
+ * leaves those numbers by existing rather than by being removed.
+ */
+export const PROJECT_STATUSES = ["active", "paused", "complete", "archived"] as const;
 
 const PROJECT_CARD = {
   id: true,
@@ -75,10 +83,16 @@ export async function listProjectsForClient(clientId: string) {
   });
 }
 
-/** Every project across the clients a team member looks after. */
-export async function listProjectsForManager(accountManagerId: string) {
+/**
+ * Every project across the clients a team member looks after.
+ *
+ * "Looks after" is being the account manager *or* being assigned to the client
+ * — the same `OR` that `listClientsForManager` uses, so the project list and the
+ * client list on `/team` can never disagree about whose work it is.
+ */
+export async function listProjectsForManager(teamMemberId: string) {
   return prisma.project.findMany({
-    where: { client: { accountManagerId } },
+    where: { client: clientVisibleTo(teamMemberId) },
     select: { ...PROJECT_CARD, client: { select: { id: true, companyName: true } } },
     orderBy: { createdAt: "desc" },
   });
@@ -113,13 +127,20 @@ export async function createProject(input: {
 
 export async function updateProject(
   id: string,
-  patch: { status?: string; progress?: number; name?: string; endDate?: Date | null },
+  patch: {
+    status?: string;
+    progress?: number;
+    name?: string;
+    startDate?: Date | null;
+    endDate?: Date | null;
+  },
 ) {
   return prisma.project.update({
     where: { id },
     data: {
       ...(patch.name ? { name: patch.name } : {}),
       ...(patch.status ? { status: patch.status } : {}),
+      ...(patch.startDate !== undefined ? { startDate: patch.startDate } : {}),
       /* Clamped rather than validated: a slider that sends 140 is a bug in the
          form, and refusing the whole update would lose the rest of it. */
       ...(patch.progress !== undefined
@@ -237,12 +258,17 @@ export async function addComment(
   };
 }
 
-/** Everything waiting on somebody, for the team's queue. */
-export async function listPendingDeliverables(accountManagerId?: string) {
+/**
+ * Everything waiting on somebody, for the team's queue.
+ *
+ * Unscoped for an administrator, who covers every account; scoped by the same
+ * "manages or is assigned to" filter as everything else on `/team`.
+ */
+export async function listPendingDeliverables(teamMemberId?: string) {
   return prisma.deliverable.findMany({
     where: {
       status: { in: ["submitted", "changes_requested"] },
-      ...(accountManagerId ? { project: { client: { accountManagerId } } } : {}),
+      ...(teamMemberId ? { project: { client: clientVisibleTo(teamMemberId) } } : {}),
     },
     select: {
       id: true,

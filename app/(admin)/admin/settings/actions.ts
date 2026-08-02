@@ -19,7 +19,7 @@ export async function saveSettings(formData: FormData): Promise<void> {
   for (const setting of SETTINGS) {
     const raw = formData.get(setting.key);
     if (raw === null) continue;
-    await writeSetting(setting.key, String(raw).trim().slice(0, 200));
+    await writeSetting(setting.key, String(raw).trim().slice(0, setting.max));
     changed.push(setting.key);
   }
 
@@ -30,5 +30,7 @@ export async function saveSettings(formData: FormData): Promise<void> {
     meta: { keys: changed },
   });
 
-  revalidatePath("/admin/settings");
+  /* `"layout"`, because these values are read on more than the page that edits
+     them — the assistant prompt is one of them. */
+  revalidatePath("/admin", "layout");
 }

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db";
+import { clientVisibleTo } from "@/lib/clients/store";
 
 /**
  * The content calendar.
@@ -45,9 +46,9 @@ export async function listCalendar(clientId: string, from?: Date) {
   });
 }
 
-export async function listCalendarForManager(accountManagerId?: string) {
+export async function listCalendarForManager(teamMemberId?: string) {
   return prisma.contentCalendarEntry.findMany({
-    where: accountManagerId ? { client: { accountManagerId } } : {},
+    where: teamMemberId ? { client: clientVisibleTo(teamMemberId) } : {},
     select: { ...ENTRY, client: { select: { id: true, companyName: true } } },
     orderBy: { publishDate: "asc" },
     take: 200,
