@@ -1,7 +1,13 @@
-// Slice 1 of the backend: leads, the assistant's rate limiter, and the one
-// account type that can read them. The wider product model — clients, projects,
-// deliverables, calendar, KPIs — lands in later slices and is deliberately absent
-// here rather than stubbed.
+// The whole product model: accounts and roles, the consultation pipeline,
+// clients and the services they buy, projects with milestones and deliverables,
+// the content calendar, KPI records, CMS content, notifications and an audit
+// trail.
+//
+// Enums are used where the vocabulary is structural — a role or an account
+// status is read by authorisation code, and a typo there is a security bug, so
+// the database should refuse it. Statuses that are only ever sales or workflow
+// vocabulary stay strings, because renaming a pipeline stage should not cost a
+// migration.
 
 generator client {
   provider = "prisma-client"
@@ -15,20 +21,97 @@ datasource db {
   provider = "postgresql"
 }
 
-/// Staff account. Created by the seed script, never by public signup.
-model Admin {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+/// What an account may do. Read by `lib/auth` on every gated request.
+enum Role {
+  REGISTERED_USER
+  TEAM_MEMBER
+  ADMIN
 }
+
+/// Where a registered user sits commercially. Only meaningful for
+/// `REGISTERED_USER`: staff accounts carry `NON_CLIENT` and ignore it.
+enum UserStatus {
+  NON_CLIENT
+  CLIENT
+}
+
+/// Every account, whatever its role.
+///
+/// One table rather than one per role: the login, the session and the password
+/// reset are identical for all three, and the differences are two columns and
+/// an optional profile row. Staff accounts are made by an admin or the seed
+/// script; visitors self-register and land as REGISTERED_USER / NON_CLIENT.
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  role         Role       @default(REGISTERED_USER)
+  status       UserStatus @default(NON_CLIENT)
+  name         String?
+  phone        String?
+  businessName String?
+  businessType String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  clientProfile Client?
+  teamProfile   TeamMember?
+  consultations Consultation[]
+  notifications Notification[]
+  comments      Comment[]
+  leads         Lead[]
+  auditEntries  AuditLog[]
+
+  @@index([role])
+  @@index([status])
+}
+
+/// A member of staff, and the clients they are the named contact for.
+model TeamMember {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @unique
+  roleTitle String?
+  createdAt DateTime @default(now())
+
+  managedClients Client[]
+}
+
+/// A paying client. One per user, created when an admin activates them.
+model Client {
+  id               String      @id @default(cuid())
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String      @unique
+  accountManager   TeamMember? @relation(fields: [accountManagerId], references: [id], onDelete: SetNull)
+  accountManagerId String?
+  companyName      String?
+  onboardedAt      DateTime?
+  notes            String?
+  createdAt        DateTime    @default(now())
+
+  services        ClientService[]
+  projects        Project[]
+  calendarEntries ContentCalendarEntry[]
+  kpis            KPIRecord[]
+
+  @@index([accountManagerId])
+}
+
+// ---------------------------------------------------------------------------
+// Demand: leads and consultations
+// ---------------------------------------------------------------------------
 
 /// Every enquiry from the site. Mirrors the `Lead` type in `app/actions.ts`,
 /// which is what both the booking funnel and the contact form already send.
 ///
 /// `kind` and `status` are strings rather than enums on purpose: the sales
-/// vocabulary is still moving, and renaming a stage should not cost a migration.
-/// `kind` is booking | contact. `status` is new | contacted | qualified | closed.
+/// vocabulary is still moving, and renaming a stage should not cost a
+/// migration. `kind` is booking | contact. `status` walks the pipeline in
+/// `lib/leads/schema.ts`.
 model Lead {
   id            String    @id @default(cuid())
   kind          String
@@ -44,13 +127,249 @@ model Lead {
   preferredTime String?
   message       String?
   status        String    @default("new")
+  /// Set when a lead is matched to an account, so the pipeline and the
+  /// dashboard stop being two separate stories about the same person.
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId        String?
   /// When the team notification email went out. Null means the lead is saved
   /// but nobody has been told — worth surfacing rather than retrying blindly.
   notifiedAt    DateTime?
   createdAt     DateTime  @default(now())
 
+  consultations Consultation[]
+
   @@index([createdAt])
   @@index([status])
+  @@index([userId])
+}
+
+/// A booked or requested call. Created from a lead by the team, or by a
+/// registered user asking for one from their dashboard.
+model Consultation {
+  id          String    @id @default(cuid())
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String?
+  lead        Lead?     @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId      String?
+  /// requested | scheduled | completed | cancelled
+  status      String    @default("requested")
+  scheduledAt DateTime?
+  topic       String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Delivery: services, projects, deliverables, calendar
+// ---------------------------------------------------------------------------
+
+/// What the agency sells. Seeded from `lib/content.ts` so the catalogue and
+/// the marketing site cannot drift apart.
+model Service {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  code      String?
+  createdAt DateTime @default(now())
+
+  clientServices ClientService[]
+  projects       Project[]
+  kpis           KPIRecord[]
+}
+
+/// A service a client is actually on.
+model ClientService {
+  id        String   @id @default(cuid())
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId String
+  /// active | paused | ended
+  status    String   @default("active")
+  startedAt DateTime @default(now())
+
+  @@unique([clientId, serviceId])
+}
+
+/// A body of work for one client under one service.
+model Project {
+  id        String    @id @default(cuid())
+  client    Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  String
+  service   Service   @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  serviceId String
+  name      String
+  /// active | paused | complete
+  status    String    @default("active")
+  /// 0–100, set by the team. Stored rather than derived from milestones: a team
+  /// often knows a project is 70% done before the next milestone ticks over.
+  progress  Int       @default(0)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+
+  milestones   Milestone[]
+  deliverables Deliverable[]
+
+  @@index([clientId])
+}
+
+model Milestone {
+  id          String    @id @default(cuid())
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  title       String
+  dueDate     DateTime?
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  /// Explicit ordering, because a plan is a sequence and creation time is not.
+  position    Int       @default(0)
+
+  @@index([projectId])
+}
+
+/// Something the client is meant to look at: a poster, a reel, a report.
+///
+/// `fileUrl` is a link rather than a blob: at this tier the cheapest storage is
+/// whatever the team already uses, and large video would exhaust a free object
+/// store first. Swapping in Vercel Blob later changes how the URL is produced,
+/// not what is stored here.
+model Deliverable {
+  id          String   @id @default(cuid())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  title       String
+  /// poster | reel | blog | report | source_file | other
+  type        String   @default("other")
+  fileUrl     String
+  /// draft | submitted | approved | changes_requested
+  status      String   @default("draft")
+  createdAt   DateTime @default(now())
+  submittedAt DateTime?
+  decidedAt   DateTime?
+
+  comments Comment[]
+
+  @@index([projectId])
+  @@index([status])
+}
+
+/// The conversation on a deliverable. Both sides write here.
+model Comment {
+  id            String      @id @default(cuid())
+  deliverable   Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+  deliverableId String
+  author        User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId      String
+  body          String
+  createdAt     DateTime    @default(now())
+
+  @@index([deliverableId])
+}
+
+/// One planned post, with its approval state.
+model ContentCalendarEntry {
+  id             String   @id @default(cuid())
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId       String
+  platform       String
+  caption        String?
+  creativeUrl    String?
+  publishDate    DateTime
+  /// pending | approved | changes_requested
+  approvalStatus String   @default("pending")
+  note           String?
+  createdAt      DateTime @default(now())
+
+  @@index([clientId, publishDate])
+}
+
+// ---------------------------------------------------------------------------
+// Reporting
+// ---------------------------------------------------------------------------
+
+/// One number, for one client, for one period.
+///
+/// Entered by hand to begin with. `source` records where it came from so a
+/// later Meta or Google sync can overwrite its own rows without touching
+/// anything a human typed.
+model KPIRecord {
+  id         String   @id @default(cuid())
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId   String
+  service    Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceId  String?
+  metricName String
+  value      Float
+  unit       String?
+  /// The month, as `YYYY-MM`. A string because it is a label, not an instant.
+  period     String
+  /// manual | meta | google
+  source     String   @default("manual")
+  createdAt  DateTime @default(now())
+
+  @@unique([clientId, serviceId, metricName, period])
+  @@index([clientId, period])
+}
+
+// ---------------------------------------------------------------------------
+// Content and housekeeping
+// ---------------------------------------------------------------------------
+
+/// Editable public content: pages, posts, case studies, FAQ entries.
+model CMSContent {
+  id          String    @id @default(cuid())
+  /// page | blog | case_study | faq | service
+  type        String
+  slug        String    @unique
+  title       String
+  excerpt     String?
+  body        String
+  coverUrl    String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([type, publishedAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String
+  /// Where clicking it should go, when there is somewhere useful.
+  href      String?
+  type      String    @default("info")
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+/// Key/value configuration an admin can edit without a deploy.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Who did what. Written on the actions that change someone else's access or
+/// money — activations, service assignments, staff accounts, deletions.
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 /// One row per key per time window, for the assistant's rate limit.

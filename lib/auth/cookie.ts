@@ -6,7 +6,9 @@ import {
   SESSION_MAX_AGE,
   decryptSession,
   encryptSession,
+  type Role,
   type SessionPayload,
+  type UserStatus,
 } from "./session";
 
 /**
@@ -14,11 +16,25 @@ import {
  * be tested without a request context.
  *
  * `httpOnly` keeps the token away from any script on the page, `sameSite=lax`
- * stops another origin from posting to an admin action with the cookie
+ * stops another origin from posting to a gated action with the cookie
  * attached, and `secure` is dropped in development because localhost is http.
+ *
+ * The role and status are baked into the token, so anything that changes either
+ * has to call this again — see `reissueSession` — or the change is not felt
+ * until the session expires.
  */
-export async function createSession(adminId: string, email: string): Promise<void> {
-  const { token, expiresAt } = await encryptSession({ adminId, email });
+export async function createSession(user: {
+  id: string;
+  email: string;
+  role: Role;
+  status: UserStatus;
+}): Promise<void> {
+  const { token, expiresAt } = await encryptSession({
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+  });
   const jar = await cookies();
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,

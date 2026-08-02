@@ -1,223 +1,128 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { verifySession } from "@/lib/auth/dal";
-import { countLeadsByStatus, listLeads } from "@/lib/leads/store";
-import { LEAD_STATUSES, isLeadStatus } from "@/lib/leads/schema";
-import { logout, updateLeadStatus } from "./actions";
+import { requireAdmin } from "@/lib/auth/dal";
+import { prisma } from "@/lib/db";
+import { listAudit } from "@/lib/audit";
+import { Alert, Card, Empty, PageHeader, SectionTitle, formatDateTime } from "@/components/app/ui";
 
-export const metadata: Metadata = {
-  title: "Leads — HashMetrik",
-  robots: { index: false, follow: false },
-};
-
+export const metadata: Metadata = { title: "Overview" };
 export const dynamic = "force-dynamic";
 
 /**
- * The leads queue.
+ * The one screen that answers "what is going on".
  *
- * One page, one table, sorted newest first. Everything a person does here is a
- * plain form post to a server action, so the whole thing works without client
- * JavaScript and there is no state to keep in sync.
+ * Counts rather than lists: each number is a link to the page that has the
+ * detail, and a dashboard that tries to be every other page is one nobody reads
+ * the top of.
  */
-export default async function AdminPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ status?: string; kind?: string }>;
-}) {
-  const session = await verifySession();
-  const params = await searchParams;
+export default async function AdminOverviewPage() {
+  const admin = await requireAdmin();
 
-  const status = isLeadStatus(params.status) ? params.status : undefined;
-  const kind = params.kind === "booking" || params.kind === "contact" ? params.kind : undefined;
-
-  /* One failure mode worth handling rather than crashing: no database. It is
-     the state the project is in until DATABASE_URL points somewhere real, and a
-     stack trace is a poor way to say so. */
-  let leads: Awaited<ReturnType<typeof listLeads>> = [];
-  let counts: Record<string, number> = {};
+  let stats: {
+    leads: number;
+    newLeads: number;
+    consultations: number;
+    users: number;
+    clients: number;
+    staff: number;
+    waiting: number;
+    published: number;
+  } | null = null;
+  let recent: Awaited<ReturnType<typeof listAudit>> = [];
   let failure: string | null = null;
+
   try {
-    [leads, counts] = await Promise.all([listLeads({ status, kind }), countLeadsByStatus()]);
+    const [leads, newLeads, consultations, users, clients, staff, waiting, published, audit] =
+      await Promise.all([
+        prisma.lead.count(),
+        prisma.lead.count({ where: { status: "new" } }),
+        prisma.consultation.count({ where: { status: { in: ["requested", "scheduled"] } } }),
+        prisma.user.count({ where: { role: "REGISTERED_USER" } }),
+        prisma.client.count(),
+        prisma.user.count({ where: { role: { in: ["TEAM_MEMBER", "ADMIN"] } } }),
+        prisma.deliverable.count({ where: { status: "submitted" } }),
+        prisma.cMSContent.count({ where: { publishedAt: { not: null } } }),
+        listAudit(12),
+      ]);
+    stats = { leads, newLeads, consultations, users, clients, staff, waiting, published };
+    recent = audit;
   } catch (error) {
-    console.error("[admin] leads unavailable", error);
+    console.error("[admin] overview unavailable", error);
     failure = "The database is unreachable. Check DATABASE_URL — see docs/backend-setup.md.";
   }
 
-  const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
-
   return (
-    <main className="flex-1 px-6 py-10 md:px-10">
-      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-ash pb-6">
-        <div>
-          <p className="label-sm text-slate">HashMetrik</p>
-          <h1 className="mt-2 font-display text-3xl font-medium tracking-[-0.015em] text-ink">
-            Leads
-          </h1>
-          <p className="mt-2 text-sm text-slate">
-            {total} in total{status || kind ? ` · ${leads.length} shown` : ""} · signed in as{" "}
-            {session.email}
-          </p>
-        </div>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="h-10 rounded-sheet border border-ash px-4 text-[13px] text-ink transition-colors hover:border-ink hover:bg-bone-2"
-          >
-            Sign out
-          </button>
-        </form>
-      </header>
-
-      <nav aria-label="Filter leads" className="mt-6 flex flex-wrap gap-2">
-        <FilterLink label="All" href="/admin" active={!status && !kind} />
-        {LEAD_STATUSES.map((s) => (
-          <FilterLink
-            key={s}
-            label={`${s}${counts[s] ? ` (${counts[s]})` : ""}`}
-            href={`/admin?status=${s}`}
-            active={status === s}
-          />
-        ))}
-        <FilterLink label="Bookings" href="/admin?kind=booking" active={kind === "booking"} />
-        <FilterLink label="Contact" href="/admin?kind=contact" active={kind === "contact"} />
-      </nav>
+    <>
+      <PageHeader eyebrow="HashMetrik" title="Overview" meta={`Signed in as ${admin.email}`} />
 
       {failure ? (
-        <p role="alert" className="mt-10 border-l-2 border-coral pl-4 text-sm text-slate">
-          {failure}
-        </p>
-      ) : leads.length === 0 ? (
-        <p className="mt-10 text-sm text-slate">
-          Nothing here yet. Every booking and contact submission lands on this page.
-        </p>
+        <div className="mt-10">
+          <Alert>{failure}</Alert>
+        </div>
       ) : (
-        <ul className="mt-8 space-y-4">
-          {leads.map((lead) => (
-            <li
-              key={lead.id}
-              className="rounded-sheet border border-ash bg-bone-2 p-5 md:p-6"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="label-sm text-slate">
-                    {lead.kind === "booking" ? "Booking" : "Contact"} ·{" "}
-                    <time dateTime={lead.createdAt.toISOString()}>
-                      {formatDate(lead.createdAt)}
-                    </time>
-                    {!lead.notifiedAt && " · not emailed"}
-                  </p>
-                  <p className="mt-2 font-display text-xl font-medium text-ink">{lead.name}</p>
-                  <p className="mt-1 text-sm text-slate">
-                    <a href={`mailto:${lead.email}`} className="underline underline-offset-2">
-                      {lead.email}
-                    </a>
-                    {lead.phone && (
-                      <>
-                        {" · "}
-                        <a href={`tel:${lead.phone}`} className="underline underline-offset-2">
-                          {lead.phone}
-                        </a>
-                      </>
-                    )}
-                    {lead.company && ` · ${lead.company}`}
-                  </p>
-                </div>
+        stats && (
+          <>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat label="New leads" value={stats.newLeads} of={stats.leads} href="/admin/leads?status=new" />
+              <Stat label="Calls open" value={stats.consultations} href="/admin/consultations" />
+              <Stat label="Waiting on clients" value={stats.waiting} href="/admin/clients" />
+              <Stat label="Clients" value={stats.clients} href="/admin/clients" />
+              <Stat label="Registered accounts" value={stats.users} href="/admin/users" />
+              <Stat label="Staff" value={stats.staff} href="/admin/team" />
+              <Stat label="Published content" value={stats.published} href="/admin/cms" />
+            </div>
 
-                <form action={updateLeadStatus} className="flex items-center gap-2">
-                  <input type="hidden" name="id" value={lead.id} />
-                  <label htmlFor={`status-${lead.id}`} className="sr-only">
-                    Status
-                  </label>
-                  <select
-                    id={`status-${lead.id}`}
-                    name="status"
-                    defaultValue={lead.status}
-                    className="h-10 rounded-sheet border border-ash bg-bone px-3 text-sm text-ink"
-                  >
-                    {LEAD_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="submit"
-                    className="h-10 rounded-sheet bg-ink px-4 text-[13px] text-bone transition-colors hover:bg-coral hover:text-ink"
-                  >
-                    Save
-                  </button>
-                </form>
-              </div>
-
-              <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-ash pt-4 sm:grid-cols-4">
-                <Detail label="Service" value={lead.service} />
-                <Detail label="Budget" value={lead.budget} />
-                <Detail label="Preferred" value={joinDateTime(lead.preferredDate, lead.preferredTime)} />
-                <Detail label="Website" value={lead.website} />
-                <Detail label="Industry" value={lead.industry} />
-                <Detail label="Status" value={lead.status} />
-              </dl>
-
-              {lead.message && (
-                <p className="mt-4 border-t border-ash pt-4 text-sm leading-relaxed text-ink">
-                  {lead.message}
-                </p>
+            <section className="mt-10">
+              <SectionTitle count={recent.length}>Recent activity</SectionTitle>
+              {recent.length === 0 ? (
+                <Empty>
+                  Nothing logged yet. Activations, service changes and staff accounts are
+                  recorded here.
+                </Empty>
+              ) : (
+                <ul className="mt-4 space-y-2">
+                  {recent.map((entry) => (
+                    <li key={entry.id} className="flex flex-wrap items-baseline gap-x-3 text-sm">
+                      <span className="tabular text-xs text-slate">
+                        {formatDateTime(entry.createdAt)}
+                      </span>
+                      <span className="text-ink">{entry.action}</span>
+                      <span className="text-slate">
+                        {entry.entity}
+                        {entry.actor && ` · ${entry.actor.name ?? entry.actor.email}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </li>
-          ))}
-        </ul>
+            </section>
+          </>
+        )
       )}
-    </main>
+    </>
   );
 }
 
-function FilterLink({
+function Stat({
   label,
+  value,
+  of,
   href,
-  active,
 }: {
   label: string;
+  value: number;
+  of?: number;
   href: string;
-  active: boolean;
 }) {
   return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`label rounded-full border px-3 py-2 transition-colors ${
-        active
-          ? "border-ink bg-ink text-bone"
-          : "border-ash text-slate hover:border-ink hover:text-ink"
-      }`}
-    >
-      {label}
+    <Link href={href} className="group">
+      <Card className="h-full transition-colors group-hover:border-ink">
+        <p className="label-sm text-slate">{label}</p>
+        <p className="tabular mt-3 font-display text-3xl font-medium text-ink">
+          {value}
+          {of !== undefined && <span className="ml-2 text-base text-slate">of {of}</span>}
+        </p>
+      </Card>
     </Link>
   );
-}
-
-function Detail({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
-  return (
-    <div>
-      <dt className="label-sm text-slate">{label}</dt>
-      <dd className="mt-1 text-sm break-words text-ink">{value}</dd>
-    </div>
-  );
-}
-
-function joinDateTime(date: string | null, time: string | null): string | null {
-  return [date, time].filter(Boolean).join(" · ") || null;
-}
-
-/* Fixed to en-GB rather than the server's locale: the team is in Hyderabad and
-   a date that renders as month-first on one deploy and day-first on another is
-   a date nobody can trust. */
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(value);
 }

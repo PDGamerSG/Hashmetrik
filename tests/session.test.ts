@@ -12,30 +12,56 @@ after(() => {
   process.env.SESSION_SECRET = ORIGINAL;
 });
 
+const ADMIN = {
+  userId: "usr_1",
+  email: "a@hashmetrik.in",
+  role: "ADMIN",
+  status: "NON_CLIENT",
+} as const;
+
+/** Re-encodes the payload with `patch` applied, keeping the original signature. */
+function forge(token: string, patch: Record<string, unknown>): string {
+  const [header, body, signature] = token.split(".");
+  const claims = JSON.parse(Buffer.from(body, "base64url").toString());
+  const forged = Buffer.from(JSON.stringify({ ...claims, ...patch })).toString("base64url");
+  return `${header}.${forged}.${signature}`;
+}
+
 describe("session", () => {
-  it("round trips an admin", async () => {
-    const { token } = await encryptSession({ adminId: "adm_1", email: "a@hashmetrik.in" });
+  it("round trips a user", async () => {
+    const { token } = await encryptSession(ADMIN);
     const payload = await decryptSession(token);
 
-    assert.equal(payload?.adminId, "adm_1");
+    assert.equal(payload?.userId, "usr_1");
     assert.equal(payload?.email, "a@hashmetrik.in");
+    assert.equal(payload?.role, "ADMIN");
+    assert.equal(payload?.status, "NON_CLIENT");
   });
 
   it("rejects a tampered token", async () => {
-    const { token } = await encryptSession({ adminId: "adm_1", email: "a@hashmetrik.in" });
-    const [header, body, signature] = token.split(".");
+    const { token } = await encryptSession(ADMIN);
+    assert.equal(await decryptSession(forge(token, { userId: "usr_2" })), null);
+  });
 
-    /* Re-encode the payload with a different admin id, keeping the original
-       signature — the forgery an attacker would actually try. */
-    const forged = Buffer.from(
-      JSON.stringify({ ...JSON.parse(Buffer.from(body, "base64url").toString()), adminId: "adm_2" }),
-    ).toString("base64url");
+  /* The forgery worth naming: not a different account, a bigger one. */
+  it("rejects a token whose role has been edited", async () => {
+    const { token } = await encryptSession({ ...ADMIN, role: "REGISTERED_USER" });
+    assert.equal(await decryptSession(forge(token, { role: "ADMIN" })), null);
+  });
 
-    assert.equal(await decryptSession(`${header}.${forged}.${signature}`), null);
+  it("rejects a role or status it does not recognise", async () => {
+    const { token } = await encryptSession({
+      ...ADMIN,
+      /* Signed correctly, so only the value check can catch it — what a token
+         from a future build carrying a role this one has never heard of would
+         look like. */
+      role: "SUPERUSER" as unknown as typeof ADMIN.role,
+    });
+    assert.equal(await decryptSession(token), null);
   });
 
   it("rejects a token signed with another secret", async () => {
-    const { token } = await encryptSession({ adminId: "adm_1", email: "a@hashmetrik.in" });
+    const { token } = await encryptSession(ADMIN);
     process.env.SESSION_SECRET = "a-different-secret-entirely-rotated-away";
     try {
       assert.equal(await decryptSession(token), null);
@@ -45,7 +71,7 @@ describe("session", () => {
   });
 
   it("rejects an expired token", async () => {
-    const { token } = await encryptSession({ adminId: "adm_1", email: "a@hashmetrik.in" }, -60);
+    const { token } = await encryptSession(ADMIN, -60);
     assert.equal(await decryptSession(token), null);
   });
 
@@ -59,10 +85,7 @@ describe("session", () => {
     const saved = process.env.SESSION_SECRET;
     delete process.env.SESSION_SECRET;
     try {
-      await assert.rejects(
-        () => encryptSession({ adminId: "adm_1", email: "a@hashmetrik.in" }),
-        /SESSION_SECRET/,
-      );
+      await assert.rejects(() => encryptSession(ADMIN), /SESSION_SECRET/);
     } finally {
       process.env.SESSION_SECRET = saved;
     }

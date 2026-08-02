@@ -95,7 +95,9 @@ export function Masthead() {
           </span>
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
+        {/* `gap-6` until there is room for more: the sixth entry and the
+            sign-in link together overrun the bar at exactly 1024px. */}
+        <nav aria-label="Primary" className="hidden items-center gap-6 lg:flex xl:gap-8">
           {NAV.map((item) => (
             <SectionLink
               key={item.label}
@@ -115,6 +117,27 @@ export function Masthead() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* The way in to the client and team areas, which nothing on the
+              marketing site linked to before.
+
+              Deliberately a fixed link rather than one that reads the session:
+              this layout is statically rendered, and reaching for the cookie
+              here would make every marketing page dynamic to change one word.
+              It costs nothing to be wrong, either — `proxy.ts` bounces anyone
+              who already has a session off `/login` and on to their own home,
+              so a signed-in visitor who presses this lands exactly where a
+              live check would have sent them.
+
+              Held back until `md`: on a phone this would sit between the
+              wordmark and the only conversion on the page, and the menu
+              carries it instead. */}
+          <Link
+            href="/login"
+            className="hidden label text-slate transition-colors hover:text-ink md:inline-block"
+          >
+            Sign in
+          </Link>
+
           {/* Kept at every width — the phone is where most of this traffic
               lands, and hiding the only conversion behind a hamburger costs
               more than the few pixels it saves. */}
@@ -177,6 +200,15 @@ export function Masthead() {
             <ActionLink href="/book" size="lg" className="mt-8" onClick={() => setOpen(false)}>
               Book a free consultation
             </ActionLink>
+
+            {/* The phone's copy of the sign-in link held back in the bar. */}
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="mt-5 inline-flex min-h-11 items-center label text-slate transition-colors hover:text-ink active:text-ink"
+            >
+              Sign in to your account
+            </Link>
 
             {/* Set as rows with their own height rather than as a line of
                 text: this list only ever appears on a phone, where the target

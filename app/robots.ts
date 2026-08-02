@@ -3,9 +3,14 @@ import { SITE } from "@/lib/content";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    /* `/admin` is behind a login and `/api` answers nothing a crawler can use;
-       both are listed so neither shows up as a broken result. */
-    rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/api"] },
+    /* Everything behind a sign-in, plus `/api`, which answers nothing a crawler
+       can use. Listed so none of them shows up as a broken result — the pages
+       themselves also send `robots: noindex` from their layouts. */
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/admin", "/dashboard", "/team", "/login", "/signup", "/api"],
+    },
     sitemap: `${SITE.url}/sitemap.xml`,
   };
 }

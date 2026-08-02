@@ -3,10 +3,14 @@
 The backend lives inside this Next.js app — there is no second service to deploy.
 Everything below is on a free tier.
 
-Nothing here has been run against a real database yet. The code compiles, the pure
-logic is tested and the routes were exercised locally without one, but the queries,
-the login and the dashboard's data are unproven until you do the steps below. Expect
-to find something.
+The whole product model is built and has been run end to end against the live Neon
+database: signup, sign-in, the four areas, activation, projects, deliverables and
+their approval loop, the content calendar, KPI entry and reporting, the CMS through
+to the public page, settings and the audit trail.
+
+What has *not* been exercised is anything needing a third-party key. Groq and Resend
+were absent, so the assistant was only confirmed to return its 503 and the lead email
+only confirmed to be skipped. Paste the keys in and both light up with no code change.
 
 ## 1. Database — Neon
 
@@ -34,21 +38,44 @@ spell takes a second or two. That is normal and costs nothing.
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-Put it in `.env` as `SESSION_SECRET`. Changing it later signs every admin out, which is
-also how you revoke a session in a hurry.
+Put it in `.env` as `SESSION_SECRET`. Changing it later signs everyone out, which is
+also how you revoke every session in a hurry — the proxy verifies the signature, so a
+cookie signed with the old secret lands on the login form rather than looping.
 
-## 3. The first admin
-
-There is no signup page anywhere in the app. Accounts are made from the command line:
+## 3. Seeding — services and the first admin
 
 ```sh
 ADMIN_EMAIL=you@hashmetrik.in ADMIN_PASSWORD='a long passphrase' npm run db:seed
 ```
 
-Minimum twelve characters — the account reads every lead. Re-running it against an
-existing address resets that password, which is the recovery path too.
+Two things happen. The six services from `lib/content.ts` are written to the `Service`
+table — every client, project and KPI hangs off one, so this has to run before anybody
+can be made a client. And the first administrator is created.
+
+Minimum twelve characters; the account reads everything. Re-running it against an
+existing address resets the password **and** sets the role back to `ADMIN`, which is
+both the recovery path and the way to promote an account made through signup.
 
 Then sign in at `/admin/login`.
+
+### Who can do what
+
+| Role | Signs in at | Gets | Made by |
+|---|---|---|---|
+| `REGISTERED_USER` / `NON_CLIENT` | `/login` | `/dashboard` — profile, consultations, notices | Public signup at `/signup` |
+| `REGISTERED_USER` / `CLIENT` | `/login` | the above plus `/dashboard/client` — work, calendar, reports | An admin activating them |
+| `TEAM_MEMBER` | `/login` | `/team` — queue, projects, calendar, reports | An admin, at `/admin/team` |
+| `ADMIN` | `/admin/login` | `/admin` — everything | The seed script, or another admin |
+
+There is no route anywhere that creates a staff account from public input, and no way
+to promote one through the interface. Activation — turning a registered account into a
+client — is the one action that grants access to a whole area, and it is audited.
+
+**Roles are read from the database, not from the session cookie.** The token carries a
+role so the proxy can route without a query, but `lib/auth/dal.ts` looks up the live row
+before letting anyone in. That is what makes an activation take effect on the client's
+next page load rather than their next sign-in, and what makes a revoked account stop
+working immediately rather than when its cookie expires.
 
 ## 4. Email — Resend
 
@@ -97,15 +124,25 @@ paid plan.
 |---|---|
 | `app/actions.ts` | Booking and contact submissions. Saves, then emails. |
 | `app/api/assistant/route.ts` | The homepage chat bubble. Rate limited, then Groq. |
-| `app/(admin)/admin` | Leads dashboard, behind the session cookie. |
-| `proxy.ts` | Sends visitors without a cookie to the login page. Not the security check. |
-| `lib/auth/dal.ts` | The security check. Called by every admin page and action. |
+| `app/(site)` | The marketing site, plus `/insights` from the CMS. |
+| `app/(app)` | `/login`, `/signup`, `/dashboard`, `/team`. One root layout for all four. |
+| `app/(admin)/admin` | The admin area. Its own login page and its own root layout. |
+| `proxy.ts` | Routes a request with no live session to a login page. **Not** the security check. |
+| `lib/auth/gate.ts` | The proxy's decision table, kept pure so it is testable. |
+| `lib/auth/dal.ts` | The security check. `requireAdmin`, `requireStaff`, `requireClient`. |
+| `lib/*/store.ts` | Queries. Marked `server-only`; every client-reachable one is scoped by `clientId` inside the `where`. |
+| `lib/*/schema.ts`, `series.ts` | The pure half of each store, so `node --test` can reach it. |
+| `lib/audit.ts` | Who did what. Written on access and money changes only. |
+
+Three route groups means three root layouts, which is why the 404 for an unmatched URL
+is `app/global-not-found.tsx` rather than a plain `not-found.tsx`.
 
 ## Checking it
 
 ```sh
-npm test          # pure logic: validation, sessions, rate windows, parsing
+npm test          # pure logic: validation, sessions, gate policy, periods, slugs
 npm run typecheck
+npm run lint
 npm run build
 ```
 
@@ -117,8 +154,20 @@ docker run --name hm-pg -e POSTGRES_PASSWORD=dev -p 5432:5432 -d postgres:17
 npm run db:deploy && npm run db:seed
 ```
 
+If you run a browser-driven pass against the live database, everything it creates is
+addressed `e2e-`, and `node --env-file=.env scripts/e2e-cleanup.ts` removes exactly
+those rows and nothing else.
+
 ## Not built yet
 
-Client and team dashboards, projects, deliverables, the content calendar, KPI
-analytics, the CMS and public signup. Those are later slices; see
-`docs/superpowers/specs/` for the design of this one.
+- **File uploads.** Deliverables and creatives are links — Drive, Dropbox, Figma —
+  rather than uploads. Vercel Blob would slot in behind the same `fileUrl` field; the
+  reason to wait is that video is what exhausts a free object store first.
+- **Automated KPI pulls.** Numbers are typed in. Every record carries a `source`, so a
+  later Vercel Cron job hitting the Meta and Google APIs can upsert its own rows and
+  leave anything a person entered alone.
+- **Email beyond the lead notification.** Activation, approvals and scheduled calls all
+  produce an in-app notification; none of them sends mail. `lib/email.ts` is the place.
+- **Password reset.** The seed script resets an admin's; there is no self-serve flow.
+- **Pagination.** Every list is capped at 200 rows. That is a working queue, not a
+  scaling decision — revisit when a table actually runs long.

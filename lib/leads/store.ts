@@ -56,3 +56,40 @@ export async function countLeadsByStatus() {
 export async function setLeadStatus(id: string, status: LeadStatus) {
   return prisma.lead.update({ where: { id }, data: { status } });
 }
+
+/**
+ * Ties an enquiry to the account of the person who sent it.
+ *
+ * The two arrive separately — somebody fills in the contact form on Monday and
+ * signs up on Thursday — and matching them is what lets the pipeline and the
+ * dashboard stop being two stories about the same person.
+ */
+export async function linkLeadToUser(id: string, userId: string) {
+  return prisma.lead.update({ where: { id }, data: { userId } });
+}
+
+/** A registered user's own enquiries, for their dashboard. */
+export async function listLeadsForUser(userId: string) {
+  return prisma.lead.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+/**
+ * The enquiry an address sent, if any, newest first.
+ *
+ * Used at signup to attach a visitor's earlier form submission to the account
+ * they have just made, without asking them to tell us they wrote in.
+ */
+export async function findUnlinkedLeadsByEmail(email: string) {
+  return prisma.lead.findMany({
+    where: { email, userId: null },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+}
+
+export async function attachLeadsToUser(email: string, userId: string) {
+  return prisma.lead.updateMany({ where: { email, userId: null }, data: { userId } });
+}

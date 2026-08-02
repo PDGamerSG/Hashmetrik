@@ -7,8 +7,24 @@ const COMPANY = [
   { label: "Services", href: "/#services" },
   { label: "Who we help", href: "/#audiences" },
   { label: "Why us", href: "/#why" },
+  { label: "Insights", href: "/insights" },
   { label: "Contact", href: "/contact" },
   { label: "All links", href: "/links" },
+];
+
+/**
+ * The way in to the signed-in side.
+ *
+ * Set apart from the marketing columns because it answers a different question
+ * — these are for people who are already customers, not people deciding to be.
+ * Both are plain links for the reason given in `masthead.tsx`: the footer is on
+ * every statically rendered page, and reading the session to relabel them would
+ * make the whole site dynamic. `/login` and `/signup` each redirect a visitor
+ * who already has a session to their own home.
+ */
+const ACCOUNT = [
+  { label: "Sign in", href: "/login" },
+  { label: "Create an account", href: "/signup" },
 ];
 
 const SERVICE_LINKS = [
@@ -38,6 +54,24 @@ export function Footer() {
             <ActionLink href="/book" variant="gold" className="mt-7">
               Book a free consultation
             </ActionLink>
+
+            {/* Under the call to action rather than in a column of its own: the
+                grid is built for three link columns, and a fourth would squeeze
+                all of them to add two entries. It reads correctly here anyway —
+                the CTA is for someone deciding, this is for someone who already
+                decided. */}
+            <ul className="mt-8 flex flex-wrap items-center gap-x-6 label text-bone/45">
+              {ACCOUNT.map((item) => (
+                <li key={item.label}>
+                  <SectionLink
+                    href={item.href}
+                    className="inline-flex min-h-11 items-center transition-colors hover:text-coral active:text-coral"
+                  >
+                    {item.label}
+                  </SectionLink>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <FooterColumn title="Company">
