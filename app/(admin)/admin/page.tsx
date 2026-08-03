@@ -6,10 +6,15 @@ import { listAudit } from "@/lib/audit";
 import { serviceUptake } from "@/lib/clients/store";
 import {
   Alert,
-  Card,
   Empty,
+  Meter,
   PageHeader,
-  SectionTitle,
+  Readout,
+  Readouts,
+  Row,
+  Rows,
+  Section,
+  formatCount,
   formatDateTime,
 } from "@/components/app/ui";
 
@@ -100,9 +105,25 @@ export default async function AdminOverviewPage() {
     failure = "The database is unreachable. Check DATABASE_URL — see docs/backend-setup.md.";
   }
 
+  /* The scale every service bar is drawn against. One denominator for the
+     whole panel, so the bars compare with each other rather than each one
+     filling itself to its own maximum. */
+  const busiest = Math.max(1, ...uptake.map((service) => service.clients));
+
+  const waiting = stats ? stats.waiting + stats.calendarWaiting : 0;
+
   return (
     <>
-      <PageHeader title="Overview" meta={`Signed in as ${admin.email}`} />
+      <PageHeader
+        title="Overview"
+        meta={
+          stats
+            ? waiting + stats.newLeads > 0
+              ? `${stats.newLeads} lead${stats.newLeads === 1 ? "" : "s"} and ${waiting} approval${waiting === 1 ? "" : "s"} are waiting on the agency.`
+              : "Nothing is waiting on the agency."
+            : `Signed in as ${admin.email}`
+        }
+      />
 
       {failure ? (
         <div className="mt-10">
@@ -111,101 +132,136 @@ export default async function AdminOverviewPage() {
       ) : (
         stats && (
           <>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Stat label="New leads" value={stats.newLeads} of={stats.leads} href="/admin/leads?status=new" />
-              <Stat
+            {/* The two readings that decay if this page is not read today come
+                first and carry the pilot light. The rest are the standing size
+                of the business, which is worth knowing and never urgent. */}
+            <Readouts>
+              <Readout
+                label="New leads"
+                value={formatCount(stats.newLeads)}
+                of={formatCount(stats.leads)}
+                note="Unopened enquiries"
+                href="/admin/leads?status=new"
+                urgent
+              />
+              <Readout
                 label="Pending approvals"
-                value={stats.waiting + stats.calendarWaiting}
+                value={formatCount(waiting)}
+                note="Deliverables and calendar posts sitting with a client"
+                href="/admin/projects"
+                urgent
+              />
+              <Readout
+                label="Calls open"
+                value={formatCount(stats.consultations)}
+                note="Requested or scheduled"
+                href="/admin/consultations"
+                urgent
+              />
+              <Readout
+                label="Active projects"
+                value={formatCount(stats.activeProjects)}
+                note="In flight across all clients"
                 href="/admin/projects"
               />
-              <Stat label="Clients" value={stats.clients} href="/admin/clients" />
-              <Stat label="Active projects" value={stats.activeProjects} href="/admin/projects" />
-              <Stat label="Team members" value={stats.staff} href="/admin/team" />
-              <Stat label="Calls open" value={stats.consultations} href="/admin/consultations" />
-              <Stat label="Registered accounts" value={stats.users} href="/admin/users" />
-              <Stat label="Published content" value={stats.published} href="/admin/cms" />
-              {stats.suspended > 0 && (
-                <Stat
-                  label="Suspended accounts"
-                  value={stats.suspended}
-                  href="/admin/users?view=suspended"
-                />
-              )}
-            </div>
+            </Readouts>
 
-            <section className="mt-10">
-              <SectionTitle count={uptake.length}>Services</SectionTitle>
+            <Readouts className="mt-3">
+              <Readout
+                label="Clients"
+                value={formatCount(stats.clients)}
+                href="/admin/clients"
+                compact
+              />
+              <Readout label="Team" value={formatCount(stats.staff)} href="/admin/team" compact />
+              <Readout
+                label="Accounts"
+                value={formatCount(stats.users)}
+                note={stats.suspended > 0 ? `${stats.suspended} suspended` : undefined}
+                href={stats.suspended > 0 ? "/admin/users?view=suspended" : "/admin/users"}
+                compact
+              />
+              <Readout
+                label="Published content"
+                value={formatCount(stats.published)}
+                href="/admin/cms"
+                compact
+              />
+            </Readouts>
+
+            <Section
+              title="Services"
+              count={uptake.length}
+              action={
+                <Link
+                  href="/admin/settings"
+                  className="label-sm text-slate transition-colors hover:text-ink"
+                >
+                  Catalogue
+                </Link>
+              }
+            >
               {uptake.length === 0 ? (
-                <Empty>No services in the catalogue yet.</Empty>
+                <Empty>
+                  No services in the catalogue yet. Add them in settings and they become the
+                  columns every client is measured against.
+                </Empty>
               ) : (
-                <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                /* Which part of the business is carrying the agency — the
+                   question the numbers alone made you do arithmetic for. */
+                <ul className="mt-5 grid gap-x-10 gap-y-5 sm:grid-cols-2">
                   {uptake.map((service) => (
-                    <Card as="li" key={service.id}>
-                      <p className="text-sm font-medium text-ink">{service.name}</p>
-                      <p className="tabular mt-2 text-sm text-slate">
-                        <span className="text-ink">{service.clients}</span>
-                        {service.clients === 1 ? " client" : " clients"}
-                        {" · "}
-                        <span className="text-ink">{service.projects}</span> active
-                        {service.projects === 1 ? " project" : " projects"}
-                      </p>
-                    </Card>
+                    <li key={service.id}>
+                      <Meter
+                        label={service.name}
+                        value={service.clients}
+                        max={busiest}
+                        display={
+                          <>
+                            {formatCount(service.clients)}
+                            <span className="text-slate">
+                              {service.clients === 1 ? " client" : " clients"} ·{" "}
+                              {formatCount(service.projects)} live
+                            </span>
+                          </>
+                        }
+                      />
+                    </li>
                   ))}
                 </ul>
               )}
-            </section>
+            </Section>
 
-            <section className="mt-10">
-              <SectionTitle count={recent.length}>Recent activity</SectionTitle>
+            <Section title="Recent activity" count={recent.length}>
               {recent.length === 0 ? (
                 <Empty>
                   Nothing logged yet. Activations, service changes and staff accounts are
                   recorded here.
                 </Empty>
               ) : (
-                <ul className="mt-4 space-y-2">
+                <Rows>
                   {recent.map((entry) => (
-                    <li key={entry.id} className="flex flex-wrap items-baseline gap-x-3 text-sm">
-                      <span className="tabular text-xs text-slate">
-                        {formatDateTime(entry.createdAt)}
-                      </span>
-                      <span className="text-ink">{entry.action}</span>
-                      <span className="text-slate">
-                        {entry.entity}
-                        {entry.actor && ` · ${entry.actor.name ?? entry.actor.email}`}
-                      </span>
-                    </li>
+                    <Row
+                      key={entry.id}
+                      title={entry.action}
+                      subtitle={entry.entity}
+                      meta={[
+                        {
+                          label: "By",
+                          value: entry.actor
+                            ? (entry.actor.name ?? entry.actor.email)
+                            : "System",
+                        },
+                        { label: "When", value: formatDateTime(entry.createdAt) },
+                      ]}
+                    />
                   ))}
-                </ul>
+                </Rows>
               )}
-            </section>
+            </Section>
           </>
         )
       )}
     </>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  of,
-  href,
-}: {
-  label: string;
-  value: number;
-  of?: number;
-  href: string;
-}) {
-  return (
-    <Link href={href} className="group">
-      <Card className="h-full transition-colors group-hover:border-ink">
-        <p className="label-sm text-slate">{label}</p>
-        <p className="tabular mt-3 font-display text-3xl font-medium text-ink">
-          {value}
-          {of !== undefined && <span className="ml-2 text-base text-slate">of {of}</span>}
-        </p>
-      </Card>
-    </Link>
   );
 }

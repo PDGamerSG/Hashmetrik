@@ -8,7 +8,9 @@ import {
   Empty,
   PageHeader,
   Pill,
-  SectionTitle,
+  Readout,
+  Readouts,
+  Section,
   formatDate,
   type Tone,
 } from "@/components/app/ui";
@@ -61,24 +63,43 @@ export default async function ClientCalendarPage() {
       {entries.length === 0 ? (
         <Empty>Nothing planned yet. Posts appear here for approval before they go out.</Empty>
       ) : (
-        [...months.entries()].map(([month, group]) => (
-          <section key={month} className="mt-10">
-            <SectionTitle count={group.length}>{month}</SectionTitle>
-            <ul className="mt-4 space-y-4">
+        <>
+          <Readouts className="lg:grid-cols-3">
+            <Readout
+              label="Waiting on you"
+              value={waiting}
+              note="Approve or ask for changes"
+              urgent
+            />
+            <Readout
+              label="Approved"
+              value={entries.filter((e) => e.approvalStatus === "approved").length}
+              note="Cleared to publish"
+            />
+            <Readout label="Planned" value={entries.length} note="Posts on the calendar" />
+          </Readouts>
+
+          {[...months.entries()].map(([month, group]) => (
+          <Section key={month} title={month} count={group.length}>
+            <ul className="mt-5 space-y-4">
               {group.map((entry) => (
                 <Card as="li" key={entry.id}>
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
                     <div className="min-w-0">
-                      <p className="label-sm text-slate">
-                        {entry.platform} · {formatDate(entry.publishDate)}
+                      <p className="label-xs text-slate">
+                        {entry.platform} ·{" "}
+                        <span className="tabular">{formatDate(entry.publishDate)}</span>
                       </p>
                       {entry.caption && (
-                        <p className="mt-2 text-sm leading-relaxed whitespace-pre-wrap text-ink">
+                        /* The caption is the thing being approved, so it is set
+                           as copy at reading size rather than as a field value
+                           under a heading. */
+                        <p className="mt-3 max-w-prose text-[15px] leading-relaxed whitespace-pre-wrap text-ink">
                           {entry.caption}
                         </p>
                       )}
                     </div>
-                    <Pill tone={TONE[entry.approvalStatus] ?? "neutral"}>
+                    <Pill tone={TONE[entry.approvalStatus] ?? "neutral"} dot>
                       {LABEL[entry.approvalStatus] ?? entry.approvalStatus}
                     </Pill>
                   </div>
@@ -91,26 +112,27 @@ export default async function ClientCalendarPage() {
                       href={safeUrl(entry.creativeUrl) as string}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-3 inline-block text-sm text-ink underline underline-offset-2"
+                      className="mt-4 inline-block text-sm text-ink underline decoration-ash underline-offset-4 transition-colors hover:decoration-ink"
                     >
                       See the creative
                     </a>
                   )}
 
                   {entry.note && (
-                    <p className="mt-3 border-l-2 border-ash pl-3 text-sm text-slate">
+                    <p className="mt-4 border-l border-ash pl-4 text-sm leading-relaxed text-slate">
                       Your note: {entry.note}
                     </p>
                   )}
 
-                  <div className="mt-4 border-t border-ash pt-4">
+                  <div className="mt-5 border-t border-ash pt-5">
                     <CalendarDecision id={entry.id} status={entry.approvalStatus} />
                   </div>
                 </Card>
               ))}
             </ul>
-          </section>
-        ))
+          </Section>
+          ))}
+        </>
       )}
     </>
   );

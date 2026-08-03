@@ -11,8 +11,12 @@ import {
   Empty,
   PageHeader,
   Pill,
+  Readout,
+  Readouts,
+  Section,
   SectionTitle,
   SubmitButton,
+  formatCount,
   formatDateTime,
 } from "@/components/app/ui";
 
@@ -67,11 +71,41 @@ export default async function AdminAssistantPage() {
     <>
       <PageHeader
         title="Assistant"
-        meta={`${tally.questions} question${tally.questions === 1 ? "" : "s"} across ${
-          tally.conversations
-        } conversation${tally.conversations === 1 ? "" : "s"}`}
-        actions={connected ? <Pill tone="good">Connected</Pill> : <Pill tone="warn">No API key</Pill>}
+        meta="What the bubble on the public site knows, is told, and has been asked."
+        actions={
+          connected ? (
+            <Pill tone="good" dot>
+              Connected
+            </Pill>
+          ) : (
+            <Pill tone="warn" dot>
+              No API key
+            </Pill>
+          )
+        }
       />
+
+      <Readouts className="lg:grid-cols-3">
+        <Readout
+          label="Questions"
+          value={formatCount(tally.questions)}
+          note="Asked by visitors and signed-in clients"
+        />
+        <Readout
+          label="Conversations"
+          value={formatCount(tally.conversations)}
+          note="A session with the bubble, however long"
+        />
+        <Readout
+          label="Per conversation"
+          value={
+            tally.conversations === 0
+              ? "—"
+              : (tally.questions / tally.conversations).toFixed(1)
+          }
+          note="Questions before a visitor stops"
+        />
+      </Readouts>
 
       {failure && (
         <div className="mt-8">
@@ -120,9 +154,8 @@ export default async function AdminAssistantPage() {
         </form>
       </Card>
 
-      <section className="mt-10">
-        <SectionTitle count={conversations.length}>Conversations</SectionTitle>
-        <p className="mt-2 text-sm leading-relaxed text-slate">
+      <Section title="Conversations" count={conversations.length}>
+        <p className="mt-3 max-w-prose text-sm leading-relaxed text-slate">
           The most recently active first. Guests are not identified beyond what they typed — no
           address of any kind is stored — and a signed-in visitor is named because their account
           already is.
@@ -133,54 +166,62 @@ export default async function AdminAssistantPage() {
             Nothing yet. Every exchange with the bubble on the public site is recorded here.
           </Empty>
         ) : (
-          <ul className="mt-4 space-y-4">
-            {conversations.map((conversation) => (
-              <Card as="li" key={conversation.id}>
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <p className="label-sm text-slate">
-                    {conversation.user
-                      ? conversation.user.name ?? conversation.user.email
-                      : "Guest"}
-                    {" · "}
-                    {conversation.messages.filter((m) => m.role === "user").length} question
-                    {conversation.messages.filter((m) => m.role === "user").length === 1
-                      ? ""
-                      : "s"}
-                  </p>
-                  <p className="tabular text-xs text-slate">
-                    {formatDateTime(conversation.lastMessageAt)}
-                  </p>
-                </div>
+          <ul className="mt-5 space-y-4">
+            {conversations.map((conversation) => {
+              const asked = conversation.messages.filter((m) => m.role === "user").length;
 
-                <ol className="mt-4 space-y-3 border-t border-ash pt-4">
-                  {conversation.messages.map((message) => (
-                    <li key={message.id} className="text-sm leading-relaxed">
-                      <span className="label-sm mr-2 text-slate">
-                        {message.role === "user" ? "Asked" : "Replied"}
+              return (
+                <Card as="li" key={conversation.id}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <p className="text-sm font-medium text-ink">
+                      {conversation.user
+                        ? (conversation.user.name ?? conversation.user.email)
+                        : "Guest"}
+                      <span className="ml-2 font-normal text-slate">
+                        {asked} question{asked === 1 ? "" : "s"}
                       </span>
-                      <span className={message.role === "user" ? "text-ink" : "text-slate"}>
-                        {message.body}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </Card>
-            ))}
+                    </p>
+                    <p className="tabular label-xs text-slate">
+                      {formatDateTime(conversation.lastMessageAt)}
+                    </p>
+                  </div>
+
+                  {/* A transcript reads as a transcript: who spoke in the
+                      margin, what they said in the column. Run together on one
+                      line, a long answer and the next question became one
+                      paragraph. */}
+                  <ol className="mt-4 space-y-3 border-t border-ash pt-4">
+                    {conversation.messages.map((message) => (
+                      <li
+                        key={message.id}
+                        className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 text-sm leading-relaxed"
+                      >
+                        <span className="label-xs pt-1 text-slate">
+                          {message.role === "user" ? "Asked" : "Replied"}
+                        </span>
+                        <span className={message.role === "user" ? "text-ink" : "text-slate"}>
+                          {message.body}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </Card>
+              );
+            })}
           </ul>
         )}
-      </section>
+      </Section>
 
-      <section className="mt-10">
-        <SectionTitle>The prompt as it stands</SectionTitle>
-        <p className="mt-2 text-sm leading-relaxed text-slate">
+      <Section title="The prompt as it stands">
+        <p className="mt-3 max-w-prose text-sm leading-relaxed text-slate">
           Read-only. The backbone is assembled from <code className="text-ink">lib/content.ts</code>
           , the same file the public pages render, so the two cannot drift; what you save above is
           appended at the end.
         </p>
-        <pre className="mt-4 max-h-96 overflow-auto rounded-sheet border border-ash bg-bone-2 p-4 text-xs leading-relaxed whitespace-pre-wrap text-slate">
+        <pre className="mt-5 max-h-96 overflow-auto rounded-sheet border border-ash bg-bone-2 p-5 font-mono text-xs leading-relaxed whitespace-pre-wrap text-slate">
           {preview}
         </pre>
-      </section>
+      </Section>
     </>
   );
 }

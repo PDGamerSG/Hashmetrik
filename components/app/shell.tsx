@@ -125,6 +125,14 @@ export function AppShell({
           open ? "visible translate-x-0" : "invisible -translate-x-full",
         )}
       >
+        {/* The scale the marketing pages run down their gutter, kept as the
+            rail's own edge: this column is the app's left margin, so it is the
+            one place the signature still fits at working density. */}
+        <span
+          aria-hidden
+          className="tick-rule pointer-events-none absolute inset-y-0 right-0 hidden w-1.5 text-ink md:block"
+        />
+
         <div className="flex items-center gap-2.5 border-b border-ash px-5 py-3.5">
           <Link href="/" className="flex min-w-0 items-center gap-2.5">
             <Image

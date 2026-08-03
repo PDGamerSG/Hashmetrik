@@ -9,9 +9,12 @@ import {
   Detail,
   Details,
   Empty,
+  Meter,
   PageHeader,
   Pill,
-  SectionTitle,
+  Readout,
+  Readouts,
+  Section,
   formatDate,
   type Tone,
 } from "@/components/app/ui";
@@ -44,9 +47,13 @@ export default async function ClientWorkPage() {
     }),
   ]);
 
-  const waiting = projects
-    .flatMap((p) => p.deliverables)
-    .filter((d) => d.status === "submitted").length;
+  const deliverables = projects.flatMap((p) => p.deliverables);
+  const waiting = deliverables.filter((d) => d.status === "submitted").length;
+  const approved = deliverables.filter((d) => d.status === "approved").length;
+  const active = projects.filter((p) => p.status !== "complete").length;
+
+  const milestones = projects.flatMap((p) => p.milestones);
+  const milestonesDone = milestones.filter((m) => m.completed).length;
 
   return (
     <>
@@ -54,117 +61,150 @@ export default async function ClientWorkPage() {
         title="Your work"
         meta={
           waiting > 0
-            ? `${waiting} item${waiting === 1 ? "" : "s"} waiting on your approval`
-            : "Nothing is waiting on you"
+            ? `${waiting} item${waiting === 1 ? "" : "s"} need your approval before the team can move on.`
+            : "Nothing is waiting on you."
         }
       />
 
-      <section className="mt-8">
-        <SectionTitle count={services.length}>Services</SectionTitle>
+      <Readouts>
+        <Readout
+          label="Waiting on you"
+          value={waiting}
+          note={waiting > 0 ? "Approve or send back below" : "Nothing to review"}
+          urgent
+        />
+        <Readout
+          label="Projects running"
+          value={active}
+          of={projects.length > active ? projects.length : undefined}
+          note="Open across your services"
+        />
+        <Readout
+          label="Milestones done"
+          value={milestonesDone}
+          of={milestones.length || undefined}
+          note="Across every project"
+        />
+        <Readout label="Approved" value={approved} note="Signed off by you" />
+      </Readouts>
+
+      <Section title="Services" count={services.length}>
         {services.length === 0 ? (
           <Empty>No services assigned yet. Your account manager will set these up.</Empty>
         ) : (
-          <ul className="mt-4 flex flex-wrap gap-2">
+          <ul className="mt-5 flex flex-wrap gap-2">
             {services.map((s) => (
               <li key={s.id}>
-                <Pill tone={s.status === "active" ? "live" : "done"}>
+                <Pill tone={s.status === "active" ? "live" : "done"} dot>
                   {s.service.name} · since {formatDate(s.startedAt)}
                 </Pill>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </Section>
 
-      <section className="mt-10">
-        <SectionTitle count={projects.length}>Projects</SectionTitle>
-
+      <Section title="Projects" count={projects.length}>
         {projects.length === 0 ? (
           <Empty>No projects yet. They appear here as soon as the team opens one.</Empty>
         ) : (
-          <ul className="mt-4 space-y-6">
-            {projects.map((project) => (
-              <Card as="li" key={project.id}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="label-sm text-slate">{project.service.name}</p>
-                    <h3 className="mt-1 font-display text-xl font-medium text-ink">
-                      {project.name}
-                    </h3>
+          <ul className="mt-5 space-y-6">
+            {projects.map((project) => {
+              const done = project.milestones.filter((m) => m.completed).length;
+              /* Drafts are the team's working state; showing them would mean
+                 asking a client to ignore half the list. */
+              const visible = project.deliverables.filter((d) => d.status !== "draft");
+
+              return (
+                <Card as="li" key={project.id}>
+                  <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+                    <div className="min-w-0">
+                      <h3 className="font-display text-xl leading-tight font-medium text-ink">
+                        {project.name}
+                      </h3>
+                      <p className="mt-1.5 text-sm text-slate">{project.service.name}</p>
+                    </div>
+                    <Pill tone={project.status === "complete" ? "good" : "live"} dot>
+                      {project.status}
+                    </Pill>
                   </div>
-                  <Pill tone={project.status === "complete" ? "done" : "live"}>
-                    {project.status}
-                  </Pill>
-                </div>
 
-                {/* A bar rather than a number alone: the point of progress is
-                    the comparison between projects, and a row of percentages
-                    has to be read one at a time. */}
-                <div className="mt-4">
-                  <div className="flex items-baseline justify-between">
-                    <span className="label-sm text-slate">Progress</span>
-                    <span className="tabular text-sm text-ink">{project.progress}%</span>
+                  {/* A bar rather than a number alone: the point of progress is
+                      the comparison between projects, and a row of percentages
+                      has to be read one at a time. */}
+                  <div className="mt-5 grid gap-x-10 gap-y-4 sm:grid-cols-2">
+                    <Meter
+                      label="Progress"
+                      value={project.progress}
+                      display={`${project.progress}%`}
+                    />
+                    {project.milestones.length > 0 && (
+                      <Meter
+                        label="Milestones"
+                        value={done}
+                        max={project.milestones.length}
+                        display={`${done} of ${project.milestones.length}`}
+                      />
+                    )}
                   </div>
-                  <div
-                    role="progressbar"
-                    aria-valuenow={project.progress}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`${project.name} progress`}
-                    className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ash"
-                  >
-                    <div className="h-full bg-ink" style={{ width: `${project.progress}%` }} />
-                  </div>
-                </div>
 
-                <Details>
-                  <Detail label="Started" value={formatDate(project.startDate)} />
-                  <Detail label="Target" value={formatDate(project.endDate)} />
-                  <Detail
-                    label="Milestones"
-                    value={`${project.milestones.filter((m) => m.completed).length} of ${project.milestones.length}`}
-                  />
-                </Details>
+                  <Details className="sm:grid-cols-3">
+                    <Detail label="Started" value={formatDate(project.startDate)} />
+                    <Detail label="Target" value={formatDate(project.endDate)} />
+                    <Detail label="Deliverables" value={String(visible.length)} />
+                  </Details>
 
-                {project.milestones.length > 0 && (
-                  <ol className="mt-4 space-y-2 border-t border-ash pt-4">
-                    {project.milestones.map((m) => (
-                      <li key={m.id} className="flex items-baseline gap-3 text-sm">
-                        <span
-                          aria-hidden
-                          className={`mt-1 size-2 shrink-0 rounded-full ${m.completed ? "bg-ink" : "border border-ash bg-transparent"}`}
-                        />
-                        <span className={m.completed ? "text-slate line-through" : "text-ink"}>
-                          {m.title}
-                        </span>
-                        {m.dueDate && (
-                          <span className="ml-auto shrink-0 text-xs text-slate">
-                            {formatDate(m.dueDate)}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ol>
-                )}
+                  {project.milestones.length > 0 && (
+                    <div className="mt-5 border-t border-ash pt-5">
+                      <p className="label-xs text-slate">The plan</p>
+                      <ol className="mt-3 space-y-2.5">
+                        {project.milestones.map((m) => (
+                          <li key={m.id} className="flex items-baseline gap-3 text-sm">
+                            <span
+                              aria-hidden
+                              className={`mt-1.5 size-1.5 shrink-0 rounded-full ${m.completed ? "bg-ink" : "border border-ash"}`}
+                            />
+                            <span className={m.completed ? "text-slate line-through" : "text-ink"}>
+                              {m.title}
+                            </span>
+                            {m.dueDate && (
+                              <span className="tabular ml-auto shrink-0 text-xs text-slate">
+                                {formatDate(m.dueDate)}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
 
-                {project.deliverables.length > 0 && (
-                  <div className="mt-6 border-t border-ash pt-4">
-                    <SectionTitle count={project.deliverables.length}>Deliverables</SectionTitle>
-                    <ul className="mt-3 space-y-4">
-                      {project.deliverables
-                        /* Drafts are the team's working state; showing them
-                           would mean asking a client to ignore half the list. */
-                        .filter((d) => d.status !== "draft")
-                        .map((d) => (
-                          <li key={d.id} className="rounded-sheet border border-ash p-4">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
+                  {visible.length > 0 && (
+                    <div className="mt-6 border-t border-ash pt-5">
+                      <div className="flex items-center gap-4">
+                        <p className="label-xs shrink-0 text-slate">Deliverables</p>
+                        <span aria-hidden className="h-px flex-1 bg-ash" />
+                        <span className="tabular label-xs text-ink">{visible.length}</span>
+                      </div>
+
+                      {/* Ruled off from one another rather than boxed: a box
+                          inside a box is two edges saying the same thing, and
+                          the decision below each one is what should stand out. */}
+                      <ul className="mt-2 divide-y divide-ash">
+                        {visible.map((d) => (
+                          <li key={d.id} className="py-5 first:pt-4 last:pb-0">
+                            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                               <div className="min-w-0">
-                                <p className="text-sm font-medium text-ink">{d.title}</p>
-                                <p className="mt-1 text-xs text-slate">
-                                  {d.type.replace("_", " ")} · {formatDate(d.submittedAt ?? d.createdAt)}
+                                <p className="text-[15px] leading-snug font-medium text-ink">
+                                  {d.title}
+                                </p>
+                                <p className="label-xs mt-1.5 text-slate">
+                                  {d.type.replace("_", " ")} ·{" "}
+                                  <span className="tabular">
+                                    {formatDate(d.submittedAt ?? d.createdAt)}
+                                  </span>
                                 </p>
                               </div>
-                              <Pill tone={DELIVERABLE_TONE[d.status] ?? "neutral"}>
+                              <Pill tone={DELIVERABLE_TONE[d.status] ?? "neutral"} dot>
                                 {DELIVERABLE_LABEL[d.status] ?? d.status}
                               </Pill>
                             </div>
@@ -177,7 +217,7 @@ export default async function ClientWorkPage() {
                                 href={safeUrl(d.fileUrl) as string}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-3 inline-block text-sm text-ink underline underline-offset-2"
+                                className="mt-3 inline-block text-sm text-ink underline decoration-ash underline-offset-4 transition-colors hover:decoration-ink"
                               >
                                 Open the file
                               </a>
@@ -189,32 +229,33 @@ export default async function ClientWorkPage() {
                             )}
 
                             {d.comments.length > 0 && (
-                              <ul className="mt-4 space-y-3 border-t border-ash pt-3">
+                              <ul className="mt-4 space-y-3 border-l border-ash pl-4">
                                 {d.comments.map((c) => (
                                   <li key={c.id} className="text-sm">
-                                    <p className="label-sm text-slate">
+                                    <p className="label-xs text-slate">
                                       {c.author.name ?? c.author.email} ·{" "}
-                                      {formatDate(c.createdAt)}
+                                      <span className="tabular">{formatDate(c.createdAt)}</span>
                                     </p>
-                                    <p className="mt-1 leading-relaxed text-ink">{c.body}</p>
+                                    <p className="mt-1.5 leading-relaxed text-ink">{c.body}</p>
                                   </li>
                                 ))}
                               </ul>
                             )}
 
-                            <div className="mt-4 border-t border-ash pt-4">
+                            <div className="mt-4">
                               <DeliverableDecision id={d.id} status={d.status} />
                             </div>
                           </li>
                         ))}
-                    </ul>
-                  </div>
-                )}
-              </Card>
-            ))}
+                      </ul>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
           </ul>
         )}
-      </section>
+      </Section>
     </>
   );
 }

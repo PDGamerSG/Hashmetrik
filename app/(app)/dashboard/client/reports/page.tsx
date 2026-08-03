@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { requireClient } from "@/lib/auth/dal";
 import { listKpis, recentPeriods, toSeries } from "@/lib/kpis/store";
 import { MetricChart } from "@/components/app/metric-chart";
-import { Card, Empty, PageHeader, SectionTitle } from "@/components/app/ui";
+import { Card, Empty, PageHeader, Section } from "@/components/app/ui";
 
 export const metadata: Metadata = { title: "Reports" };
 export const dynamic = "force-dynamic";
@@ -38,18 +38,20 @@ export default async function ClientReportsPage() {
         </Empty>
       ) : (
         [...byService.entries()].map(([serviceName, metrics]) => (
-          <section key={serviceName} className="mt-10">
-            <SectionTitle count={metrics.size}>{serviceName}</SectionTitle>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Section key={serviceName} title={serviceName} count={metrics.size}>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {series
                 .filter((s) => metrics.has(s.metricName))
                 .map((s) => (
-                  <Card key={`${serviceName}-${s.metricName}`}>
+                  <Card
+                    key={`${serviceName}-${s.metricName}`}
+                    className="transition-colors hover:border-ink/25"
+                  >
                     <MetricChart series={s} />
                   </Card>
                 ))}
             </div>
-          </section>
+          </Section>
         ))
       )}
     </>

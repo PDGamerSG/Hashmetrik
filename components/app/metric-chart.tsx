@@ -1,4 +1,6 @@
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { MetricSeries } from "@/lib/kpis/series";
+import { cn } from "@/lib/utils";
 
 /**
  * A month-by-month reading of one metric.
@@ -10,7 +12,8 @@ import type { MetricSeries } from "@/lib/kpis/series";
  *
  * The line is ink and the fill is a faint wash of it — the coral accent is
  * spent on things that need a decision, and a chart is a reading, not a
- * request.
+ * request. The latest point carries a dot, because the number printed above
+ * the chart is that point and nothing was saying so.
  */
 export function MetricChart({ series }: { series: MetricSeries }) {
   const points = series.points;
@@ -30,8 +33,11 @@ export function MetricChart({ series }: { series: MetricSeries }) {
     return { x, y, ...point };
   });
 
-  const line = coords.map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(2)},${c.y.toFixed(2)}`).join(" ");
+  const line = coords
+    .map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(2)},${c.y.toFixed(2)}`)
+    .join(" ");
   const area = `${line} L${width},${height} L0,${height} Z`;
+  const last = coords.at(-1);
 
   const latest = points.at(-1);
   const previous = points.at(-2);
@@ -40,14 +46,29 @@ export function MetricChart({ series }: { series: MetricSeries }) {
       ? ((latest.value - previous.value) / Math.abs(previous.value)) * 100
       : null;
 
+  /* Direction, not judgement: a fall in cost per lead is a good month, and this
+     component has no way of knowing which metric it is holding. So the arrow
+     turns and the figure stays ink. */
+  const flat = change === null || Math.abs(change) < 0.05;
+  const Trend = flat ? ArrowRight : change! > 0 ? ArrowUpRight : ArrowDownRight;
+
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-4">
-        <p className="label-sm text-slate">{series.metricName}</p>
-        <p className="tabular text-lg text-ink">
+      <p className="label-xs text-slate">{series.metricName}</p>
+
+      <div className="mt-3 flex items-baseline gap-2">
+        <p className="tabular font-display text-2xl leading-none font-medium tracking-[-0.02em] text-ink">
           {formatValue(latest?.value)}
-          {series.unit && <span className="ml-1 text-xs text-slate">{series.unit}</span>}
         </p>
+        {series.unit && <span className="text-xs text-slate">{series.unit}</span>}
+
+        {change !== null && (
+          <span className="tabular ml-auto inline-flex items-center gap-1 text-xs text-slate">
+            <Trend aria-hidden className={cn("size-3", !flat && "text-ink")} />
+            {change >= 0 ? "+" : ""}
+            {change.toFixed(1)}%
+          </span>
+        )}
       </div>
 
       {points.length > 1 && (
@@ -58,9 +79,9 @@ export function MetricChart({ series }: { series: MetricSeries }) {
           aria-label={`${series.metricName} over ${points.length} months, ${points
             .map((p) => `${p.period}: ${p.value}`)
             .join(", ")}`}
-          className="mt-3 h-12 w-full"
+          className="mt-4 h-14 w-full overflow-visible"
         >
-          <path d={area} className="fill-ink/8" />
+          <path d={area} className="fill-ink/[0.07]" />
           <path
             d={line}
             className="stroke-ink"
@@ -70,17 +91,22 @@ export function MetricChart({ series }: { series: MetricSeries }) {
             strokeLinejoin="round"
             strokeLinecap="round"
           />
+          {last && (
+            <circle
+              cx={last.x}
+              cy={last.y}
+              r="2"
+              className="fill-bone-2 stroke-ink"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
         </svg>
       )}
 
-      <div className="mt-2 flex items-baseline justify-between text-xs text-slate">
+      {/* The scale under the line: where the series starts, and where it ends. */}
+      <div className="tabular mt-2 flex items-baseline justify-between border-t border-ash pt-2 text-[10px] text-slate">
         <span>{points[0]?.period}</span>
-        {change !== null && (
-          <span className="tabular text-ink">
-            {change >= 0 ? "+" : ""}
-            {change.toFixed(1)}%
-          </span>
-        )}
         <span>{latest?.period}</span>
       </div>
     </div>

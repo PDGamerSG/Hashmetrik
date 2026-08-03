@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Plus } from "lucide-react";
 import { Field, Input, Select, Textarea } from "@/components/site/field";
 import { Alert } from "@/components/app/ui";
-import { Button, SubmitButton } from "@/components/app/button";
+import { SubmitButton } from "@/components/app/button";
+import { cn } from "@/lib/utils";
 import {
   newCalendarEntry,
   newDeliverable,
@@ -29,14 +31,29 @@ function Result({ state }: { state: FormState }) {
   return null;
 }
 
+/* A panel that opens rather than a button that reveals a form below itself:
+   the border is what says the fields belong to the control that summoned them,
+   and the label stays put instead of turning into "Close". */
 function Disclosure({ label, children }: { label: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div>
-      <Button type="button" variant="quiet" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        {open ? "Close" : label}
-      </Button>
-      {open && <div className="mt-4">{children}</div>}
+    <div className="rounded-sheet border border-ash bg-bone-2">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="label-sm flex w-full items-center gap-2.5 px-5 py-4 text-slate transition-colors hover:text-ink md:px-6"
+      >
+        <Plus
+          aria-hidden
+          className={cn(
+            "size-3.5 transition-transform duration-300 ease-[var(--ease-out-quint)]",
+            open && "rotate-45",
+          )}
+        />
+        {label}
+      </button>
+      {open && <div className="border-t border-ash px-5 py-5 md:px-6">{children}</div>}
     </div>
   );
 }

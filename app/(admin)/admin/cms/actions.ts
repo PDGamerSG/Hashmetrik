@@ -26,8 +26,9 @@ export async function saveContent(
   if (!slug) return { error: "That slug reduces to nothing. Use letters or numbers." };
   if (!body) return { error: "The body is empty." };
 
-  /* Reaches Open Graph metadata and, if the page ever renders it, an `<img>`.
-     Same rule as every other link a person types in — see `lib/url.ts`. */
+  /* Reaches Open Graph metadata and the `<img>` at the head of the article.
+     Same rule as every other link a person types in — see `lib/url.ts`, which
+     the page checks again on the way out. */
   const coverUrl = String(formData.get("coverUrl") ?? "").trim().slice(0, 500);
   if (coverUrl && !isHttpUrl(coverUrl)) {
     return { error: "The cover image link should start http:// or https://." };

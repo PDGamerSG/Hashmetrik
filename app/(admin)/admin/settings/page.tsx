@@ -9,6 +9,7 @@ import {
   Card,
   Empty,
   PageHeader,
+  Section,
   SectionTitle,
   SubmitButton,
   formatDateTime,
@@ -96,9 +97,8 @@ export default async function AdminSettingsPage() {
         </form>
       </Card>
 
-      <section className="mt-10">
-        <SectionTitle count={ROLE_POWERS.length}>Roles and permissions</SectionTitle>
-        <p className="mt-2 text-sm leading-relaxed text-slate">
+      <Section title="Roles and permissions" count={ROLE_POWERS.length}>
+        <p className="mt-3 max-w-prose text-sm leading-relaxed text-slate">
           Read-only, and deliberately: permissions here are code, not configuration. Every gated
           page and every server action calls one of the guards in{" "}
           <code className="text-ink">lib/auth/dal.ts</code> against the live database row, so a
@@ -107,30 +107,39 @@ export default async function AdminSettingsPage() {
           Roles are changed per account on the Accounts page.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-5 overflow-x-auto">
           <table className="w-full min-w-[40rem] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-ash text-left">
-                <th scope="col" className="label-sm py-2 text-slate">Role</th>
-                <th scope="col" className="label-sm py-2 text-slate">Can</th>
-                <th scope="col" className="label-sm py-2 text-slate">Cannot</th>
+              <tr className="border-y border-ash text-left">
+                <th scope="col" className="label-xs py-2.5 pr-4 text-slate">Role</th>
+                <th scope="col" className="label-xs py-2.5 pr-4 text-slate">Can</th>
+                <th scope="col" className="label-xs py-2.5 text-slate">Cannot</th>
               </tr>
             </thead>
             <tbody>
               {ROLE_POWERS.map((row) => (
-                <tr key={row.role} className="border-b border-ash/60 align-top">
-                  <td className="py-3 pr-4 text-ink">{row.label}</td>
-                  <td className="py-3 pr-4 text-slate">
-                    <ul className="space-y-1">
+                <tr
+                  key={row.role}
+                  className="border-b border-ash align-top transition-colors hover:bg-ink/[0.02]"
+                >
+                  <td className="py-3.5 pr-4 font-medium text-ink">{row.label}</td>
+                  <td className="py-3.5 pr-4 text-slate">
+                    <ul className="space-y-1.5">
                       {row.can.map((line) => (
-                        <li key={line}>{line}</li>
+                        <li key={line} className="flex gap-2.5">
+                          <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-ink" />
+                          {line}
+                        </li>
                       ))}
                     </ul>
                   </td>
-                  <td className="py-3 text-slate">
-                    <ul className="space-y-1">
+                  <td className="py-3.5 text-slate">
+                    <ul className="space-y-1.5">
                       {row.cannot.map((line) => (
-                        <li key={line}>{line}</li>
+                        <li key={line} className="flex gap-2.5">
+                          <span aria-hidden className="mt-2 size-1 shrink-0 rounded-full bg-ash" />
+                          {line}
+                        </li>
                       ))}
                     </ul>
                   </td>
@@ -139,11 +148,10 @@ export default async function AdminSettingsPage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </Section>
 
-      <section className="mt-10">
-        <SectionTitle count={trail.length}>Audit trail</SectionTitle>
-        <p className="mt-2 text-sm leading-relaxed text-slate">
+      <Section title="Audit trail" count={trail.length}>
+        <p className="mt-3 max-w-prose text-sm leading-relaxed text-slate">
           Activations, service changes, staff accounts and content edits. Ordinary work — a
           milestone ticked, a caption rewritten — is not logged here, because a trail that records
           everything is one nobody reads.
@@ -152,32 +160,37 @@ export default async function AdminSettingsPage() {
         {trail.length === 0 ? (
           <Empty>Nothing logged yet.</Empty>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[36rem] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-ash text-left">
-                  <th scope="col" className="label-sm py-2 text-slate">When</th>
-                  <th scope="col" className="label-sm py-2 text-slate">Who</th>
-                  <th scope="col" className="label-sm py-2 text-slate">Action</th>
-                  <th scope="col" className="label-sm py-2 text-slate">Entity</th>
+                <tr className="border-y border-ash text-left">
+                  <th scope="col" className="label-xs py-2.5 pr-4 text-slate">When</th>
+                  <th scope="col" className="label-xs py-2.5 pr-4 text-slate">Who</th>
+                  <th scope="col" className="label-xs py-2.5 pr-4 text-slate">Action</th>
+                  <th scope="col" className="label-xs py-2.5 text-slate">Entity</th>
                 </tr>
               </thead>
               <tbody>
                 {trail.map((entry) => (
-                  <tr key={entry.id} className="border-b border-ash/60">
-                    <td className="tabular py-2 text-slate">{formatDateTime(entry.createdAt)}</td>
-                    <td className="py-2 text-ink">
+                  <tr
+                    key={entry.id}
+                    className="border-b border-ash transition-colors hover:bg-ink/[0.02]"
+                  >
+                    <td className="tabular py-2.5 pr-4 whitespace-nowrap text-slate">
+                      {formatDateTime(entry.createdAt)}
+                    </td>
+                    <td className="py-2.5 pr-4 text-ink">
                       {entry.actor?.name ?? entry.actor?.email ?? "—"}
                     </td>
-                    <td className="py-2 text-ink">{entry.action}</td>
-                    <td className="py-2 text-slate">{entry.entity}</td>
+                    <td className="py-2.5 pr-4 font-medium text-ink">{entry.action}</td>
+                    <td className="py-2.5 text-slate">{entry.entity}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </section>
+      </Section>
     </>
   );
 }

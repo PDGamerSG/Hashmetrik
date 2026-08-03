@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/dal";
 import { countLeadsByStatus, listLeads } from "@/lib/leads/store";
-import { LEAD_STATUSES, LEAD_STATUS_LABELS, isLeadStatus } from "@/lib/leads/schema";
+import {
+  LEAD_STATUSES,
+  LEAD_STATUS_LABELS,
+  isLeadStatus,
+  type LeadStatus,
+} from "@/lib/leads/schema";
 import { matchLeadToAccount, updateLeadStatus } from "../actions";
 import {
   Alert,
@@ -10,10 +14,17 @@ import {
   Detail,
   Details,
   Empty,
+  Fieldset,
+  Filter,
+  Filters,
   PageHeader,
+  Pill,
+  Select,
   SubmitButton,
+  formatCount,
   formatDateTime,
 } from "@/components/app/ui";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Leads" };
 export const dynamic = "force-dynamic";
@@ -25,6 +36,31 @@ export const dynamic = "force-dynamic";
  * form post to a server action, so the whole thing works without client
  * JavaScript and there is no state to keep in sync.
  */
+
+/* The pipeline drawn as one measured strip: how much of the business is where.
+   The fills are meanings rather than a palette — coral is the stage that decays
+   if nobody calls today, gold is the stage that paid, ash is the one that
+   ended, and the ink ramp between them is distance travelled. */
+const STAGE_FILL: Record<LeadStatus, string> = {
+  new: "bg-coral",
+  qualified: "bg-ink/85",
+  consultation: "bg-ink/70",
+  proposal: "bg-ink/55",
+  negotiation: "bg-ink/40",
+  client: "bg-gold",
+  lost: "bg-ash",
+};
+
+const STAGE_TONE: Record<LeadStatus, "warn" | "live" | "good" | "done"> = {
+  new: "warn",
+  qualified: "live",
+  consultation: "live",
+  proposal: "live",
+  negotiation: "live",
+  client: "good",
+  lost: "done",
+};
+
 export default async function AdminLeadsPage({
   searchParams,
 }: {
@@ -49,143 +85,181 @@ export default async function AdminLeadsPage({
   }
 
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  const open = LEAD_STATUSES.filter((s) => s !== "client" && s !== "lost").reduce(
+    (sum, s) => sum + (counts[s] ?? 0),
+    0,
+  );
 
   return (
     <>
       <PageHeader
         title="Leads"
-        meta={`${total} in total${status || kind ? ` · ${leads.length} shown` : ""}`}
+        meta={
+          total === 0
+            ? "Every booking and contact submission lands here."
+            : `${formatCount(open)} still open of ${formatCount(total)} · ${formatCount(counts.new ?? 0)} not yet opened`
+        }
       />
 
-      {/* The pipeline the PRD names, drawn in its own order rather than sorted
-          by volume: the point of a pipeline is that it is a sequence, and a
-          board that reorders itself as the numbers move cannot be read at a
-          glance twice running. */}
-      <nav aria-label="Filter leads" className="mt-6 flex flex-wrap gap-2">
-        <FilterLink label="All" href="/admin/leads" active={!status && !kind} />
+      {total > 0 && (
+        /* The pipeline in the order the PRD names it rather than sorted by
+           volume: the point of a pipeline is that it is a sequence, and a board
+           that reorders itself as the numbers move cannot be read at a glance
+           twice running. */
+        <div className="mt-8 flex h-2 w-full gap-px overflow-hidden rounded-full bg-ash">
+          {LEAD_STATUSES.map((s) =>
+            counts[s] ? (
+              <div
+                key={s}
+                className={cn("h-full first:rounded-l-full last:rounded-r-full", STAGE_FILL[s])}
+                style={{ width: `${((counts[s] ?? 0) / total) * 100}%` }}
+                title={`${LEAD_STATUS_LABELS[s]}: ${counts[s]}`}
+              />
+            ) : null,
+          )}
+        </div>
+      )}
+
+      <Filters label="Filter leads">
+        <Filter label="All" href="/admin/leads" active={!status && !kind} count={total} />
         {LEAD_STATUSES.map((s) => (
-          <FilterLink
+          <Filter
             key={s}
-            label={`${LEAD_STATUS_LABELS[s]}${counts[s] ? ` (${counts[s]})` : ""}`}
+            label={LEAD_STATUS_LABELS[s]}
+            count={counts[s] ?? 0}
             href={`/admin/leads?status=${s}`}
             active={status === s}
           />
         ))}
-        <FilterLink label="Bookings" href="/admin/leads?kind=booking" active={kind === "booking"} />
-        <FilterLink label="Contact" href="/admin/leads?kind=contact" active={kind === "contact"} />
-      </nav>
+        <Filter label="Bookings" href="/admin/leads?kind=booking" active={kind === "booking"} />
+        <Filter label="Contact" href="/admin/leads?kind=contact" active={kind === "contact"} />
+      </Filters>
 
       {failure ? (
         <div className="mt-10">
           <Alert>{failure}</Alert>
         </div>
       ) : leads.length === 0 ? (
-        <Empty>Nothing here yet. Every booking and contact submission lands on this page.</Empty>
+        <Empty>
+          {status || kind
+            ? "No leads in this view. Clear the filter to see the whole queue."
+            : "Nothing here yet. Every booking and contact submission lands on this page."}
+        </Empty>
       ) : (
-        <ul className="mt-8 space-y-4">
-          {leads.map((lead) => (
-            <Card as="li" key={lead.id}>
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="label-sm text-slate">
+        <ul className="mt-8 space-y-5">
+          {leads.map((lead) => {
+            const stage = isLeadStatus(lead.status) ? lead.status : "new";
+
+            return (
+              <Card as="li" key={lead.id} className="transition-colors hover:border-ink/25">
+                <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <p className="font-display text-xl leading-tight font-medium text-ink">
+                        {lead.name}
+                      </p>
+                      <Pill tone={STAGE_TONE[stage]} dot>
+                        {LEAD_STATUS_LABELS[stage]}
+                      </Pill>
+                      {!lead.notifiedAt && <Pill tone="warn">Not emailed</Pill>}
+                      {lead.userId && <Pill tone="neutral">Has an account</Pill>}
+                    </div>
+
+                    <p className="mt-2 text-sm text-slate">
+                      <a
+                        href={`mailto:${lead.email}`}
+                        className="text-ink underline decoration-ash underline-offset-4 transition-colors hover:decoration-ink"
+                      >
+                        {lead.email}
+                      </a>
+                      {lead.phone && (
+                        <>
+                          {" · "}
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="text-ink underline decoration-ash underline-offset-4 transition-colors hover:decoration-ink"
+                          >
+                            {lead.phone}
+                          </a>
+                        </>
+                      )}
+                      {lead.company && ` · ${lead.company}`}
+                    </p>
+                  </div>
+
+                  <p className="label-xs shrink-0 text-slate">
                     {lead.kind === "booking" ? "Booking" : "Contact"} ·{" "}
-                    <time dateTime={lead.createdAt.toISOString()}>
+                    <time dateTime={lead.createdAt.toISOString()} className="tabular">
                       {formatDateTime(lead.createdAt)}
                     </time>
-                    {!lead.notifiedAt && " · not emailed"}
-                    {lead.userId && " · has an account"}
-                  </p>
-                  <p className="mt-2 font-display text-xl font-medium text-ink">{lead.name}</p>
-                  <p className="mt-1 text-sm text-slate">
-                    <a href={`mailto:${lead.email}`} className="underline underline-offset-2">
-                      {lead.email}
-                    </a>
-                    {lead.phone && (
-                      <>
-                        {" · "}
-                        <a href={`tel:${lead.phone}`} className="underline underline-offset-2">
-                          {lead.phone}
-                        </a>
-                      </>
-                    )}
-                    {lead.company && ` · ${lead.company}`}
                   </p>
                 </div>
 
-                <form action={updateLeadStatus} className="flex items-center gap-2">
-                  <input type="hidden" name="id" value={lead.id} />
-                  <label htmlFor={`status-${lead.id}`} className="sr-only">
-                    Status
-                  </label>
-                  <select
-                    id={`status-${lead.id}`}
-                    name="status"
-                    defaultValue={lead.status}
-                    className="h-10 rounded-sheet border border-ash bg-bone-2 px-3 text-sm text-ink transition-colors hover:border-ink/40 focus:border-ink focus:outline-none"
-                  >
-                    {LEAD_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {LEAD_STATUS_LABELS[s]}
-                      </option>
-                    ))}
-                  </select>
-                  <SubmitButton>Save</SubmitButton>
-                </form>
-              </div>
+                <Details>
+                  <Detail label="Service" value={lead.service} />
+                  <Detail label="Budget" value={lead.budget} />
+                  <Detail
+                    label="Preferred"
+                    value={
+                      [lead.preferredDate, lead.preferredTime].filter(Boolean).join(" · ") || null
+                    }
+                  />
+                  <Detail label="Website" value={lead.website} />
+                  <Detail label="Industry" value={lead.industry} />
+                </Details>
 
-              <Details>
-                <Detail label="Service" value={lead.service} />
-                <Detail label="Budget" value={lead.budget} />
-                <Detail
-                  label="Preferred"
-                  value={[lead.preferredDate, lead.preferredTime].filter(Boolean).join(" · ") || null}
-                />
-                <Detail label="Website" value={lead.website} />
-                <Detail label="Industry" value={lead.industry} />
-                <Detail
-                  label="Stage"
-                  value={
-                    isLeadStatus(lead.status) ? LEAD_STATUS_LABELS[lead.status] : lead.status
-                  }
-                />
-              </Details>
+                {lead.message && (
+                  /* What they actually wrote, set as reading matter rather than
+                     as one more field: it is the only part of a lead that did
+                     not come out of a dropdown. */
+                  <blockquote className="mt-5 border-l border-ash pl-4 text-sm leading-relaxed text-ink">
+                    {lead.message}
+                  </blockquote>
+                )}
 
-              {lead.message && (
-                <p className="mt-4 border-t border-ash pt-4 text-sm leading-relaxed text-ink">
-                  {lead.message}
-                </p>
-              )}
+                <Fieldset legend="Stage">
+                  <div className="mt-3 flex flex-wrap items-end gap-3">
+                    <form action={updateLeadStatus} className="flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="id" value={lead.id} />
+                      <Select
+                        id={`status-${lead.id}`}
+                        name="status"
+                        label="Status"
+                        hideLabel
+                        defaultValue={lead.status}
+                        className="w-44"
+                      >
+                        {LEAD_STATUSES.map((s) => (
+                          <option key={s} value={s}>
+                            {LEAD_STATUS_LABELS[s]}
+                          </option>
+                        ))}
+                      </Select>
+                      <SubmitButton size="sm" busyLabel="Saving…">
+                        Save stage
+                      </SubmitButton>
+                    </form>
 
-              {!lead.userId && (
-                /* One click rather than a search: the address on the enquiry is
-                   almost always the address on the account, and matching them is
-                   what stops the pipeline carrying a duplicate person. */
-                <form action={matchLeadToAccount} className="mt-4 border-t border-ash pt-4">
-                  <input type="hidden" name="leadId" value={lead.id} />
-                  <input type="hidden" name="email" value={lead.email} />
-                  <SubmitButton variant="quiet">Match to an account with this email</SubmitButton>
-                </form>
-              )}
-            </Card>
-          ))}
+                    {!lead.userId && (
+                      /* One press rather than a search: the address on the
+                         enquiry is almost always the address on the account, and
+                         matching them is what stops the pipeline carrying the
+                         same person twice. */
+                      <form action={matchLeadToAccount}>
+                        <input type="hidden" name="leadId" value={lead.id} />
+                        <input type="hidden" name="email" value={lead.email} />
+                        <SubmitButton variant="quiet" size="sm" busyLabel="Matching…">
+                          Match to this email
+                        </SubmitButton>
+                      </form>
+                    )}
+                  </div>
+                </Fieldset>
+              </Card>
+            );
+          })}
         </ul>
       )}
     </>
-  );
-}
-
-function FilterLink({ label, href, active }: { label: string; href: string; active: boolean }) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`label rounded-full border px-3 py-2 transition-colors ${
-        active
-          ? "border-ink bg-ink text-bone"
-          : "border-ash text-slate hover:border-ink hover:text-ink"
-      }`}
-    >
-      {label}
-    </Link>
   );
 }

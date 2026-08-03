@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/dal";
 import { listAllProjects, PROJECT_STATUSES } from "@/lib/projects/store";
 import { listClients, listServices } from "@/lib/clients/store";
@@ -12,9 +11,12 @@ import {
   Detail,
   Details,
   Empty,
+  Fieldset,
+  Filter,
+  Filters,
+  Meter,
   PageHeader,
   Pill,
-  SectionTitle,
   SubmitButton,
   formatDate,
 } from "@/components/app/ui";
@@ -79,24 +81,46 @@ export default async function AdminProjectsPage({
     return tally;
   }, {});
 
+  /* The two facts an administrator opens this page for: what is sitting with a
+     client, and what has run past the date it promised. */
+  const waitingTotal = projects.reduce(
+    (sum, project) => sum + project.deliverables.filter((d) => d.status === "submitted").length,
+    0,
+  );
+  const overdueTotal = projects.filter(
+    (project) =>
+      project.status === "active" && project.endDate && new Date(project.endDate) < new Date(),
+  ).length;
+
   return (
     <>
       <PageHeader
         title="Projects"
-        meta={`${projects.length} in total${status ? ` · ${shown.length} ${status}` : ""}`}
+        meta={
+          projects.length === 0
+            ? "Open one against a client and a service below."
+            : [
+                `${projects.length} in total`,
+                waitingTotal > 0 ? `${waitingTotal} awaiting approval` : null,
+                overdueTotal > 0 ? `${overdueTotal} past its end date` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")
+        }
       />
 
-      <nav aria-label="Filter projects" className="mt-6 flex flex-wrap gap-2">
-        <FilterLink label="All" href="/admin/projects" active={!status} />
+      <Filters label="Filter projects">
+        <Filter label="All" href="/admin/projects" active={!status} count={projects.length} />
         {PROJECT_STATUSES.map((s) => (
-          <FilterLink
+          <Filter
             key={s}
-            label={`${s}${counts[s] ? ` (${counts[s]})` : ""}`}
+            label={s}
+            count={counts[s] ?? 0}
             href={`/admin/projects?status=${s}`}
             active={status === s}
           />
         ))}
-      </nav>
+      </Filters>
 
       {failure ? (
         <div className="mt-10">
@@ -115,140 +139,173 @@ export default async function AdminProjectsPage({
                 : "No projects yet. Open one against a client and a service above."}
             </Empty>
           ) : (
-            <ul className="mt-8 space-y-4">
+            <ul className="mt-6 space-y-5">
               {shown.map((project) => {
                 const done = project.milestones.filter((m) => m.completed).length;
-                const waiting = project.deliverables.filter(
-                  (d) => d.status === "submitted",
-                ).length;
+                const waiting = project.deliverables.filter((d) => d.status === "submitted").length;
                 const overdue =
                   project.endDate &&
                   project.status === "active" &&
                   new Date(project.endDate) < new Date();
 
                 return (
-                  <Card as="li" key={project.id}>
-                    <div className="flex flex-wrap items-start justify-between gap-4">
+                  <Card as="li" key={project.id} className="transition-colors hover:border-ink/25">
+                    <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
                       <div className="min-w-0">
-                        <p className="label-sm text-slate">
-                          {project.client.companyName ?? "Client"} · {project.service.name}
-                        </p>
-                        <p className="mt-2 font-display text-xl font-medium text-ink">
+                        <p className="font-display text-xl leading-tight font-medium text-ink">
                           {project.name}
+                        </p>
+                        <p className="mt-1.5 text-sm text-slate">
+                          {project.client.companyName ?? "Client"} · {project.service.name}
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        {waiting > 0 && <Pill tone="warn">{waiting} awaiting approval</Pill>}
-                        {overdue && <Pill tone="warn">Past its end date</Pill>}
+                        {waiting > 0 && (
+                          <Pill tone="warn" dot>
+                            {waiting} awaiting approval
+                          </Pill>
+                        )}
+                        {overdue && (
+                          <Pill tone="warn" dot>
+                            Past its end date
+                          </Pill>
+                        )}
                         <Pill tone={TONE[project.status as keyof typeof TONE] ?? "neutral"}>
                           {project.status}
                         </Pill>
                       </div>
                     </div>
 
-                    <Details>
-                      <Detail label="Progress" value={`${project.progress}%`} />
-                      <Detail
-                        label="Milestones"
-                        value={`${done} of ${project.milestones.length} done`}
+                    <div className="mt-5 grid gap-x-10 gap-y-4 sm:grid-cols-2">
+                      <Meter
+                        label="Progress"
+                        value={project.progress}
+                        display={`${project.progress}%`}
                       />
+                      {project.milestones.length > 0 && (
+                        <Meter
+                          label="Milestones"
+                          value={done}
+                          max={project.milestones.length}
+                          display={`${done} of ${project.milestones.length}`}
+                        />
+                      )}
+                    </div>
+
+                    <Details>
                       <Detail label="Starts" value={formatDate(project.startDate)} />
                       <Detail label="Target end" value={formatDate(project.endDate)} />
+                      <Detail label="Deliverables" value={String(project.deliverables.length)} />
+                      <Detail label="Client" value={project.client.companyName} />
                     </Details>
+
+                    {project.milestones.length > 0 && (
+                      <Fieldset legend="Milestones">
+                        <ol className="mt-3 space-y-2">
+                          {project.milestones.map((milestone) => (
+                            <li key={milestone.id} className="flex items-baseline gap-3 text-sm">
+                              <span
+                                aria-hidden
+                                className={`mt-1.5 size-1.5 shrink-0 rounded-full ${
+                                  milestone.completed ? "bg-ink" : "border border-ash"
+                                }`}
+                              />
+                              <span
+                                className={
+                                  milestone.completed ? "text-slate line-through" : "text-ink"
+                                }
+                              >
+                                {milestone.title}
+                              </span>
+                              <span className="tabular ml-auto shrink-0 text-xs text-slate">
+                                {formatDate(milestone.dueDate)}
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+                      </Fieldset>
+                    )}
 
                     {/* A plain form posting a server action: no client component,
                         so the whole page still works with JavaScript off, and
                         there is no draft state to get out of step with the row
                         above it. */}
-                    <form
-                      action={saveProjectPlan}
-                      className="mt-4 grid gap-4 border-t border-ash pt-4 sm:grid-cols-2 lg:grid-cols-5"
-                    >
+                    <form action={saveProjectPlan}>
                       <input type="hidden" name="id" value={project.id} />
+                      <Fieldset legend="The plan">
+                        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                          <Field label="Name" htmlFor={`name-${project.id}`} className="lg:col-span-2">
+                            <Input
+                              id={`name-${project.id}`}
+                              name="name"
+                              defaultValue={project.name}
+                              maxLength={120}
+                            />
+                          </Field>
 
-                      <Field label="Name" htmlFor={`name-${project.id}`} className="lg:col-span-2">
-                        <Input
-                          id={`name-${project.id}`}
-                          name="name"
-                          defaultValue={project.name}
-                          maxLength={120}
-                        />
-                      </Field>
+                          <Field label="Status" htmlFor={`status-${project.id}`}>
+                            <Select
+                              id={`status-${project.id}`}
+                              name="status"
+                              defaultValue={project.status}
+                            >
+                              {PROJECT_STATUSES.map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </Select>
+                          </Field>
 
-                      <Field label="Status" htmlFor={`status-${project.id}`}>
-                        <Select
-                          id={`status-${project.id}`}
-                          name="status"
-                          defaultValue={project.status}
-                        >
-                          {PROJECT_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </Select>
-                      </Field>
+                          <Field label="Progress %" htmlFor={`progress-${project.id}`}>
+                            <Input
+                              id={`progress-${project.id}`}
+                              name="progress"
+                              type="number"
+                              min={0}
+                              max={100}
+                              defaultValue={project.progress}
+                            />
+                          </Field>
 
-                      <Field label="Progress %" htmlFor={`progress-${project.id}`}>
-                        <Input
-                          id={`progress-${project.id}`}
-                          name="progress"
-                          type="number"
-                          min={0}
-                          max={100}
-                          defaultValue={project.progress}
-                        />
-                      </Field>
+                          <Field label="Starts" htmlFor={`start-${project.id}`}>
+                            <Input
+                              id={`start-${project.id}`}
+                              name="startDate"
+                              type="date"
+                              defaultValue={toDateInput(project.startDate)}
+                            />
+                          </Field>
 
-                      <Field label="Starts" htmlFor={`start-${project.id}`}>
-                        <Input
-                          id={`start-${project.id}`}
-                          name="startDate"
-                          type="date"
-                          defaultValue={toDateInput(project.startDate)}
-                        />
-                      </Field>
+                          <Field label="Target end" htmlFor={`end-${project.id}`}>
+                            <Input
+                              id={`end-${project.id}`}
+                              name="endDate"
+                              type="date"
+                              defaultValue={toDateInput(project.endDate)}
+                            />
+                          </Field>
+                        </div>
 
-                      <Field label="Target end" htmlFor={`end-${project.id}`}>
-                        <Input
-                          id={`end-${project.id}`}
-                          name="endDate"
-                          type="date"
-                          defaultValue={toDateInput(project.endDate)}
-                        />
-                      </Field>
-
-                      <div className="flex items-end sm:col-span-2 lg:col-span-5">
-                        <SubmitButton>Save plan</SubmitButton>
-                      </div>
+                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                          <SubmitButton busyLabel="Saving…">Save plan</SubmitButton>
+                        </div>
+                      </Fieldset>
                     </form>
 
-                    <form action={archiveProject} className="mt-3">
+                    <form action={archiveProject} className="mt-4 border-t border-ash pt-4">
                       <input type="hidden" name="id" value={project.id} />
                       {project.status === "archived" && (
                         <input type="hidden" name="restore" value="true" />
                       )}
-                      <SubmitButton variant={project.status === "archived" ? "quiet" : "danger"}>
+                      <SubmitButton
+                        size="sm"
+                        variant={project.status === "archived" ? "quiet" : "danger"}
+                        busyLabel="Working…"
+                      >
                         {project.status === "archived" ? "Bring back" : "Archive"}
                       </SubmitButton>
                     </form>
-
-                    {project.milestones.length > 0 && (
-                      <section className="mt-5 border-t border-ash pt-4">
-                        <SectionTitle count={project.milestones.length}>Milestones</SectionTitle>
-                        <ul className="mt-3 space-y-1.5 text-sm">
-                          {project.milestones.map((milestone) => (
-                            <li key={milestone.id} className="flex flex-wrap gap-x-3 text-slate">
-                              <span className={milestone.completed ? "text-slate" : "text-ink"}>
-                                {milestone.completed ? "Done" : "Open"}
-                              </span>
-                              <span className="text-ink">{milestone.title}</span>
-                              <span className="tabular">{formatDate(milestone.dueDate)}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </section>
-                    )}
                   </Card>
                 );
               })}
@@ -266,20 +323,4 @@ function toDateInput(value: Date | null): string {
   const d = new Date(value);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function FilterLink({ label, href, active }: { label: string; href: string; active: boolean }) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`label rounded-full border px-3 py-2 transition-colors ${
-        active
-          ? "border-ink bg-ink text-bone"
-          : "border-ash text-slate hover:border-ink hover:text-ink"
-      }`}
-    >
-      {label}
-    </Link>
-  );
 }

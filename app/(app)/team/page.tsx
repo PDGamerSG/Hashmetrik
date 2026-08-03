@@ -5,13 +5,16 @@ import { listPendingDeliverables } from "@/lib/projects/store";
 import { listCalendarForManager } from "@/lib/calendar/store";
 import {
   ButtonLink,
-  Card,
   Detail,
   Details,
   Empty,
   PageHeader,
   Pill,
-  SectionTitle,
+  Readout,
+  Readouts,
+  Row,
+  Rows,
+  Section,
   formatDate,
 } from "@/components/app/ui";
 
@@ -44,96 +47,111 @@ export default async function TeamQueuePage() {
       <PageHeader
         title="Queue"
         meta={
-          scope
-            ? `${clients.length} account${clients.length === 1 ? "" : "s"} you look after`
-            : `${clients.length} client${clients.length === 1 ? "" : "s"} across the agency`
+          needingWork.length > 0
+            ? `${needingWork.length} item${needingWork.length === 1 ? "" : "s"} came back for changes.`
+            : "Nothing has been sent back to you."
         }
       />
 
-      <section className="mt-8">
-        <SectionTitle count={needingWork.length}>Changes requested</SectionTitle>
+      <Readouts className="lg:grid-cols-3">
+        <Readout
+          label="Changes requested"
+          value={needingWork.length}
+          note="Your move"
+          urgent
+        />
+        <Readout
+          label="Waiting on clients"
+          value={awaitingClient.length + calendarPending.length}
+          note="Files and posts sent for approval"
+        />
+        <Readout
+          label={scope ? "Your accounts" : "All accounts"}
+          value={clients.length}
+          note={scope ? "You are the named contact or assigned" : "Across the agency"}
+        />
+      </Readouts>
+
+      <Section title="Changes requested" count={needingWork.length}>
         {needingWork.length === 0 ? (
-          <Empty>Nothing has been sent back. </Empty>
+          <Empty>Nothing has been sent back.</Empty>
         ) : (
           /* The urgency is already carried by the section this list sits under
-             and by the note the client wrote. A coral slab down each card's
-             edge as well made every row in the queue shout. */
-          <ul className="mt-4 space-y-3">
+             and by the note the client wrote. A coral slab down each row's edge
+             as well made every line in the queue shout. */
+          <Rows>
             {needingWork.map((d) => (
-              <Card as="li" key={d.id}>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="min-w-0 text-sm text-ink">
-                    <span className="font-medium">{d.title}</span>{" "}
-                    <span className="text-slate">
-                      · {d.project.client.companyName ?? "Client"} · {d.project.name}
-                    </span>
-                  </p>
+              <Row
+                key={d.id}
+                title={d.title}
+                subtitle={`${d.project.client.companyName ?? "Client"} · ${d.project.name}`}
+                trailing={
                   <ButtonLink href="/team/projects" variant="quiet" size="sm">
                     Open
                   </ButtonLink>
-                </div>
-              </Card>
+                }
+              />
             ))}
-          </ul>
+          </Rows>
         )}
-      </section>
+      </Section>
 
-      <section className="mt-10">
-        <SectionTitle count={awaitingClient.length + calendarPending.length}>
-          Waiting on clients
-        </SectionTitle>
+      <Section
+        title="Waiting on clients"
+        count={awaitingClient.length + calendarPending.length}
+      >
         {awaitingClient.length + calendarPending.length === 0 ? (
           <Empty>Nothing is sitting with a client.</Empty>
         ) : (
-          <ul className="mt-4 space-y-3">
+          <Rows>
             {awaitingClient.map((d) => (
-              <Card as="li" key={d.id}>
-                <p className="text-sm text-ink">
-                  <span className="font-medium">{d.title}</span>{" "}
-                  <span className="text-slate">
-                    · {d.project.client.companyName ?? "Client"} · sent{" "}
-                    {formatDate(d.submittedAt)}
-                  </span>
-                </p>
-              </Card>
+              <Row
+                key={d.id}
+                title={d.title}
+                subtitle={d.project.client.companyName ?? "Client"}
+                meta={[{ label: "Sent", value: formatDate(d.submittedAt) }]}
+                status={<Pill tone="live">Deliverable</Pill>}
+              />
             ))}
             {calendarPending.map((c) => (
-              <Card as="li" key={c.id}>
-                <p className="text-sm text-ink">
-                  <span className="font-medium">{c.platform} post</span>{" "}
-                  <span className="text-slate">
-                    · {c.client.companyName ?? "Client"} · {formatDate(c.publishDate)}
-                  </span>
-                </p>
-              </Card>
+              <Row
+                key={c.id}
+                title={`${c.platform} post`}
+                subtitle={c.client.companyName ?? "Client"}
+                meta={[{ label: "Publishes", value: formatDate(c.publishDate) }]}
+                status={<Pill tone="live">Calendar</Pill>}
+              />
             ))}
-          </ul>
+          </Rows>
         )}
-      </section>
+      </Section>
 
-      <section className="mt-10">
-        <SectionTitle count={clients.length}>Accounts</SectionTitle>
+      <Section title="Accounts" count={clients.length}>
         {clients.length === 0 ? (
           <Empty>No accounts assigned to you yet.</Empty>
         ) : (
-          <ul className="mt-4 space-y-3">
+          <ul className="mt-5 space-y-4">
             {clients.map((client) => (
-              <Card as="li" key={client.id}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="font-display text-lg font-medium text-ink">
+              <li
+                key={client.id}
+                className="rounded-sheet border border-ash bg-bone-2 p-5 transition-colors hover:border-ink/25 md:p-6"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+                  <div className="min-w-0">
+                    <p className="font-display text-lg leading-tight font-medium text-ink">
                       {client.companyName ?? client.user.name ?? client.user.email}
                     </p>
-                    <p className="mt-1 text-sm text-slate">{client.user.email}</p>
+                    <p className="mt-1.5 text-sm text-slate">{client.user.email}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {client.services.map((s) => (
-                      <Pill key={s.id} tone={s.status === "active" ? "live" : "done"}>
+                      <Pill key={s.id} tone={s.status === "active" ? "live" : "done"} dot>
                         {s.service.name}
                       </Pill>
                     ))}
                   </div>
                 </div>
+
                 <Details>
                   <Detail label="Since" value={formatDate(client.onboardedAt)} />
                   <Detail label="Projects" value={String(client._count.projects)} />
@@ -141,17 +159,17 @@ export default async function TeamQueuePage() {
                     label="Account manager"
                     value={
                       client.accountManager
-                        ? client.accountManager.user.name ?? client.accountManager.user.email
+                        ? (client.accountManager.user.name ?? client.accountManager.user.email)
                         : "Unassigned"
                     }
                   />
                   <Detail label="Phone" value={client.user.phone} />
                 </Details>
-              </Card>
+              </li>
             ))}
           </ul>
         )}
-      </section>
+      </Section>
     </>
   );
 }

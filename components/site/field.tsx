@@ -43,7 +43,9 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
 }
 
 export function Select({ className, ...props }: ComponentProps<"select">) {
-  return <select className={cn(CONTROL, "appearance-none pr-10", className)} {...props} />;
+  return (
+    <select className={cn(CONTROL, "field-chevron cursor-pointer appearance-none pr-10", className)} {...props} />
+  );
 }
 
 export function Textarea({ className, ...props }: ComponentProps<"textarea">) {

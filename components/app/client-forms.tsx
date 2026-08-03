@@ -32,7 +32,7 @@ function ChangeNote({
     <form action={action} className="space-y-3">
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="decision" value="changes_requested" />
-      <label htmlFor={`note-${id}`} className="label-sm text-slate">
+      <label htmlFor={`note-${id}`} className="label-xs block text-slate">
         What needs to change?
       </label>
       <Textarea id={`note-${id}`} name="note" rows={3} required maxLength={maxLength} />
@@ -91,7 +91,7 @@ export function DeliverableDecision({ id, status }: { id: string; status: string
 
       <form action={comment} className="space-y-2">
         <input type="hidden" name="id" value={id} />
-        <label htmlFor={`comment-${id}`} className="label-sm text-slate">
+        <label htmlFor={`comment-${id}`} className="label-xs block text-slate">
           Add a comment
         </label>
         {/* `required` because the action drops an empty body and returns

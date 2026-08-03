@@ -217,6 +217,38 @@
   opacity: 0.55;
 }
 
+/* The same scale turned on its side, for the working surfaces. The marketing
+   pages have a gutter to run a vertical rule down; a dashboard beside a
+   navigation rail does not, and giving one up would cost the tables their
+   columns. So the app registers its headings against a horizontal scale
+   instead — same instrument, read left to right. Drawn from the bottom so the
+   marks hang off the rule rather than sitting on it. */
+@utility tick-scale {
+  background-image: repeating-linear-gradient(to right, currentColor 0 1px, transparent 1px 9px);
+  opacity: 0.35;
+}
+
+@utility tick-scale-major {
+  background-image: repeating-linear-gradient(to right, currentColor 0 1px, transparent 1px 45px);
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   Controls
+   ========================================================================== */
+
+/* The mark on a select. Every select on the site is `appearance-none`, so that
+   the height, the border and the focus edge match the text inputs beside them —
+   which also removed the platform's own arrow and left a control that looked
+   like an input but did not accept typing. Drawn here rather than as a wrapper
+   element so a `<select>` stays one tag. */
+@utility field-chevron {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%2358554f' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 0.7rem;
+}
+
 /* ==========================================================================
    Signature — the metrics tape
    The vocabulary the work is actually judged on, running as tape. The track

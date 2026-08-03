@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { verifySession } from "@/lib/auth/dal";
 import { listConsultationsForUser } from "@/lib/consultations/store";
 import { listLeadsForUser } from "@/lib/leads/store";
@@ -8,12 +7,14 @@ import { ConsultationRequest, ProfileForm } from "@/components/app/account-forms
 import {
   ButtonLink,
   Card,
-  Details,
   Detail,
+  Details,
   Empty,
   PageHeader,
   Pill,
-  SectionTitle,
+  Row,
+  Rows,
+  Section,
   formatDate,
   formatDateTime,
 } from "@/components/app/ui";
@@ -49,16 +50,18 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const upcoming = consultations.filter((c) => c.status === "scheduled");
+  const upcoming = consultations.filter((c) => c.status === "scheduled" && c.scheduledAt);
 
   return (
     <>
       <PageHeader
         title={profile?.name ? `Hello, ${profile.name.split(" ")[0]}` : "Your account"}
         meta={
-          client
-            ? `Client since ${formatDate(client.onboardedAt)} · ${client.services.length} service${client.services.length === 1 ? "" : "s"}`
-            : "Registered account. Book a consultation to get started."
+          upcoming.length > 0
+            ? `Your next call is ${formatDateTime(upcoming[0].scheduledAt)}.`
+            : client
+              ? `Client since ${formatDate(client.onboardedAt)} · ${client.services.length} service${client.services.length === 1 ? "" : "s"} running`
+              : "Registered account. Book a consultation to get started."
         }
         actions={
           client ? (
@@ -71,14 +74,13 @@ export default async function DashboardPage() {
 
       {client && (
         <Card className="mt-8">
-          <SectionTitle>Your account team</SectionTitle>
-          <Details>
+          <Details className="mt-0 border-t-0 pt-0 sm:grid-cols-3">
             <Detail label="Company" value={client.companyName} />
             <Detail
               label="Account manager"
               value={
                 client.accountManager
-                  ? client.accountManager.user.name ?? client.accountManager.user.email
+                  ? (client.accountManager.user.name ?? client.accountManager.user.email)
                   : "To be assigned"
               }
             />
@@ -90,85 +92,79 @@ export default async function DashboardPage() {
         </Card>
       )}
 
-      <section className="mt-10">
-        <SectionTitle count={consultations.length}>Consultations</SectionTitle>
-
-        {upcoming.length > 0 && (
-          <p className="mt-3 text-sm text-slate">
-            Next: {formatDateTime(upcoming[0].scheduledAt)}
-          </p>
-        )}
-
+      <Section title="Consultations" count={consultations.length}>
         {consultations.length === 0 ? (
-          <Empty>
-            No consultations yet. Ask for one below, or use the{" "}
-            <Link href="/book" className="text-ink underline underline-offset-2">
-              booking page
-            </Link>{" "}
-            to pick a slot.
+          <Empty
+            action={
+              <ButtonLink href="/book" variant="quiet" size="sm">
+                Pick a slot
+              </ButtonLink>
+            }
+          >
+            No consultations yet. Ask for one below, or use the booking page to choose a time that
+            already suits you.
           </Empty>
         ) : (
-          <ul className="mt-4 space-y-3">
+          <Rows>
             {consultations.map((c) => (
-              <Card as="li" key={c.id}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-ink">{c.topic ?? "Consultation"}</p>
-                    <p className="mt-1 text-sm text-slate">
-                      {c.scheduledAt
-                        ? formatDateTime(c.scheduledAt)
-                        : `Requested ${formatDate(c.createdAt)}`}
-                    </p>
-                  </div>
+              <Row
+                key={c.id}
+                title={c.topic ?? "Consultation"}
+                subtitle={
+                  c.scheduledAt
+                    ? formatDateTime(c.scheduledAt)
+                    : `Requested ${formatDate(c.createdAt)}`
+                }
+                status={
                   <Pill
                     tone={CONSULTATION_TONE[c.status as keyof typeof CONSULTATION_TONE] ?? "neutral"}
+                    dot
                   >
                     {c.status}
                   </Pill>
-                </div>
+                }
+              >
                 {c.notes && (
-                  <p className="mt-3 border-t border-ash pt-3 text-sm leading-relaxed text-ink">
+                  <p className="max-w-prose border-l border-ash pl-4 text-sm leading-relaxed text-slate">
                     {c.notes}
                   </p>
                 )}
-              </Card>
+              </Row>
             ))}
-          </ul>
+          </Rows>
         )}
 
-        <Card className="mt-4">
-          <SectionTitle>Ask for a call</SectionTitle>
+        <Card className="mt-6">
+          <p className="label-xs text-slate">Ask for a call</p>
           <div className="mt-4">
             <ConsultationRequest />
           </div>
         </Card>
-      </section>
+      </Section>
 
       {enquiries.length > 0 && (
-        <section className="mt-10">
-          <SectionTitle count={enquiries.length}>Your enquiries</SectionTitle>
-          <ul className="mt-4 space-y-3">
+        <Section title="Your enquiries" count={enquiries.length}>
+          <Rows>
             {enquiries.map((lead) => (
-              <Card as="li" key={lead.id}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <p className="text-sm text-ink">
-                    {lead.kind === "booking" ? "Booking request" : "Contact form"} ·{" "}
-                    <span className="text-slate">{formatDate(lead.createdAt)}</span>
-                  </p>
-                  <Pill tone={lead.status === "closed" ? "done" : "live"}>{lead.status}</Pill>
-                </div>
+              <Row
+                key={lead.id}
+                title={lead.kind === "booking" ? "Booking request" : "Contact form"}
+                subtitle={formatDate(lead.createdAt)}
+                status={<Pill tone={lead.status === "closed" ? "done" : "live"} dot>{lead.status}</Pill>}
+              >
                 {lead.message && (
-                  <p className="mt-3 text-sm leading-relaxed text-slate">{lead.message}</p>
+                  <p className="max-w-prose border-l border-ash pl-4 text-sm leading-relaxed text-slate">
+                    {lead.message}
+                  </p>
                 )}
-              </Card>
+              </Row>
             ))}
-          </ul>
-        </section>
+          </Rows>
+        </Section>
       )}
 
-      <section className="mt-10">
-        <SectionTitle>Your details</SectionTitle>
-        <Card className="mt-4">
+      <Section title="Your details">
+        <Card className="mt-5">
           <ProfileForm
             defaults={{
               name: profile?.name ?? "",
@@ -179,7 +175,7 @@ export default async function DashboardPage() {
             email={viewer.email}
           />
         </Card>
-      </section>
+      </Section>
     </>
   );
 }
