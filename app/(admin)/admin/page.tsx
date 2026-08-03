@@ -166,7 +166,11 @@ export default async function AdminOverviewPage() {
               />
             </Readouts>
 
-            <Readouts className="mt-3">
+            {/* The standing size of the business, at half the weight of the
+                four readings above and joined to them by a single hairline —
+                one console with a main face and a secondary strip, rather than
+                two panels that happen to be stacked. */}
+            <Readouts className="pt-px">
               <Readout
                 label="Clients"
                 value={formatCount(stats.clients)}

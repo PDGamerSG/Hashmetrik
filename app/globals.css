@@ -24,6 +24,25 @@
   --color-ash: #e4dfd4; /* hairlines on bone */
   --color-ash-ink: #2c2926; /* hairlines on ink */
 
+  /* The ink surfaces were text-only until the working side started using them
+     for whole panels, at which point `bone` at some alpha was standing in for
+     every secondary tone — and an alpha over ink is a colour nobody checked.
+     These two are checked: 11.0:1 and 6.1:1 against `--color-ink`, which is the
+     same two-step hierarchy `slate` gives the paper side. */
+  --color-haze: #cfcac1; /* secondary text on ink */
+  --color-haze-2: #97938a; /* notes and captions on ink */
+
+  /* --- depth ------------------------------------------------------------- */
+  /* Paper does not glow, it casts. Both of these are warm — mixed from ink
+     rather than from black — and both carry an offset as well as a blur, so a
+     card reads as a sheet lying on the page rather than as a halo. */
+  --shadow-sheet:
+    0 1px 2px -1px color-mix(in srgb, var(--color-ink) 10%, transparent),
+    0 6px 18px -14px color-mix(in srgb, var(--color-ink) 45%, transparent);
+  --shadow-lift:
+    0 2px 4px -2px color-mix(in srgb, var(--color-ink) 12%, transparent),
+    0 18px 34px -24px color-mix(in srgb, var(--color-ink) 55%, transparent);
+
   /* --- type ------------------------------------------------------------- */
   --font-display: var(--font-newsreader), Georgia, serif;
   --font-editorial: var(--font-newsreader), Georgia, serif;
@@ -247,6 +266,53 @@
   background-repeat: no-repeat;
   background-position: right 0.875rem center;
   background-size: 0.7rem;
+}
+
+/* ==========================================================================
+   The console
+   The signed-in pages used to be printed entirely on paper: rail, heading,
+   readings and records all bone, all separated by the same hairline, so nothing
+   on the page was heavier than anything else and the eye had nowhere to land.
+   The mark itself answers this — it is an ink tile with a coral hash on it — so
+   the app is now framed the way the logo is. The rail and the head of each page
+   are the tile; everything you actually work on stays on the paper beside it.
+
+   This is the light on that tile. It is the hero's sweep at working density:
+   two blooms, both under 10% alpha, sitting in the corner the eye enters from.
+   Push these and the head stops being a machined surface and starts being a
+   marketing banner, which is not what somebody clearing a queue needs.
+   ========================================================================== */
+
+@utility console-light {
+  background-image:
+    radial-gradient(
+      62% 130% at 88% 0%,
+      color-mix(in oklab, var(--color-coral) 13%, transparent) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      45% 100% at 12% 8%,
+      color-mix(in oklab, var(--color-gold) 8%, transparent) 0%,
+      transparent 70%
+    );
+}
+
+/* ==========================================================================
+   Meters
+   A gauge that is already full when it arrives has not told you anything. The
+   fill grows from nothing to its width once, quickly — this is the reading
+   being taken, not an entrance. `--meter` is the target, written inline.
+   ========================================================================== */
+
+@keyframes meter-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.meter-fill {
+  transform-origin: left;
+  animation: meter-fill 0.65s var(--ease-out-quint) both;
 }
 
 /* ==========================================================================
@@ -721,6 +787,12 @@ html[data-motion="reduce"] .pulse-dot,
 html[data-motion="reduce"] .cue-mark,
 html[data-motion="reduce"] .rise {
   animation: none !important;
+}
+
+/* The meter keeps its reading; it simply arrives at it. */
+html[data-motion="reduce"] .meter-fill {
+  animation: none !important;
+  transform: none;
 }
 
 /* The sweep is composition, not movement — it stays, it simply stops arriving

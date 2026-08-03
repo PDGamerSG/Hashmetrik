@@ -43,7 +43,7 @@ export function NavLinks({ area, links }: { area: string; links: NavLink[] }) {
     /* Scrolls inside the rail rather than pushing the account block off the
        bottom of it: the admin area has ten sections, and on a laptop in
        landscape that column is shorter than the list. */
-    <nav aria-label={`${area} sections`} className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
+    <nav aria-label={`${area} sections`} className="relative min-h-0 flex-1 overflow-y-auto px-3 pb-4">
       <ul className="flex flex-col gap-0.5">
         {links.map((link) => {
           const active = link.href === activeHref;
@@ -55,20 +55,28 @@ export function NavLinks({ area, links }: { area: string; links: NavLink[] }) {
                 /* Sheet corners, not pills: the system's rule is that
                    everything you read has corners and everything you press does
                    not, and a full-width row with round ends reads as a button
-                   the width of the rail. */
-                className={`label flex items-center rounded-sheet px-3 py-2.5 transition-colors ${
-                  active ? "bg-ink text-bone" : "text-slate hover:bg-ink/[0.055] hover:text-ink"
+                   the width of the rail.
+
+                   The rail is ink now, so the marked row is the inverse of what
+                   it was: a piece of the paper you are working on, cut into the
+                   frame. It is the same relationship the page has to the rail,
+                   stated once more at the size of a link. */
+                className={`label flex items-center rounded-sheet px-3 py-2.5 transition-colors duration-200 ${
+                  active
+                    ? "bg-bone text-ink"
+                    : "text-haze-2 hover:bg-bone/[0.07] hover:text-bone"
                 }`}
               >
                 {link.label}
                 {link.badge ? (
                   /* The unread count, drawn as a reading rather than as a red
-                     dot: how many is the useful part, and on the active row a
-                     coral disc on ink is the one place the accent still
-                     reads. */
+                     dot: how many is the useful part. Coral on the paper row,
+                     coral on the ink — this is the one count on the rail that
+                     is asking for something, so it keeps the accent in both
+                     states rather than going quiet on the row you are on. */
                   <span
                     className={`tabular ml-auto inline-flex min-w-4 items-center justify-center rounded-full px-1 py-px text-[10px] ${
-                      active ? "bg-coral text-ink" : "bg-ink text-bone"
+                      active ? "bg-coral text-ink" : "bg-coral/85 text-ink"
                     }`}
                   >
                     {link.badge}

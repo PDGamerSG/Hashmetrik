@@ -27,16 +27,29 @@ export { Button, ButtonLink, SubmitButton } from "./button";
  */
 
 /**
- * The head of every signed-in page.
+ * The head of every signed-in page: the console.
+ *
+ * This was a heading on the paper with a ruled scale under it, and it was the
+ * flattest thing on a flat page — the title of the page, the readings taken off
+ * it and the records underneath were all printed on one sheet at one weight, so
+ * there was no order of reading, only a top.
+ *
+ * It is an ink panel now. The rail is ink, the head of the page is ink, and the
+ * work you do sits on the paper between them: the mark is a dark tile with a
+ * coral hash on it, and this is that arrangement at the size of a screen. The
+ * gain is not decoration — it is that a reading printed white on black is an
+ * instrument face, and the eye goes there first without being told to.
  *
  * The monospace caption that used to sit above the title is gone. It said
  * "Admin", "Team" or the company name — which the rail already says, in the
  * same face, at the same size — so the top of every page opened with the same
  * word twice and the heading arrived third.
  *
- * The rule underneath is a scale rather than a plain hairline: it is the
- * site's signature, turned on its side for a surface that has no gutter to
- * spare. See `tick-scale` in `globals.css`.
+ * The rule along the bottom edge is a scale rather than a plain hairline: it is
+ * the site's signature, turned on its side for a surface that has no gutter to
+ * spare, and drawn in gold because on ink that is the rule that reads. Where a
+ * band of `Readouts` follows, it is the scale those readings register against.
+ * See `tick-scale` in `globals.css`.
  */
 export function PageHeader({
   title,
@@ -48,40 +61,50 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header>
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 pb-5">
+    /* Square, unlike every other surface in the kit. The console is assembled
+       from separate elements — this head, then whatever band of readings the
+       page puts under it — and two 4px corners meeting leave a notch on each
+       side of the join. A panel is also the one thing here that is machined
+       rather than printed, so square is the honest edge for it. */
+    <header className="console-light relative overflow-hidden bg-ink px-5 pt-7 shadow-sheet md:px-8 md:pt-9">
+      <div className="relative flex flex-wrap items-end justify-between gap-x-8 gap-y-5 pb-7 md:pb-8">
         <div className="min-w-0">
-          <h1 className="font-display text-[clamp(1.85rem,1.15rem+2.2vw,2.5rem)] leading-[1.02] font-medium tracking-[-0.022em] text-balance text-ink">
+          <h1 className="font-display text-[clamp(1.85rem,1.15rem+2.2vw,2.5rem)] leading-[1.02] font-medium tracking-[-0.022em] text-balance text-bone">
             {title}
           </h1>
-          {meta && <div className="mt-2.5 text-sm leading-relaxed text-slate">{meta}</div>}
+          {meta && <div className="mt-3 max-w-prose text-sm leading-relaxed text-haze">{meta}</div>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
 
-      <div aria-hidden className="relative h-2.5 text-ink">
-        <span className="absolute inset-x-0 top-0 h-px bg-ash" />
-        <span className="tick-scale absolute inset-x-0 top-0 h-1.5" />
-        <span className="tick-scale-major absolute inset-x-0 top-0 h-2.5" />
+      {/* Hung off the panel's bottom edge, so the marks hang from the rule the
+          way they do on a real scale rather than standing on it. */}
+      <div aria-hidden className="relative h-2.5 text-gold">
+        <span className="absolute inset-x-0 bottom-0 h-px bg-ash-ink" />
+        <span className="tick-scale absolute inset-x-0 bottom-0 h-1.5" />
+        <span className="tick-scale-major absolute inset-x-0 bottom-0 h-2.5" />
       </div>
     </header>
   );
 }
 
 /**
- * A band of readings, ruled into one panel.
+ * A band of readings, ruled into one panel — the lower half of the console.
  *
- * Instruments rule their columns, they do not box them — so this is a single
- * bordered field divided by hairlines, not four cards with four shadows and
- * twelve edges. The rules are the `gap-px` over an ash ground, which means
- * they land correctly however many readings there are and wherever the grid
- * wraps.
+ * Instruments rule their columns, they do not box them, so this is a single
+ * field divided by hairlines rather than four cards with four shadows and
+ * twelve edges. The rules are the `gap-px` over an ink ground, which means they
+ * land correctly however many readings there are and wherever the grid wraps.
+ *
+ * It carries no top margin and the same square edge as the head above it, so
+ * where a page puts one directly under the other the two read as one slab. A
+ * page with no readings simply ends the console at the scale.
  */
 export function Readouts({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <ul
       className={cn(
-        "mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-sheet border border-ash bg-ash lg:grid-cols-4",
+        "grid grid-cols-2 gap-px bg-ash-ink shadow-sheet lg:grid-cols-4",
         className,
       )}
     >
@@ -123,26 +146,35 @@ export function Readout({
   const lit = urgent && value !== 0 && value !== "0";
 
   return (
-    <li className="group relative bg-bone-2 transition-colors hover:bg-bone">
-      <div className={cn("px-4 md:px-5", compact ? "py-3.5 md:py-4" : "py-4 md:py-5")}>
-        <p className="label-xs flex items-center gap-1.5 text-slate">
+    <li className="group relative bg-ink transition-colors duration-200 hover:bg-ink-2">
+      {/* The lit reading gets its own coral wash rather than a coral figure:
+          recolouring the number would make one panel disagree with the others
+          about what a reading looks like. This lights the cell instead, which is
+          what a warning lamp behind a dial actually does. */}
+      {lit && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-coral/15 to-transparent"
+        />
+      )}
+
+      <div className={cn("relative px-4 md:px-5", compact ? "py-4" : "py-5 md:py-6")}>
+        <p className="label-xs flex items-center gap-1.5 text-haze-2">
           {lit && <span aria-hidden className="pulse-dot size-1.5 rounded-full bg-coral" />}
           {label}
         </p>
 
         <p
           className={cn(
-            "tabular flex items-baseline gap-1.5 font-display leading-[0.9] font-medium tracking-[-0.02em] text-ink",
-            compact
-              ? "mt-2 text-[1.375rem]"
-              : "mt-3 text-[clamp(1.6rem,1rem+1.6vw,2.25rem)]",
+            "tabular flex items-baseline gap-1.5 font-display leading-[0.9] font-medium tracking-[-0.02em] text-bone",
+            compact ? "mt-2.5 text-[1.375rem]" : "mt-3.5 text-[clamp(1.7rem,1rem+1.8vw,2.4rem)]",
           )}
         >
           {value}
-          {of !== undefined && <span className="text-sm font-normal text-slate">of {of}</span>}
+          {of !== undefined && <span className="text-sm font-normal text-haze-2">of {of}</span>}
         </p>
 
-        {note && <p className="mt-2.5 text-xs leading-snug text-slate">{note}</p>}
+        {note && <p className="mt-2.5 text-xs leading-snug text-haze-2">{note}</p>}
       </div>
 
       {href && (
@@ -152,7 +184,7 @@ export function Readout({
           <Link href={href} className="absolute inset-0" aria-label={`${label} — open`} />
           <ArrowUpRight
             aria-hidden
-            className="absolute top-4 right-4 size-3.5 text-slate opacity-0 transition-opacity group-hover:opacity-100"
+            className="absolute top-4 right-4 size-3.5 text-haze opacity-0 transition-opacity group-hover:opacity-100"
           />
         </>
       )}
@@ -187,15 +219,25 @@ export function Meter({
         <span className="label-xs min-w-0 truncate text-slate">{label}</span>
         <span className="tabular shrink-0 text-sm text-ink">{display ?? `${Math.round(pct)}%`}</span>
       </div>
+
+      {/* Square ends, not a pill: the system's rule is that everything you read
+          has corners, and a meter is read. The track carries the tick scale the
+          rest of the site is ruled with, so the bar can be read off marks
+          instead of only against the bar beside it — which is the whole reason
+          a proportion is drawn rather than printed. */}
       <div
         role="meter"
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
-        className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ash"
+        className="relative mt-2.5 h-2 w-full overflow-hidden rounded-[2px] bg-ash"
       >
+        <span aria-hidden className="tick-scale-major absolute inset-0 text-slate opacity-45" />
         <div
-          className={cn("h-full rounded-full", tone === "coral" ? "bg-coral" : "bg-ink")}
+          className={cn(
+            "meter-fill relative h-full rounded-[2px]",
+            tone === "coral" ? "bg-coral" : "bg-ink",
+          )}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -246,7 +288,13 @@ export function Row({
   className?: string;
 }) {
   return (
-    <li className={cn("group relative transition-colors", href && "hover:bg-ink/[0.03]", className)}>
+    <li
+      className={cn(
+        "group relative transition-colors duration-200",
+        href && "hover:bg-bone-2",
+        className,
+      )}
+    >
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-4">
         <div className="min-w-0 flex-1 basis-52">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -515,7 +563,16 @@ export function Card({
   as?: "div" | "li" | "section";
 }) {
   return (
-    <Tag className={cn("rounded-sheet border border-ash bg-bone-2 p-5 md:p-6", className)}>
+    /* A hairline said "there is an edge here"; it did not say the card was on
+       top. The shadow is warm and offset — a sheet lying on the page, not a
+       glow around a box — and it is what lets a stack of cards read as a stack
+       rather than as a grid of outlines. */
+    <Tag
+      className={cn(
+        "rounded-sheet border border-ash bg-bone-2 p-5 shadow-sheet md:p-6",
+        className,
+      )}
+    >
       {children}
     </Tag>
   );

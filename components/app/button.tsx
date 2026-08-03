@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
  * corners, everything you press does not.
  */
 
-type Variant = "primary" | "quiet" | "danger";
+type Variant = "primary" | "quiet" | "danger" | "onInk";
 type Size = "sm" | "md";
 
 const VARIANT: Record<Variant, string> = {
@@ -40,6 +40,11 @@ const VARIANT: Record<Variant, string> = {
      filled: a destructive control should be findable, not the loudest thing on
      the page. */
   danger: "border border-coral/50 text-ink hover:border-coral hover:bg-coral/10",
+  /* `quiet`, for the ink surfaces — the rail and the head of each page. It is
+     its own variant rather than a set of overrides at the call site because an
+     ash border on ink is invisible, and a control nobody can see is the kind of
+     thing that gets fixed once per call site and then drifts. */
+  onInk: "border border-haze/25 text-haze hover:border-haze/60 hover:bg-bone/[0.07] hover:text-bone",
 };
 
 const SIZE: Record<Size, string> = {
