@@ -1,4 +1,4 @@
-import { AppNav, type NavLink } from "@/components/app/nav";
+import { AppShell, type NavLink } from "@/components/app/shell";
 import { logout } from "@/app/(app)/actions";
 import { requireStaff } from "@/lib/auth/dal";
 import { countUnread } from "@/lib/notifications/store";
@@ -24,9 +24,8 @@ export default async function TeamLayout({ children }: { children: React.ReactNo
   ];
 
   return (
-    <>
-      <AppNav area="Team" email={viewer.email} links={links} signOut={logout} />
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 md:px-10">{children}</div>
-    </>
+    <AppShell area="Team" email={viewer.email} links={links} signOut={logout}>
+      {children}
+    </AppShell>
   );
 }
