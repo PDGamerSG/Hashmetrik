@@ -63,7 +63,7 @@ export default async function NotificationsPage() {
                 aria-hidden
                 className={cn(
                   "mt-1.5 h-3 w-px shrink-0",
-                  notice.readAt ? "bg-ash" : "bg-coral",
+                  notice.readAt ? "bg-ash" : "bg-lamp-coral",
                 )}
               />
 

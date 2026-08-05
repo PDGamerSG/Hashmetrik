@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { ActionButton } from "@/components/site/button";
+import { Button } from "@/components/app/button";
 import { Field, Input, Notice } from "@/components/site/field";
 import { PasswordInput } from "@/components/site/password-input";
 import { login, signup, type FormState } from "@/app/(app)/actions";
@@ -15,26 +15,17 @@ import { MIN_PASSWORD } from "@/lib/accounts/schema";
  * server actions, so the forms still submit with JavaScript disabled and the
  * error survives the round trip without a client-side store.
  *
- * The submit is the site's own pill rather than the square button that used to
- * stand here. The system's rule is that everything you read has corners and
- * everything you press does not — a square ink slab under a stack of square
- * inputs read as one more field, and the one element on the page a visitor is
- * meant to press should not look like something to fill in.
+ * The submit is the board's own key, not the marketing site's pill: these two
+ * forms are the door into the board and everything behind them is machined.
+ * Taller than a key inside the app and full width, because it is the only thing
+ * on the page to press and a stack of dark slots wants a lit face under it.
  */
 
 function Submit({ pending, children }: { pending: boolean; children: string }) {
   return (
-    <ActionButton
-      type="submit"
-      size="lg"
-      /* No arrow: the disc's arrow points out of the page, and this goes
-         further in. */
-      arrow={false}
-      disabled={pending}
-      className="w-full"
-    >
+    <Button type="submit" pending={pending} className="h-12 w-full">
       {children}
-    </ActionButton>
+    </Button>
   );
 }
 

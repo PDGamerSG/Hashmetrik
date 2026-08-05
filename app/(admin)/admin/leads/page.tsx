@@ -42,12 +42,12 @@ export const dynamic = "force-dynamic";
    if nobody calls today, gold is the stage that paid, ash is the one that
    ended, and the ink ramp between them is distance travelled. */
 const STAGE_FILL: Record<LeadStatus, string> = {
-  new: "bg-coral",
+  new: "bg-lamp-coral",
   qualified: "bg-ink/85",
   consultation: "bg-ink/70",
   proposal: "bg-ink/55",
   negotiation: "bg-ink/40",
-  client: "bg-gold",
+  client: "bg-lamp-gold",
   lost: "bg-ash",
 };
 

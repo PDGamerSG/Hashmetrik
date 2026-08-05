@@ -9,8 +9,11 @@ import { fontVariables } from "@/lib/fonts";
  * Deliberately bare next to the marketing site's: no smooth scroll, no intro,
  * no masthead, no chat bubble. These are working surfaces somebody keeps open
  * while they do a job, and every piece of marketing motion in the way of that
- * is a cost with no return. It keeps the site's type and colour so it still
- * reads as the same company.
+ * is a cost with no return.
+ *
+ * Same brand tokens as the public site — bone, ink, coral, gold — carried
+ * through a conventional light dashboard rather than the site's own printed
+ * layout.
  */
 export const metadata: Metadata = {
   title: { default: "HashMetrik", template: "%s — HashMetrik" },
@@ -20,13 +23,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f6f3ec",
+  themeColor: "#f7f5f0",
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontVariables}>
-      <body className="flex min-h-dvh flex-col bg-bone antialiased">{children}</body>
+      <body className="flex min-h-dvh flex-col bg-bone text-ink antialiased">{children}</body>
     </html>
   );
 }

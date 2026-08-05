@@ -118,8 +118,8 @@ export function MetricChart({ series }: { series: MetricSeries }) {
                   in a flat band — a solid tint with a hard bottom edge reads as
                   a second shape sitting under the chart. */}
               <linearGradient id={`wash-${wash}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-ink)" stopOpacity="0.14" />
-                <stop offset="100%" stopColor="var(--color-ink)" stopOpacity="0.01" />
+                <stop offset="0%" stopColor="var(--color-gold)" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="var(--color-gold)" stopOpacity="0.01" />
               </linearGradient>
             </defs>
 
@@ -131,7 +131,7 @@ export function MetricChart({ series }: { series: MetricSeries }) {
                 x2={marked.x}
                 y1="0"
                 y2={height}
-                className="stroke-ink/25"
+                className="stroke-slate/50"
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
@@ -139,7 +139,7 @@ export function MetricChart({ series }: { series: MetricSeries }) {
 
             <path
               d={line}
-              className="stroke-ink"
+              className="stroke-[var(--color-gold)]"
               fill="none"
               strokeWidth="2"
               vectorEffect="non-scaling-stroke"
@@ -155,7 +155,7 @@ export function MetricChart({ series }: { series: MetricSeries }) {
                 cx={(marked ?? last)!.x}
                 cy={(marked ?? last)!.y}
                 r="3"
-                className="fill-bone-2 stroke-ink"
+                className="fill-bone stroke-[var(--color-gold)]"
                 strokeWidth="2"
                 vectorEffect="non-scaling-stroke"
               />

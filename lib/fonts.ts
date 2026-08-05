@@ -42,7 +42,7 @@ const dmMono = DM_Mono({
 /**
  * The three font variables, for the `<html>` element.
  *
- * Shared because there are now two root layouts — the site and the admin area —
+ * Shared across every root layout — the site, the app and the admin area —
  * and `next/font` keys its cache on the call site. Declaring the faces twice
  * would ship two copies of each and let them drift.
  */

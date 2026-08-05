@@ -119,7 +119,10 @@ export default async function AdminSettingsPage() {
             <tbody>
               {ROLE_POWERS.map((row) => (
                 <tr
-                  key={row.role}
+                  /* Keyed by label, not role: a client is an activated
+                     registered user, so two rows share `REGISTERED_USER` and
+                     React was being handed the same key twice. */
+                  key={row.label}
                   className="border-b border-ash align-top transition-colors hover:bg-ink/[0.02]"
                 >
                   <td className="py-3.5 pr-4 font-medium text-ink">{row.label}</td>

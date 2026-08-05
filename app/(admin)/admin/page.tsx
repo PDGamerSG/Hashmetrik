@@ -116,6 +116,15 @@ export default async function AdminOverviewPage() {
     <>
       <PageHeader
         title="Overview"
+        /* The board's own headline: the two readings that decay if nobody
+           looks today, on flaps, which turn when either of them changes. */
+        status={
+          stats
+            ? stats.newLeads + waiting > 0
+              ? `${stats.newLeads} LEADS ${waiting} APPROVALS`
+              : "ALL CLEAR"
+            : "BOARD OFFLINE"
+        }
         meta={
           stats
             ? waiting + stats.newLeads > 0
@@ -170,7 +179,7 @@ export default async function AdminOverviewPage() {
                 four readings above and joined to them by a single hairline —
                 one console with a main face and a secondary strip, rather than
                 two panels that happen to be stacked. */}
-            <Readouts className="pt-px">
+            <Readouts className="mt-px">
               <Readout
                 label="Clients"
                 value={formatCount(stats.clients)}

@@ -23,6 +23,10 @@
   --color-slate: #58554f; /* secondary text on bone — 7.1:1 */
   --color-ash: #e4dfd4; /* hairlines on bone */
   --color-ash-ink: #2c2926; /* hairlines on ink */
+  /* Cleared / done, for the signed-in app's status badges. Dark enough to
+     read as text at accessible contrast on bone, unlike coral and gold which
+     stay decorative accents. */
+  --color-go: #166534;
 
   /* The ink surfaces were text-only until the working side started using them
      for whole panels, at which point `bone` at some alpha was standing in for
@@ -827,4 +831,68 @@ html[data-motion="reduce"] *::after {
 
 .lenis.lenis-smooth [data-lenis-prevent] iframe {
   pointer-events: auto;
+}
+
+/* ==========================================================================
+   THE APP
+   Everything from here down belongs to the signed-in areas — `app/(app)` and
+   `app/(admin)` — and nothing above it changes. The public site keeps its own
+   printed system; the working surfaces are an ordinary light dashboard built
+   from the same brand tokens: bone paper, ink text, a coral accent for
+   anything asking for a decision, gold for something running, green for
+   cleared. One light appearance only — no dark mode, no switch.
+   ========================================================================== */
+
+/* The dial in `components/ui/gauge.tsx` — the one place a proportion earns a
+   drawn instrument rather than a bar, because the brand is *hash* + *metrik*
+   and a scale with a needle on it is the most direct statement of that
+   anywhere in the product. Both halves are registered custom properties so
+   the browser interpolates them itself: `--dial-sweep` drives the arc's
+   `stroke-dasharray` (the path is declared `pathLength="100"`, so the sweep is
+   just a percentage) and `--dial-count` is printed by `counter()`. No state,
+   no render per frame, and the keyframe only declares `from`, so the settled
+   state is whatever the server sent — the dial reads correctly before any
+   JavaScript arrives, and would still read correctly if none ever did.
+   `inherits: true` is load-bearing on both: the readout prints from a
+   pseudo-element, which only sees a custom property by inheritance. */
+@property --dial-sweep {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@property --dial-count {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: true;
+}
+
+@keyframes dial-sweep {
+  from {
+    --dial-sweep: 0;
+    --dial-count: 0;
+  }
+}
+
+.dial {
+  animation: dial-sweep 0.9s var(--ease-out-quint) both;
+}
+
+.dial-arc {
+  stroke-dasharray: var(--dial-sweep) 100;
+}
+
+.dial-count::after {
+  counter-reset: dial var(--dial-count);
+  content: counter(dial) "%";
+}
+
+html[data-motion="reduce"] .dial {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dial {
+    animation: none !important;
+  }
 }

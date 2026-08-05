@@ -3,124 +3,92 @@ import Link from "next/link";
 import { ArrowUpRight, CircleAlert, CircleCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/* The action controls live in their own `"use client"` module — they read the
-   surrounding form's pending state — and are re-exported here so a page still
-   has one import for the whole kit. */
+/* The action controls live in their own `"use client"` module and are
+   re-exported here so a page still has one import for the whole kit. The
+   segmented control is client for its own reason: the active pill slides
+   between filters, which is a shared layout and needs the browser. */
 export { Button, ButtonLink, SubmitButton } from "./button";
+export { Filters, Filter } from "./filters";
+/** The dial — see `components/ui/gauge.tsx`. Re-exported here so a page still
+ * has one import for the whole kit. */
+export { Dial } from "@/components/ui/gauge";
 
 /**
  * The pieces every signed-in page is built from.
  *
- * These surfaces used to be a card and nothing else: every page was a stack of
- * identically sized boxes, one per record, and a page built entirely of cards
- * has no hierarchy left to spend — the count of clients, a single overdue
- * approval and a phone number all arrived in the same rectangle at the same
- * weight. What the marketing side of this site does well, the working side had
- * quietly opted out of.
- *
- * So the instrument vocabulary is here now, at working density: readings ruled
- * into a panel rather than boxed one by one, ledgers of hairline rows instead
- * of stacks of cards, meters where a proportion is the point, and headings
- * registered against a tick scale. The palette is unchanged — bone paper, ink
- * text, ash rules, coral for the one thing that wants a decision — and nothing
- * here moves except in answer to a pointer.
+ * A conventional dashboard kit — cards, a KPI band, a queue of rows, a
+ * status badge — built off the same brand tokens as the public site: bone
+ * paper, ink text, coral for anything that is asking for a decision, gold for
+ * something running, green for cleared. Every signed-in page imports from
+ * here and nothing else, so a colour or a radius changed once changes
+ * everywhere.
  */
 
+/* ==========================================================================
+   The head of a page
+   ========================================================================== */
+
 /**
- * The head of every signed-in page: the console.
- *
- * This was a heading on the paper with a ruled scale under it, and it was the
- * flattest thing on a flat page — the title of the page, the readings taken off
- * it and the records underneath were all printed on one sheet at one weight, so
- * there was no order of reading, only a top.
- *
- * It is an ink panel now. The rail is ink, the head of the page is ink, and the
- * work you do sits on the paper between them: the mark is a dark tile with a
- * coral hash on it, and this is that arrangement at the size of a screen. The
- * gain is not decoration — it is that a reading printed white on black is an
- * instrument face, and the eye goes there first without being told to.
- *
- * The monospace caption that used to sit above the title is gone. It said
- * "Admin", "Team" or the company name — which the rail already says, in the
- * same face, at the same size — so the top of every page opened with the same
- * word twice and the heading arrived third.
- *
- * The rule along the bottom edge is a scale rather than a plain hairline: it is
- * the site's signature, turned on its side for a surface that has no gutter to
- * spare, and drawn in gold because on ink that is the rule that reads. Where a
- * band of `Readouts` follows, it is the scale those readings register against.
- * See `tick-scale` in `globals.css`.
+ * The title bar at the top of every signed-in page: what this page is, the
+ * one-line description under it, a short status badge if there is a single
+ * reading worth calling out, and the primary action on the right.
  */
 export function PageHeader({
   title,
   meta,
   actions,
+  status,
 }: {
   title: string;
   meta?: ReactNode;
   actions?: ReactNode;
+  /** A short reading worth calling out beside the title — "3 waiting on you". */
+  status?: string;
 }) {
   return (
-    /* Square, unlike every other surface in the kit. The console is assembled
-       from separate elements — this head, then whatever band of readings the
-       page puts under it — and two 4px corners meeting leave a notch on each
-       side of the join. A panel is also the one thing here that is machined
-       rather than printed, so square is the honest edge for it. */
-    <header className="console-light relative overflow-hidden bg-ink px-5 pt-7 shadow-sheet md:px-8 md:pt-9">
-      <div className="relative flex flex-wrap items-end justify-between gap-x-8 gap-y-5 pb-7 md:pb-8">
+    <header className="border-b border-ash pb-6">
+      <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4">
         <div className="min-w-0">
-          <h1 className="font-display text-[clamp(1.85rem,1.15rem+2.2vw,2.5rem)] leading-[1.02] font-medium tracking-[-0.022em] text-balance text-bone">
+          {status && (
+            <p className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-coral uppercase">
+              <span aria-hidden className="size-1.5 rounded-full bg-coral" />
+              {status}
+            </p>
+          )}
+          <h1 className="font-display text-[clamp(1.75rem,1.2rem+1.8vw,2.5rem)] font-medium text-balance text-ink">
             {title}
           </h1>
-          {meta && <div className="mt-3 max-w-prose text-sm leading-relaxed text-haze">{meta}</div>}
+          {meta && (
+            <div className="mt-2.5 max-w-[62ch] text-[0.9375rem] leading-relaxed text-slate">
+              {meta}
+            </div>
+          )}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-      </div>
-
-      {/* Hung off the panel's bottom edge, so the marks hang from the rule the
-          way they do on a real scale rather than standing on it. */}
-      <div aria-hidden className="relative h-2.5 text-gold">
-        <span className="absolute inset-x-0 bottom-0 h-px bg-ash-ink" />
-        <span className="tick-scale absolute inset-x-0 bottom-0 h-1.5" />
-        <span className="tick-scale-major absolute inset-x-0 bottom-0 h-2.5" />
       </div>
     </header>
   );
 }
 
+/* ==========================================================================
+   KPI band
+   ========================================================================== */
+
 /**
- * A band of readings, ruled into one panel — the lower half of the console.
- *
- * Instruments rule their columns, they do not box them, so this is a single
- * field divided by hairlines rather than four cards with four shadows and
- * twelve edges. The rules are the `gap-px` over an ink ground, which means they
- * land correctly however many readings there are and wherever the grid wraps.
- *
- * It carries no top margin and the same square edge as the head above it, so
- * where a page puts one directly under the other the two read as one slab. A
- * page with no readings simply ends the console at the scale.
+ * The readings across the top of a page, as a row of stat cards.
  */
 export function Readouts({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <ul
-      className={cn(
-        "grid grid-cols-2 gap-px bg-ash-ink shadow-sheet lg:grid-cols-4",
-        className,
-      )}
-    >
-      {children}
-    </ul>
+    <ul className={cn("mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4", className)}>{children}</ul>
   );
 }
 
 /**
- * One reading: what it is, how much of it there is, and — where it earns it —
- * the page that has the detail.
+ * One stat card.
  *
- * `urgent` is for the readings that decay if nobody looks today. It does not
- * recolour the figure; it lights a coral pilot beside the label, which is the
- * one motion this surface allows and the same signal the marketing pages use
- * for a live panel.
+ * `urgent` is for the readings that decay if nobody looks today — it marks
+ * the label with a coral dot. The figure itself always stays ink: a warning
+ * lights the lamp beside a dial, it does not recolour the reading.
  */
 export function Readout({
   label,
@@ -138,43 +106,38 @@ export function Readout({
   note?: ReactNode;
   href?: string;
   urgent?: boolean;
-  /** For a second band of standing figures under the headline readings. */
+  /** For a second, denser band of standing figures. */
   compact?: boolean;
 }) {
-  /* Pages hand this a formatted string or a raw number, so both zeroes have to
-     be refused — an unlit reading is the whole point of the light. */
+  /* Pages hand this a formatted string or a raw number, so both zeroes have
+     to be refused — an unmarked reading is the whole point of the dot. */
   const lit = urgent && value !== 0 && value !== "0";
 
   return (
-    <li className="group relative bg-ink transition-colors duration-200 hover:bg-ink-2">
-      {/* The lit reading gets its own coral wash rather than a coral figure:
-          recolouring the number would make one panel disagree with the others
-          about what a reading looks like. This lights the cell instead, which is
-          what a warning lamp behind a dial actually does. */}
-      {lit && (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-coral/15 to-transparent"
-        />
+    <li
+      className={cn(
+        "group relative rounded-xl border bg-bone-2 shadow-sm transition-colors",
+        lit ? "border-coral/30" : "border-ash",
+        href && "hover:border-slate/40",
       )}
-
-      <div className={cn("relative px-4 md:px-5", compact ? "py-4" : "py-5 md:py-6")}>
-        <p className="label-xs flex items-center gap-1.5 text-haze-2">
-          {lit && <span aria-hidden className="pulse-dot size-1.5 rounded-full bg-coral" />}
+    >
+      <div className={cn("px-4 md:px-5", compact ? "py-4" : "py-5")}>
+        <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-slate uppercase">
+          {lit && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-coral" />}
           {label}
         </p>
 
         <p
           className={cn(
-            "tabular flex items-baseline gap-1.5 font-display leading-[0.9] font-medium tracking-[-0.02em] text-bone",
-            compact ? "mt-2.5 text-[1.375rem]" : "mt-3.5 text-[clamp(1.7rem,1rem+1.8vw,2.4rem)]",
+            "flex items-baseline gap-2 font-display font-medium text-ink tabular-nums",
+            compact ? "mt-2.5 text-2xl" : "mt-3 text-[clamp(1.75rem,1.1rem+1.6vw,2.25rem)]",
           )}
         >
           {value}
-          {of !== undefined && <span className="text-sm font-normal text-haze-2">of {of}</span>}
+          {of !== undefined && <span className="text-sm font-medium text-slate">of {of}</span>}
         </p>
 
-        {note && <p className="mt-2.5 text-xs leading-snug text-haze-2">{note}</p>}
+        {note && <p className="mt-2 text-[0.8125rem] leading-snug text-slate">{note}</p>}
       </div>
 
       {href && (
@@ -184,7 +147,7 @@ export function Readout({
           <Link href={href} className="absolute inset-0" aria-label={`${label} — open`} />
           <ArrowUpRight
             aria-hidden
-            className="absolute top-4 right-4 size-3.5 text-haze opacity-0 transition-opacity group-hover:opacity-100"
+            className="absolute top-4 right-4 size-3.5 text-slate opacity-0 transition-opacity group-hover:opacity-100"
           />
         </>
       )}
@@ -193,9 +156,13 @@ export function Readout({
 }
 
 /**
- * A proportion, drawn. Used wherever the comparison between rows is the point
- * — progress against a plan, uptake across the service catalogue — because a
- * column of percentages has to be read one figure at a time.
+ * A proportion, drawn as a bar in a track.
+ *
+ * For a *column* of proportions — uptake across the service catalogue,
+ * milestones across five projects — because bars stacked in a column share a
+ * left edge and can be compared down it at a glance. When there is one
+ * proportion and it is the headline of the thing it sits on, `Dial` is the
+ * instrument instead — see `components/ui/gauge.tsx`.
  */
 export function Meter({
   label,
@@ -216,26 +183,22 @@ export function Meter({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4">
-        <span className="label-xs min-w-0 truncate text-slate">{label}</span>
-        <span className="tabular shrink-0 text-sm text-ink">{display ?? `${Math.round(pct)}%`}</span>
+        <span className="min-w-0 truncate text-sm font-medium text-slate">{label}</span>
+        <span className="shrink-0 text-sm font-semibold text-ink tabular-nums">
+          {display ?? `${Math.round(pct)}%`}
+        </span>
       </div>
 
-      {/* Square ends, not a pill: the system's rule is that everything you read
-          has corners, and a meter is read. The track carries the tick scale the
-          rest of the site is ruled with, so the bar can be read off marks
-          instead of only against the bar beside it — which is the whole reason
-          a proportion is drawn rather than printed. */}
       <div
         role="meter"
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
-        className="relative mt-2.5 h-2 w-full overflow-hidden rounded-[2px] bg-ash"
+        className="mt-2 h-2 w-full overflow-hidden rounded-full bg-ash"
       >
-        <span aria-hidden className="tick-scale-major absolute inset-0 text-slate opacity-45" />
         <div
           className={cn(
-            "meter-fill relative h-full rounded-[2px]",
+            "meter-fill h-full rounded-full",
             tone === "coral" ? "bg-coral" : "bg-ink",
           )}
           style={{ width: `${pct}%` }}
@@ -245,28 +208,35 @@ export function Meter({
   );
 }
 
+/* ==========================================================================
+   The queue
+   ========================================================================== */
+
 /**
- * A ledger.
- *
- * Records are rows ruled off from one another, not cards stacked with a gap:
- * a hairline is enough to separate two lines of a list, and it lets twelve
- * leads occupy the space four cards used to, which is the difference between
- * reading the queue and scrolling it.
+ * A list of records.
  */
 export function Rows({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <ul className={cn("mt-4 divide-y divide-ash border-y border-ash", className)}>{children}</ul>
+    <ul
+      className={cn(
+        "mt-4 overflow-hidden rounded-xl border border-ash bg-bone-2 shadow-sm",
+        "divide-y divide-ash",
+        className,
+      )}
+    >
+      {children}
+    </ul>
   );
 }
 
 export type RowMeta = { label: string; value: ReactNode };
 
 /**
- * One record on the ledger.
+ * One record.
  *
  * `href` stretches over the row rather than wrapping it, so anything
- * interactive passed as `trailing` or `children` still receives its own clicks
- * — those keep their own stacking context via `relative`.
+ * interactive passed as `trailing` or `children` still receives its own
+ * clicks — those keep their own stacking context via `relative`.
  */
 export function Row({
   title,
@@ -290,13 +260,13 @@ export function Row({
   return (
     <li
       className={cn(
-        "group relative transition-colors duration-200",
-        href && "hover:bg-bone-2",
+        "group relative transition-colors duration-150",
+        href && "hover:bg-bone",
         className,
       )}
     >
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 py-4">
-        <div className="min-w-0 flex-1 basis-52">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3.5 md:px-5">
+        <div className="min-w-0 flex-1 basis-56">
           <div className="flex min-w-0 items-center gap-2.5">
             {/* The name of the record *is* the link, stretched over the row by
                 the pseudo-element — so the target is the whole line and the
@@ -304,12 +274,12 @@ export function Row({
             {href ? (
               <Link
                 href={href}
-                className="min-w-0 truncate text-[15px] leading-snug font-medium text-ink after:absolute after:inset-0"
+                className="min-w-0 truncate text-[0.9375rem] leading-snug font-medium text-ink after:absolute after:inset-0"
               >
                 {title}
               </Link>
             ) : (
-              <p className="min-w-0 truncate text-[15px] leading-snug font-medium text-ink">
+              <p className="min-w-0 truncate text-[0.9375rem] leading-snug font-medium text-ink">
                 {title}
               </p>
             )}
@@ -320,13 +290,15 @@ export function Row({
               />
             )}
           </div>
-          {subtitle && <p className="mt-1 truncate text-sm text-slate">{subtitle}</p>}
+          {subtitle && <p className="mt-1 truncate text-[0.8125rem] text-slate">{subtitle}</p>}
         </div>
 
         {meta?.map((item) => (
           <div key={item.label} className="min-w-0 shrink-0">
-            <p className="label-xs text-slate">{item.label}</p>
-            <p className="tabular mt-1 truncate text-sm text-ink">{item.value}</p>
+            <p className="text-[0.6875rem] font-medium tracking-wide text-slate uppercase">
+              {item.label}
+            </p>
+            <p className="mt-1 truncate text-sm text-ink">{item.value}</p>
           </div>
         ))}
 
@@ -334,14 +306,14 @@ export function Row({
         {trailing && <div className="relative z-10 ml-auto shrink-0">{trailing}</div>}
       </div>
 
-      {children && <div className="relative z-10 pb-4">{children}</div>}
+      {children && <div className="relative z-10 px-4 pb-4 md:px-5">{children}</div>}
     </li>
   );
 }
 
 /**
- * A section of a page: a named reading, the rule that carries it to the right
- * edge, and whatever the section is about.
+ * A section of a page: what this block of records is, the rule that carries
+ * the name to the right edge, and the records themselves.
  */
 export function Section({
   title,
@@ -368,57 +340,29 @@ export function Section({
   );
 }
 
-/**
- * The strip of views a queue can be read in.
- *
- * A filter is a reading on the same scale as the section heads — mono, small,
- * ruled — rather than a row of buttons: choosing "Contacted" is not an action,
- * it is a lens, and it should not look like the thing that saves a record.
- */
-export function Filters({ label, children }: { label: string; children: ReactNode }) {
+export function SectionTitle({ children, count }: { children: ReactNode; count?: number }) {
   return (
-    <nav aria-label={label} className="mt-6 flex flex-wrap items-center gap-x-1.5 gap-y-2">
+    <h2 className="flex shrink-0 items-baseline gap-2.5 text-lg font-semibold text-ink">
       {children}
-    </nav>
+      {typeof count === "number" && (
+        <span className="text-sm font-medium text-slate tabular-nums">{count}</span>
+      )}
+    </h2>
   );
 }
 
-export function Filter({
-  href,
-  label,
-  count,
-  active,
-}: {
-  href: string;
-  label: string;
-  count?: number;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "label-sm inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors",
-        active
-          ? "border-ink bg-ink text-bone"
-          : "border-ash text-slate hover:border-ink/40 hover:text-ink",
-      )}
-    >
-      {label}
-      {count !== undefined && count > 0 && (
-        <span className={cn("tabular", active ? "text-bone/60" : "text-ink")}>{count}</span>
-      )}
-    </Link>
-  );
-}
+/* `Filters` / `Filter` live in `./filters` and are re-exported at the top of
+   this file. */
 
-/* One control surface for every input on these pages. They were written out at
-   each call site, which is how three different heights and two different focus
-   treatments ended up on the same row of the same form. */
+/* ==========================================================================
+   Controls
+   ========================================================================== */
+
 const CONTROL =
-  "h-10 w-full rounded-sheet border border-ash bg-bone-2 px-3 text-sm text-ink transition-colors " +
-  "hover:border-ink/40 focus:border-ink focus:outline-none";
+  "h-11 w-full rounded-lg border border-ash bg-bone-2 px-3 " +
+  "text-sm text-ink shadow-sm transition-colors " +
+  "placeholder:text-slate/70 hover:border-slate/40 " +
+  "focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20";
 
 export function Select({
   id,
@@ -440,18 +384,17 @@ export function Select({
 }) {
   return (
     <div className={cn("min-w-0", className)}>
-      <label htmlFor={id} className={hideLabel ? "sr-only" : "label-xs block text-slate"}>
+      <label
+        htmlFor={id}
+        className={hideLabel ? "sr-only" : "block text-sm font-medium text-slate"}
+      >
         {label}
       </label>
       <select
         id={id}
         name={name}
         defaultValue={defaultValue}
-        className={cn(
-          CONTROL,
-          "field-chevron cursor-pointer appearance-none pr-9",
-          !hideLabel && "mt-2",
-        )}
+        className={cn(CONTROL, "field-chevron cursor-pointer appearance-none pr-9", !hideLabel && "mt-2")}
       >
         {children}
       </select>
@@ -479,7 +422,10 @@ export function Input({
 } & Omit<React.ComponentProps<"input">, "id" | "name" | "type" | "defaultValue" | "className">) {
   return (
     <div className={cn("min-w-0", className)}>
-      <label htmlFor={id} className={hideLabel ? "sr-only" : "label-xs block text-slate"}>
+      <label
+        htmlFor={id}
+        className={hideLabel ? "sr-only" : "block text-sm font-medium text-slate"}
+      >
         {label}
       </label>
       <input
@@ -507,13 +453,13 @@ export function Check({
   children: ReactNode;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2.5 rounded-sheet px-2 py-1.5 text-sm text-ink transition-colors hover:bg-ink/[0.04]">
+    <label className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm text-ink transition-colors hover:bg-ash/40">
       <input
         type="checkbox"
         name={name}
         value={value}
         defaultChecked={defaultChecked}
-        className="size-4 shrink-0 accent-[var(--color-ink)]"
+        className="size-4 shrink-0 accent-coral"
       />
       <span className="min-w-0 truncate">{children}</span>
     </label>
@@ -522,9 +468,7 @@ export function Check({
 
 /**
  * A block of a record's editor: what this part of the form is for, ruled off
- * from the part above it. Cards on these pages are editors rather than
- * containers, and an editor with four unlabelled halves is one nobody reads
- * twice the same way.
+ * from the part above it.
  */
 export function Fieldset({
   legend,
@@ -544,7 +488,7 @@ export function Fieldset({
   return (
     <div role="group" aria-label={legend} className="mt-5 border-t border-ash pt-5">
       <div className="flex items-center gap-4">
-        <p className="label-xs shrink-0 text-slate">{legend}</p>
+        <p className="text-sm font-medium text-slate">{legend}</p>
         <span aria-hidden className="h-px flex-1 bg-ash" />
         {action}
       </div>
@@ -553,6 +497,9 @@ export function Fieldset({
   );
 }
 
+/**
+ * A card: the surface for anything that is edited rather than scanned.
+ */
 export function Card({
   children,
   className,
@@ -563,42 +510,28 @@ export function Card({
   as?: "div" | "li" | "section";
 }) {
   return (
-    /* A hairline said "there is an edge here"; it did not say the card was on
-       top. The shadow is warm and offset — a sheet lying on the page, not a
-       glow around a box — and it is what lets a stack of cards read as a stack
-       rather than as a grid of outlines. */
-    <Tag
-      className={cn(
-        "rounded-sheet border border-ash bg-bone-2 p-5 shadow-sheet md:p-6",
-        className,
-      )}
-    >
+    <Tag className={cn("rounded-xl border border-ash bg-bone-2 p-5 shadow-sm md:p-6", className)}>
       {children}
     </Tag>
   );
 }
 
-export function SectionTitle({ children, count }: { children: ReactNode; count?: number }) {
-  return (
-    <h2 className="label-sm flex shrink-0 items-baseline gap-2 text-slate">
-      {children}
-      {typeof count === "number" && <span className="tabular text-ink">{count}</span>}
-    </h2>
-  );
-}
+/* ==========================================================================
+   Status
+   ========================================================================== */
 
 /**
- * Tone is carried by the border and a tint, never by colour alone — the words
- * are always there to read, which is what a colour-blind reader and a printed
- * page both need. The dot is the second, faster read: a queue of thirty rows
- * is scanned down the left edge, not word by word.
+ * Tone is carried by a dot and the word beside it, never by colour alone —
+ * the words are always there to read, which is what a colour-blind reader
+ * and a printed page both need. The dot is the second, faster read: a queue
+ * of thirty rows is scanned down its status column, not word by word.
  */
 const TONE = {
-  neutral: { chip: "border-ash text-slate", dot: "bg-slate/50" },
-  live: { chip: "border-ink/30 text-ink", dot: "bg-ink" },
-  good: { chip: "border-gold/70 bg-gold/20 text-ink", dot: "bg-gold" },
-  warn: { chip: "border-coral/60 bg-coral/10 text-ink", dot: "bg-coral" },
-  done: { chip: "border-ash bg-ash/30 text-slate", dot: "bg-ash" },
+  neutral: { text: "text-slate", dot: "bg-slate" },
+  live: { text: "text-[#8a6a0c]", dot: "bg-gold" },
+  good: { text: "text-go", dot: "bg-go" },
+  warn: { text: "text-coral", dot: "bg-coral" },
+  done: { text: "text-slate/70", dot: "bg-slate/40" },
 } as const;
 
 export type Tone = keyof typeof TONE;
@@ -616,13 +549,10 @@ export function Pill({
   return (
     <span
       className={cn(
-        "label-sm inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 whitespace-nowrap",
-        TONE[tone].chip,
+        "inline-flex items-center gap-1.5 text-xs font-medium whitespace-nowrap",
+        TONE[tone].text,
       )}
     >
-      {/* Still, unlike the pilot light on a readout. A queue is thirty rows
-          long and half of them are `warn`; thirty blinking dots is not an
-          alarm, it is a fairground. */}
       {dot && <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", TONE[tone].dot)} />}
       {children}
     </span>
@@ -631,17 +561,12 @@ export function Pill({
 
 /**
  * What a page says when there is nothing to show.
- *
- * A bare grey sentence was doing this job, which reads as a page that failed
- * to load rather than one with nothing in it yet. A dashed field says the
- * shape is right and the content has not arrived — and where there is
- * something the reader can do about that, the action sits inside it.
  */
 export function Empty({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="mt-4 rounded-sheet border border-dashed border-ash bg-bone-2/50 px-5 py-8">
-      <p className="max-w-prose text-sm leading-relaxed text-slate">{children}</p>
-      {action && <div className="mt-4 flex flex-wrap gap-2">{action}</div>}
+    <div className="mt-4 rounded-xl border border-dashed border-ash bg-bone-2/60 px-5 py-9">
+      <p className="max-w-[60ch] text-sm leading-relaxed text-slate">{children}</p>
+      {action && <div className="mt-5 flex flex-wrap gap-2">{action}</div>}
     </div>
   );
 }
@@ -649,11 +574,9 @@ export function Empty({ children, action }: { children: ReactNode; action?: Reac
 /**
  * What a page or a form says went wrong, or went right.
  *
- * Bounded rather than the bare coloured rule this used to be. A 2px edge with
- * text beside it is the same shape the site uses for a pull quote, and it was
- * the only thing marking the difference between "saved" and "that failed" —
- * two states a person has to be able to tell apart at a glance, from across a
- * desk, without having to read the sentence first.
+ * Two states a person has to tell apart at a glance, from across a desk,
+ * without having to read the sentence first — so each gets its own icon and
+ * its own tinted field, and neither relies on colour alone.
  */
 export function Alert({ children, tone = "warn" }: { children: ReactNode; tone?: "warn" | "good" }) {
   const warn = tone === "warn";
@@ -663,11 +586,11 @@ export function Alert({ children, tone = "warn" }: { children: ReactNode; tone?:
     <p
       role={warn ? "alert" : "status"}
       className={cn(
-        "flex items-start gap-2.5 rounded-sheet border px-3.5 py-3 text-sm leading-relaxed text-ink",
-        warn ? "border-coral/45 bg-coral/10" : "border-gold/60 bg-gold/15",
+        "flex items-start gap-2.5 rounded-lg border px-3.5 py-3 text-sm leading-relaxed text-ink",
+        warn ? "border-coral/30 bg-coral/5" : "border-go/30 bg-go/5",
       )}
     >
-      <Icon aria-hidden className={cn("mt-0.5 size-4 shrink-0", warn ? "text-coral" : "text-ink")} />
+      <Icon aria-hidden className={cn("mt-0.5 size-4 shrink-0", warn ? "text-coral" : "text-go")} />
       <span className="min-w-0">{children}</span>
     </p>
   );
@@ -677,7 +600,7 @@ export function Detail({ label, value }: { label: string; value: ReactNode }) {
   if (value === null || value === undefined || value === "") return null;
   return (
     <div className="min-w-0">
-      <dt className="label-xs text-slate">{label}</dt>
+      <dt className="text-xs font-medium tracking-wide text-slate uppercase">{label}</dt>
       <dd className="mt-1.5 text-sm break-words text-ink">{value}</dd>
     </div>
   );
@@ -687,7 +610,7 @@ export function Details({ children, className }: { children: ReactNode; classNam
   return (
     <dl
       className={cn(
-        "mt-4 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-ash pt-4 sm:grid-cols-4",
+        "mt-4 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-ash pt-4 sm:grid-cols-4",
         className,
       )}
     >
@@ -695,6 +618,10 @@ export function Details({ children, className }: { children: ReactNode; classNam
     </dl>
   );
 }
+
+/* ==========================================================================
+   Readings
+   ========================================================================== */
 
 /* Fixed to en-GB rather than the server's locale: the team is in Hyderabad and
    a date that renders month-first on one deploy and day-first on another is a

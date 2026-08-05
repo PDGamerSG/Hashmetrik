@@ -56,6 +56,7 @@ export default async function DashboardPage() {
     <>
       <PageHeader
         title={profile?.name ? `Hello, ${profile.name.split(" ")[0]}` : "Your account"}
+        status={upcoming.length > 0 ? "CALL BOOKED" : "NO CALL BOOKED"}
         meta={
           upcoming.length > 0
             ? `Your next call is ${formatDateTime(upcoming[0].scheduledAt)}.`

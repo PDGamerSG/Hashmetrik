@@ -8,8 +8,10 @@ import { fontVariables } from "@/lib/fonts";
  * Deliberately bare next to the site's: no smooth scroll, no intro, no
  * masthead, no chat bubble. This is a working surface that somebody keeps open
  * while they call people back, and every piece of marketing motion in the way
- * of that is a cost with no return. It keeps the site's type and colour so it
- * still reads as the same company.
+ * of that is a cost with no return.
+ *
+ * Same conventions as `app/(app)` — the two signed-in areas share one visual
+ * language, just a different set of sections down the rail.
  */
 export const metadata: Metadata = {
   title: "Admin — HashMetrik",
@@ -19,13 +21,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f6f3ec",
+  themeColor: "#f7f5f0",
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontVariables}>
-      <body className="flex min-h-dvh flex-col bg-bone antialiased">{children}</body>
+      <body className="flex min-h-dvh flex-col bg-bone text-ink antialiased">{children}</body>
     </html>
   );
 }

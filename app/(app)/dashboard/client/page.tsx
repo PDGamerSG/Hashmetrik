@@ -8,6 +8,7 @@ import {
   Card,
   Detail,
   Details,
+  Dial,
   Empty,
   Meter,
   PageHeader,
@@ -59,6 +60,7 @@ export default async function ClientWorkPage() {
     <>
       <PageHeader
         title="Your work"
+        status={waiting > 0 ? `${waiting} WAITING ON YOU` : "ALL CLEAR"}
         meta={
           waiting > 0
             ? `${waiting} item${waiting === 1 ? "" : "s"} need your approval before the team can move on.`
@@ -117,35 +119,43 @@ export default async function ClientWorkPage() {
 
               return (
                 <Card as="li" key={project.id}>
-                  <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-                    <div className="min-w-0">
-                      <h3 className="font-display text-xl leading-tight font-medium text-ink">
-                        {project.name}
-                      </h3>
-                      <p className="mt-1.5 text-sm text-slate">{project.service.name}</p>
+                  {/* The dial reads the one thing a client opens this page to
+                      find out — how far through their project is — against a
+                      printed scale, which eight pixels of bar could only imply.
+                      Milestones stay a bar beside it: that is a count out of a
+                      count, and it is compared down the column from one project
+                      to the next, which is what a bar is for. One instrument per
+                      record; a grid of dials would be the tile wall again. */}
+                  <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
+                    <div className="flex min-w-0 flex-1 basis-64 flex-wrap items-start gap-x-8 gap-y-5">
+                      {/* Always the lit flap, never the coral. Coral on this
+                          board means somebody is being asked for a decision,
+                          and a project being half finished is not a decision
+                          anybody owes — the deliverables below are where that
+                          question lives, and they carry the lamp. */}
+                      <Dial label="Progress" value={project.progress} className="shrink-0" />
+                      <div className="min-w-0 flex-1 basis-48">
+                        <h3 className="font-display text-xl leading-tight font-medium text-ink">
+                          {project.name}
+                        </h3>
+                        <p className="mt-1.5 text-sm text-slate">{project.service.name}</p>
+
+                        {project.milestones.length > 0 && (
+                          <div className="mt-5 max-w-sm">
+                            <Meter
+                              label="Milestones"
+                              value={done}
+                              max={project.milestones.length}
+                              display={`${done} of ${project.milestones.length}`}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
+
                     <Pill tone={project.status === "complete" ? "good" : "live"} dot>
                       {project.status}
                     </Pill>
-                  </div>
-
-                  {/* A bar rather than a number alone: the point of progress is
-                      the comparison between projects, and a row of percentages
-                      has to be read one at a time. */}
-                  <div className="mt-5 grid gap-x-10 gap-y-4 sm:grid-cols-2">
-                    <Meter
-                      label="Progress"
-                      value={project.progress}
-                      display={`${project.progress}%`}
-                    />
-                    {project.milestones.length > 0 && (
-                      <Meter
-                        label="Milestones"
-                        value={done}
-                        max={project.milestones.length}
-                        display={`${done} of ${project.milestones.length}`}
-                      />
-                    )}
                   </div>
 
                   <Details className="sm:grid-cols-3">
