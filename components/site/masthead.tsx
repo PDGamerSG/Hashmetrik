@@ -9,7 +9,24 @@ import { cn } from "@/lib/utils";
 import { setScrollLocked } from "@/components/motion/smooth-scroll";
 import { Magnetic } from "@/components/motion/magnetic";
 import { ActionLink } from "./button";
+import { Facebook, Instagram, Linkedin, Youtube } from "./brand-icons";
 import { SectionLink } from "./section-link";
+
+/**
+ * The glyph for each network, keyed by the code `SOCIALS` already carries.
+ *
+ * The footer prints those codes as text, which is right in a column of links
+ * that is read. Here there is one row and no column to read it against, so
+ * four codes set in mono wrapped onto a second line and left `FB · FACEBOOK`
+ * stranded under the rest. Marks are recognised rather than read, fit on one
+ * line, and give the thumb a target the size of a thumb.
+ */
+const SOCIAL_ICON = {
+  IG: Instagram,
+  LI: Linkedin,
+  YT: Youtube,
+  FB: Facebook,
+} as const;
 
 export function Masthead() {
   const [open, setOpen] = useState(false);
@@ -239,33 +256,46 @@ export function Masthead() {
               Book a free consultation
             </ActionLink>
 
-            {/* The phone's copy of the sign-in link held back in the bar. */}
-            <Link
+            {/* The phone's copy of the sign-in link held back in the bar.
+
+                A pill, matching the one above it. It used to be a bare line of
+                mono capitals, which put the site's caption face on a control
+                and left it ranged hard left under a full-width button — so it
+                read as a label describing the button rather than as the second
+                thing you could press. Outline rather than ink: this is the
+                alternative to the call above, not a rival to it. */}
+            <ActionLink
               href="/login"
+              variant="outline"
+              size="md"
+              arrow={false}
+              className="mt-3"
               onClick={() => setOpen(false)}
-              className="mt-4 inline-flex min-h-11 items-center label text-slate transition-colors hover:text-ink active:text-ink"
             >
               Sign in to your account
-            </Link>
+            </ActionLink>
 
             {/* Pushed to the foot of the panel where there is room for it, and
-                simply following the sign-in link where there is not. Set as
-                rows with their own height rather than as a line of text: this
-                list only ever appears on a phone, where the target is a
-                thumb. */}
-            <ul className="mt-auto flex flex-wrap gap-x-5 pt-6">
-              {SOCIALS.map((s) => (
-                <li key={s.code}>
-                  <a
-                    href={s.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex min-h-11 items-center label-sm text-slate transition-colors hover:text-coral active:text-coral"
-                  >
-                    {s.code} · {s.label}
-                  </a>
-                </li>
-              ))}
+                simply following the sign-in button where there is not. `size-11`
+                because this list only ever appears on a phone, where the target
+                is a thumb. */}
+            <ul className="mt-auto flex items-center justify-center gap-2.5 border-t border-ash pt-6">
+              {SOCIALS.map((s) => {
+                const Icon = SOCIAL_ICON[s.code];
+                return (
+                  <li key={s.code}>
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="grid size-11 place-items-center rounded-full border border-ink/15 text-slate transition-colors hover:border-ink hover:bg-ink hover:text-bone active:border-ink active:bg-ink active:text-bone"
+                    >
+                      <Icon className="size-4" />
+                      <span className="sr-only">{s.label}</span>
+                    </a>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         </div>
