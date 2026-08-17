@@ -38,7 +38,14 @@ export function Hero() {
 
       <HeroPlates />
 
-      <div className="shell relative z-10 flex flex-1 items-center justify-center py-14 md:py-16">
+      {/* Centred, so the gap above the eyebrow is whatever the viewport has
+          spare — and on a short phone that is nothing but this padding. The
+          top is therefore larger than the bottom rather than symmetric: it is
+          the only clearance the two plates in the top corners can count on, and
+          5.5rem is the 4.375rem they occupy plus air. See `HeroPlates`. From
+          `md` up the plates move inboard into the gutters and the padding goes
+          back to being even. */}
+      <div className="shell relative z-10 flex flex-1 items-center justify-center pt-22 pb-14 md:py-16">
         <HeroLead />
       </div>
 

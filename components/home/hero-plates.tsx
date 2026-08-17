@@ -59,22 +59,34 @@ type Plate = {
   className?: string;
 };
 
-/* Two plates on a phone — the top corners, and hung off the top edge rather
-   than sitting inside it.
+/* Two plates on a phone — the top corners, whole, and inside the frame.
  *
- * The centred column leaves about 56px between the top of the hero and the
- * first line of type, and a plate that fits inside 56px is a postage stamp. So
- * the phone offsets are a negative `rem` rather than a percentage: the plate
- * hangs above the hero's top edge, the container's `overflow-hidden` cuts it,
- * and what is left on screen is a two-thirds crop that clears the eyebrow with
- * room to spare. A fixed offset rather than a percentage because the thing
- * being cleared — the gap under the masthead — is a fixed height, while the
- * hero's own height is whatever the handset says `svh` is.
+ * They used to hang off the hero's top edge and be cut by its
+ * `overflow-hidden`. That is the right idea on a wide screen, where the crop
+ * reads as a contact sheet running past the edge of the paper. On a phone it
+ * reads as a mistake: the band above the headline is only a few rem tall, so
+ * what survived the cut was a strip with no top to it, sitting under a bar that
+ * had already taken the rest.
  *
- * It is also the better composition. These plates are supposed to have come
- * loose from a contact sheet; one cropped by the edge of the frame reads as
- * exactly that, where four tidy rectangles inset from the corners read as a
- * layout.
+ * So the phone offsets are positive, and the plates are sized to fit the band
+ * rather than to overflow it. Both are 5rem wide, both start 0.625rem below the
+ * hero's top edge, and both are hung on the same gutter the type is set to —
+ * one box each, mirrored, whole. The 0.625rem is not decoration: these are
+ * rotated 5-6°, which lifts a corner about 4px above the box's own top, and
+ * that corner is what the hero would otherwise clip.
+ *
+ * Fitting the band is why `Strategy` is 4:3 here and 3:4 only from `md` up. It
+ * is a portrait plate, and portrait at any width wide enough to read is taller
+ * than the band has room for — the alternative was a 3rem stamp. A landscape
+ * crop of the same frame keeps it legible at a size that fits, and both plates
+ * then share a height, so their tops and bottoms line up instead of nearly
+ * lining up.
+ *
+ * The band itself is the hero column's top padding. The column is centred, so
+ * the gap above the eyebrow is whatever the viewport has left over, and on a
+ * short screen that collapses to the padding and nothing more. `pt-22` there
+ * is the guaranteed 5.5rem: 0.625rem of air, 3.75rem of plate, and the rest
+ * between the plates and the first line of type.
  *
  * The other two plates, and the chips below, wait for `lg` rather than `md`.
  * Their positions are percentages while the copy they have to miss is a column
@@ -90,9 +102,9 @@ const PLATES: Plate[] = [
     video: "/frames/strategy.mp4",
     alt: "A strategist pinning a campaign map to a wall of working notes",
     label: "Strategy",
-    x: "1%",
-    y: "-2.5rem",
-    w: "5.25rem",
+    x: "var(--shell-pad)",
+    y: "0.625rem",
+    w: "5rem",
     /* High and tight to the left edge. It is the tallest plate on the page and
        the only one whose corner can reach the script `One`, which is the one
        word in the headline that cannot afford a photograph behind it — the
@@ -101,7 +113,8 @@ const PLATES: Plate[] = [
     xMd: "2.5%",
     yMd: "9%",
     wMd: "clamp(8rem, 13vw, 13rem)",
-    ratio: "aspect-3/4",
+    /* Landscape on a phone so it fits the band whole — see the note above. */
+    ratio: "aspect-4/3 md:aspect-3/4",
     depth: 1,
     rotate: -5,
     float: { x: 1.6, y: 3.2, seconds: 7.5 },
@@ -111,8 +124,9 @@ const PLATES: Plate[] = [
     video: "/frames/review.mp4",
     alt: "A client review in progress across a table of printed pages",
     label: "Review",
-    x: "74%",
-    y: "-1.25rem",
+    /* The same box on the opposite gutter. */
+    x: "calc(100% - var(--shell-pad) - 5rem)",
+    y: "0.625rem",
     w: "5rem",
     xMd: "78.5%",
     yMd: "8%",
