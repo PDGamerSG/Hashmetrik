@@ -17,9 +17,9 @@ import { cn } from "@/lib/utils";
 const VCARD = [
   "BEGIN:VCARD",
   "VERSION:3.0",
-  "N:;HashMetrik;;;",
-  "FN:HashMetrik",
-  "ORG:HashMetrik",
+  "N:;Hashmetrik;;;",
+  "FN:Hashmetrik",
+  "ORG:Hashmetrik",
   "TITLE:PR & Digital Marketing Agency",
   `TEL;TYPE=WORK,VOICE:${CONTACT.phone}`,
   `EMAIL;TYPE=WORK:${CONTACT.email}`,

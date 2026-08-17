@@ -10,14 +10,14 @@ web
 
 Four audiences, all reached through the same sign-in. Derived from `docs/superpowers/specs/2026-08-02-full-product-model.md`, `lib/auth/dal.ts` and the route tree; not yet confirmed by the user.
 
-- **Client** (`/dashboard/client/*`) — the marketing or founder contact at a company HashMetrik works for. Signs in to see what is running, approve or send back deliverables, read the content calendar and the KPI reports. Visits in bursts, usually because something is waiting on them.
+- **Client** (`/dashboard/client/*`) — the marketing or founder contact at a company Hashmetrik works for. Signs in to see what is running, approve or send back deliverables, read the content calendar and the KPI reports. Visits in bursts, usually because something is waiting on them.
 - **Registered user** (`/dashboard`) — signed up, not yet activated as a client. Books consultations, tracks their own enquiries, keeps their profile current.
 - **Staff / team member** (`/team`) — an account manager or delivery person. Sees only the clients they own or are assigned to; works projects, milestones, deliverables, calendar entries and reports.
 - **Administrator** (`/admin`) — runs the business: leads, consultations, client activation, users, team, projects, services, CMS, settings, the assistant. This is the surface someone keeps open all day.
 
 ## Product Purpose
 
-The signed-in half of HashMetrik's own site: a client portal and back office for a PR and digital-marketing agency in Hyderabad. It replaces the email-and-spreadsheet loop between agency and client — what is in progress, what needs approval, what was published, what it moved — with one place both sides read. Success is a client who can answer "where is my work" without emailing, and an admin who can clear the day's queue without leaving the app.
+The signed-in half of Hashmetrik's own site: a client portal and back office for a PR and digital-marketing agency in Hyderabad. It replaces the email-and-spreadsheet loop between agency and client — what is in progress, what needs approval, what was published, what it moved — with one place both sides read. Success is a client who can answer "where is my work" without emailing, and an admin who can clear the day's queue without leaving the app.
 
 ## Positioning
 
@@ -42,7 +42,7 @@ The agency's site and its operations are one codebase: the lead captured on the 
 
 ## Brand Commitments
 
-- Name **HashMetrik**; mark at `public/logo-hm.png` — a warm near-black tile with a coral hash on it.
+- Name **Hashmetrik**; mark at `public/logo-hm.png` — a warm near-black tile with a coral hash on it.
 - The **public marketing site** (`app/(site)`) is out of scope for this redesign and must not change: its bone/ink editorial system stays exactly as it is.
 - Brand colours as recorded in `app/globals.css`: coral `#f2564a`, gold `#f6cd63`, ink `#141312`, bone `#f7f5f0`. Confirmed from the mark itself.
 

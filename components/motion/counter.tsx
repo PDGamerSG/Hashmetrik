@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 /**
  * A number that rolls up to its value, one digit column at a time.
  *
- * The site is called HashMetrik and until now it printed no readings of its
+ * The site is called Hashmetrik and until now it printed no readings of its
  * own, which is the one thing a measuring instrument has to do. This is the
  * component that lets it: an odometer, where each digit is a strip of 0–9
  * clipped to a single line box and translated to bring the right numeral into

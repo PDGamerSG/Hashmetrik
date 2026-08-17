@@ -24,21 +24,21 @@ import { fontVariables } from "@/lib/fonts";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "HashMetrik — PR & digital marketing agency in Hyderabad",
-    template: "%s — HashMetrik",
+    default: "Hashmetrik — PR & digital marketing agency in Hyderabad",
+    template: "%s — Hashmetrik",
   },
   description: SITE.description,
   openGraph: {
     type: "website",
     siteName: SITE.name,
-    title: "HashMetrik — measurable growth, not guesswork",
+    title: "Hashmetrik — measurable growth, not guesswork",
     description: SITE.description,
     url: SITE.url,
     images: ["/icon-512.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HashMetrik — measurable growth, not guesswork",
+    title: "Hashmetrik — measurable growth, not guesswork",
     description: SITE.description,
   },
   alternates: { canonical: "/" },

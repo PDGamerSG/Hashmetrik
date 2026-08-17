@@ -24,7 +24,7 @@ export const SETTINGS = [
     group: "company",
     label: "Company name",
     hint: "Used in emails and on the invoice footer.",
-    fallback: "HashMetrik",
+    fallback: "Hashmetrik",
     max: 200,
     multiline: false,
   },
@@ -70,7 +70,7 @@ export const SETTINGS = [
     label: "Welcome notification",
     hint: "The first thing a new account sees in its notifications.",
     fallback:
-      "Welcome to HashMetrik. Book a consultation and a strategist will take it from there.",
+      "Welcome to Hashmetrik. Book a consultation and a strategist will take it from there.",
     max: 600,
     multiline: true,
   },

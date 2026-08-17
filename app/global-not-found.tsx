@@ -16,7 +16,7 @@ import NotFound from "./(site)/not-found";
  * — stay the same page.
  */
 export const metadata: Metadata = {
-  title: "Page not found — HashMetrik",
+  title: "Page not found — Hashmetrik",
   description: "That page has moved or never existed.",
 };
 

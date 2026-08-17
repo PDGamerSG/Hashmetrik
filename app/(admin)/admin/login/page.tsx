@@ -6,7 +6,7 @@ import { AuthShell, type Reading } from "@/components/site/auth-shell";
 import { optionalSession } from "@/lib/auth/dal";
 
 export const metadata: Metadata = {
-  title: "Sign in — HashMetrik",
+  title: "Sign in — Hashmetrik",
   robots: { index: false, follow: false },
 };
 
@@ -39,7 +39,7 @@ export default async function LoginPage() {
   return (
     <AuthShell
       title="Staff sign-in"
-      lede="For the HashMetrik team. Accounts are created from the command line, not from this page."
+      lede="For the Hashmetrik team. Accounts are created from the command line, not from this page."
       statement="The desk behind the studio."
       readings={READINGS}
       foot={

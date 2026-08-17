@@ -1,4 +1,4 @@
-# HashMetrik — generation prompts (Google Flow)
+# Hashmetrik — generation prompts (Google Flow)
 
 Every photograph on the home page is currently a stock Unsplash frame. They are
 cool-graded, Western, and glossy; the design system they sit in is warm paper,

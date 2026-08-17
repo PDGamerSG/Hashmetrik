@@ -32,7 +32,7 @@ function Lockup() {
         priority
       />
       <span className="font-display text-xl leading-none font-medium tracking-[-0.022em] text-ink">
-        HashMetrik
+        Hashmetrik
       </span>
     </Link>
   );

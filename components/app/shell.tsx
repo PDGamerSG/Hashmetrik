@@ -81,7 +81,7 @@ export function AppShell({
             height={64}
             className="size-6 rounded-[6px] object-cover"
           />
-          <span className="font-display text-lg font-medium text-ink">HashMetrik</span>
+          <span className="font-display text-lg font-medium text-ink">Hashmetrik</span>
         </Link>
         <span className="ml-auto text-xs font-medium tracking-wide text-slate uppercase">
           {area}
@@ -130,7 +130,7 @@ export function AppShell({
               height={64}
               className="size-7 rounded-[6px] object-cover"
             />
-            <span className="font-display text-xl font-medium text-ink">HashMetrik</span>
+            <span className="font-display text-xl font-medium text-ink">Hashmetrik</span>
           </Link>
           <button
             ref={closeRef}

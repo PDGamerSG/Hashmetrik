@@ -110,7 +110,7 @@ export function Masthead() {
               priority
             />
             <span className="font-display text-xl leading-[1.02] font-medium tracking-[-0.022em] md:text-[1.375rem]">
-              HashMetrik
+              Hashmetrik
             </span>
           </Link>
 

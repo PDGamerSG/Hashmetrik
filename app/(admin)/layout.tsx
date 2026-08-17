@@ -14,7 +14,7 @@ import { fontVariables } from "@/lib/fonts";
  * language, just a different set of sections down the rail.
  */
 export const metadata: Metadata = {
-  title: "Admin — HashMetrik",
+  title: "Admin — Hashmetrik",
   /* Belt and braces with `app/robots.ts`: a page behind a login should not be
      indexed even if it is ever served to a crawler by mistake. */
   robots: { index: false, follow: false },

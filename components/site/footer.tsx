@@ -141,7 +141,7 @@ export function Footer() {
         </div>
 
         <div className="mt-6 flex flex-col gap-3 label text-bone/40 sm:flex-row sm:items-center sm:justify-between">
-          <p className="uppercase">© {new Date().getFullYear()} HashMetrik</p>
+          <p className="uppercase">© {new Date().getFullYear()} Hashmetrik</p>
           <p className="uppercase">Hyderabad, India · 17.33°N 78.60°E</p>
         </div>
       </div>
@@ -150,7 +150,7 @@ export function Footer() {
           the sign-off, and the only place the name is allowed to be this big. */}
       <div aria-hidden className="relative select-none px-4 pb-2 md:px-8">
         <p className="w-full text-center font-display text-[19vw] leading-[0.84] font-medium tracking-[-0.03em] text-bone/[0.07]">
-          HashMetrik
+          Hashmetrik
         </p>
       </div>
     </footer>

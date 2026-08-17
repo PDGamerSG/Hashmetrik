@@ -142,7 +142,7 @@ export function LinksHub() {
                 className="size-12 rounded-sheet object-cover"
               />
               <h1 className="mt-5 font-display text-4xl leading-[1.02] font-medium tracking-[-0.022em]">
-                HashMetrik
+                Hashmetrik
               </h1>
               <p className="mt-3 label-sm text-coral">
                 PR · Performance · SEO · Social

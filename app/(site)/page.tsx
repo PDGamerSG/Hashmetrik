@@ -10,7 +10,7 @@ import { SectionScroll } from "@/components/site/section-link";
 import { FAQS, SITE } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "HashMetrik — everything your brand needs, one growth partner",
+  title: "Hashmetrik — everything your brand needs, one growth partner",
   description: SITE.description,
   alternates: { canonical: "/" },
 };

@@ -5,11 +5,11 @@
  */
 
 export const SITE = {
-  name: "HashMetrik",
+  name: "Hashmetrik",
   url: "https://hashmetrik.com",
   tagline: "Everything your brand needs. One growth partner.",
   description:
-    "HashMetrik is a Hyderabad-based growth partner. Brand foundation, digital presence, marketing growth and brand reach — built as one customised package and reported as one set of numbers.",
+    "Hashmetrik is a Hyderabad-based growth partner. Brand foundation, digital presence, marketing growth and brand reach — built as one customised package and reported as one set of numbers.",
 } as const;
 
 export const CONTACT = {
@@ -299,7 +299,7 @@ export const REASONS = [
 
 export const FAQS = [
   {
-    q: "What does HashMetrik actually do?",
+    q: "What does Hashmetrik actually do?",
     a: "PR and reputation, influencer marketing, performance marketing across Google, Meta and YouTube, SEO, conversion-focused websites, and social media — run as one system rather than six disconnected retainers.",
   },
   {
@@ -319,7 +319,7 @@ export const FAQS = [
     a: "Pick a service, choose a slot and share a short brief. You get 30 minutes with a senior strategist, plus a written growth thesis within 48 hours. There is no obligation attached to it.",
   },
   {
-    q: "Why choose HashMetrik over a larger agency?",
+    q: "Why choose Hashmetrik over a larger agency?",
     a: "Senior people on your account, reporting you can check line by line, and a refusal to confuse activity with impact.",
   },
 ] as const;

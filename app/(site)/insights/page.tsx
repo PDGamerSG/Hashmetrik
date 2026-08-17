@@ -7,7 +7,7 @@ import { Tape } from "@/components/site/tape";
 
 export const metadata: Metadata = {
   title: "Insights",
-  description: "Writing and case studies from the HashMetrik team.",
+  description: "Writing and case studies from the Hashmetrik team.",
 };
 
 /* Rebuilt on demand rather than at build time, so publishing something in the

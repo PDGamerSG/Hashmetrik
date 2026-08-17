@@ -11,7 +11,7 @@ import type { LeadInput } from "@/lib/leads/schema";
  * is only honoured on a host that permits it — the default matches the account
  * rather than pretending otherwise.
  */
-const DEFAULT_FROM = "HashMetrik <hashmetrik@gmail.com>";
+const DEFAULT_FROM = "Hashmetrik <hashmetrik@gmail.com>";
 const DEFAULT_TO = "hashmetrik@gmail.com";
 
 export type SendResult =

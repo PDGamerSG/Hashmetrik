@@ -105,7 +105,7 @@ export function ContactBand() {
                 className="relative aspect-square overflow-hidden rounded-sheet border border-ash-ink bg-bone"
               >
                 <iframe
-                  title="Map of the HashMetrik studio in Hayathnagar, Hyderabad"
+                  title="Map of the Hashmetrik studio in Hayathnagar, Hyderabad"
                   src={`https://www.google.com/maps?q=${CONTACT.mapQuery}&output=embed`}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"

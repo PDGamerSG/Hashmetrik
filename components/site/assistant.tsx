@@ -170,7 +170,7 @@ export function Assistant() {
         )}
       >
         {open ? <X className="size-4" /> : <MessageSquare className="size-4" />}
-        <span className={open ? "sr-only" : "sr-only sm:not-sr-only"}>Ask HashMetrik</span>
+        <span className={open ? "sr-only" : "sr-only sm:not-sr-only"}>Ask Hashmetrik</span>
         {open && <span className="sr-only">Close assistant</span>}
       </button>
 
@@ -180,7 +180,7 @@ export function Assistant() {
           id="assistant-panel"
           role="dialog"
           aria-modal="false"
-          aria-label="Ask HashMetrik"
+          aria-label="Ask Hashmetrik"
           className={cn(
             "fixed z-50 flex w-[min(24rem,calc(100vw-2rem))] flex-col",
             "bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-[calc(1rem+env(safe-area-inset-right))]",
@@ -194,7 +194,7 @@ export function Assistant() {
                 Assistant
               </p>
               <p className="mt-1 font-display text-lg font-medium tracking-[-0.012em]">
-                Ask HashMetrik
+                Ask Hashmetrik
               </p>
             </div>
             <span

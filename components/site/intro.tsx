@@ -25,7 +25,7 @@ export function Intro() {
         <div className="intro-mark">
           <Image src="/logo-hm.png" alt="" width={64} height={64} className="size-8 rounded-sheet" />
           <span className="font-display text-2xl leading-[1.02] font-medium tracking-[-0.022em]">
-            HashMetrik
+            Hashmetrik
           </span>
         </div>
 

@@ -5,7 +5,7 @@ import { MarkField } from "@/components/site/mark-field";
 export const metadata: Metadata = {
   title: "Book a free consultation",
   description:
-    "Book a free 30-minute growth consultation with a senior HashMetrik strategist. Pick a service, choose a slot, and get a written growth thesis within 48 hours.",
+    "Book a free 30-minute growth consultation with a senior Hashmetrik strategist. Pick a service, choose a slot, and get a written growth thesis within 48 hours.",
   alternates: { canonical: "/book" },
 };
 

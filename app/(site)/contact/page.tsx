@@ -9,7 +9,7 @@ import { CONTACT, SOCIALS } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Talk to HashMetrik. Phone, email, WhatsApp and our Hyderabad studio — we reply within two business hours.",
+    "Talk to Hashmetrik. Phone, email, WhatsApp and our Hyderabad studio — we reply within two business hours.",
   alternates: { canonical: "/contact" },
 };
 
@@ -149,7 +149,7 @@ export default function ContactPage() {
             className="relative mt-5 h-64 overflow-hidden rounded-sheet border border-ash bg-bone md:h-80"
           >
             <iframe
-              title="Map of the HashMetrik studio in Hayathnagar, Hyderabad"
+              title="Map of the Hashmetrik studio in Hayathnagar, Hyderabad"
               src={`https://www.google.com/maps?q=${CONTACT.mapQuery}&output=embed`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

@@ -16,7 +16,7 @@ import { fontVariables } from "@/lib/fonts";
  * layout.
  */
 export const metadata: Metadata = {
-  title: { default: "HashMetrik", template: "%s — HashMetrik" },
+  title: { default: "Hashmetrik", template: "%s — Hashmetrik" },
   /* A signed-in surface should not be indexed even if it is ever served to a
      crawler by mistake. `app/robots.ts` says the same thing again. */
   robots: { index: false, follow: false },

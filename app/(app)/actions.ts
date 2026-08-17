@@ -93,7 +93,7 @@ export async function signup(_prev: FormState, formData: FormData): Promise<Form
     await notify(
       user.id,
       welcome ||
-        "Welcome to HashMetrik. Book a consultation and a strategist will take it from there.",
+        "Welcome to Hashmetrik. Book a consultation and a strategist will take it from there.",
       { href: "/book" },
     ).catch(() => {});
   } catch (error) {
