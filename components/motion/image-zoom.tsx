@@ -86,19 +86,18 @@ export function ImageZoom({
   const close = useCallback(() => setOpen(false), []);
 
   /* The lightbox owns the viewport while it is up: the page behind must not
-     scroll — under Lenis that means stopping the scroller too, not just the
-     body — and Escape must always be the way out. */
+     scroll — `setScrollLocked` stops the scroller and clamps the root together,
+     which is the only pairing that leaves sticky elements alone — and Escape
+     must always be the way out. */
   useEffect(() => {
     if (!open) return;
     setScrollLocked(true);
-    document.body.style.overflow = "hidden";
 
     const onKey = (event: KeyboardEvent) => event.key === "Escape" && close();
     window.addEventListener("keydown", onKey);
 
     return () => {
       setScrollLocked(false);
-      document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
     };
   }, [open, close]);
