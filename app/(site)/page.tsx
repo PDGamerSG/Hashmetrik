@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/hero";
-import { Readout } from "@/components/home/readout";
 import { GrowthPackage } from "@/components/home/growth-package";
 import { Audiences } from "@/components/home/audiences";
 import { Services } from "@/components/home/services";
@@ -35,10 +34,6 @@ export default function HomePage() {
           the section without carrying a fragment into the URL. */}
       <SectionScroll />
       <Hero />
-      {/* The hero's own footer: the first hard numbers on a site named after
-          measurement. Deliberately between the tape and section 01 rather than
-          inside either — it summarises the argument before the argument. */}
-      <Readout />
       {/* The package is the homepage's argument, so it comes before the
           breakdown of what is in it: one purchase, then its parts. */}
       <GrowthPackage />

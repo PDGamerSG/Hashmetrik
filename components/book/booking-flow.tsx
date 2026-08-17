@@ -302,12 +302,41 @@ export function BookingFlow() {
                   </p>
                 )}
 
-                <div className="mt-10 flex items-center justify-between gap-4">
-                  <BackButton onClick={() => setStep(2)} />
-                  <ActionButton type="submit" disabled={pending} arrow={false}>
-                    {pending ? "Confirming…" : "Confirm booking"}
-                    <Check aria-hidden className="size-4" />
-                  </ActionButton>
+                <div className="mt-10">
+                  {/* Announced as well as drawn: `role="status"` reports the
+                      wording without stealing focus from the button the
+                      visitor just pressed. */}
+                  {pending && (
+                    <div role="status" className="mb-6">
+                      <span className="relative block h-px w-full overflow-hidden bg-ash">
+                        <span
+                          aria-hidden
+                          className="booking-run absolute inset-y-0 left-0 block w-[18%] bg-coral"
+                        />
+                      </span>
+                      <p className="mt-3 label-sm text-slate">
+                        Holding your slot — this takes a moment.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-4">
+                    {/* Disabled while the request is in flight. Stepping back
+                        mid-submit left the form on the time picker with a
+                        booking still being written behind it, and the success
+                        screen then replacing whatever the visitor had started
+                        changing. */}
+                    <BackButton onClick={() => setStep(2)} disabled={pending} />
+                    <ActionButton
+                      type="submit"
+                      disabled={pending}
+                      aria-busy={pending}
+                      arrow={false}
+                    >
+                      {pending ? "Confirming…" : "Confirm booking"}
+                      <Check aria-hidden className="size-4" />
+                    </ActionButton>
+                  </div>
                 </div>
               </StepBody>
             </form>

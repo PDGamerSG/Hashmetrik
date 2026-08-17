@@ -538,6 +538,29 @@
   animation: cue-run 2.4s var(--ease-out-quint) infinite;
 }
 
+/* The booking form's one moving part, while the server is working.
+   The same idea as the scroll cue — a coral mark travelling a rule — laid on
+   its side. Confirming a booking writes a row, emails the team and appends to
+   the sheet, which is long enough that a button changing only its label reads
+   as a click that never registered. An instrument taking a reading is the right
+   register for it, and it is the register the rest of the site already uses.
+
+   Indeterminate on purpose: the three calls behind it finish in an order
+   nothing here can know, so a bar that filled to a percentage would be
+   inventing a number. */
+@keyframes booking-run {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(560%);
+  }
+}
+
+.booking-run {
+  animation: booking-run 1.4s ease-in-out infinite;
+}
+
 /* ==========================================================================
    The rule field
    The column rules under every surface, and the base layer of the mark field
@@ -791,6 +814,15 @@ html[data-motion="reduce"] .pulse-dot,
 html[data-motion="reduce"] .cue-mark,
 html[data-motion="reduce"] .rise {
   animation: none !important;
+}
+
+/* The booking rule stops travelling but stays lit, and the wording beside it
+   still says what is happening — the one case where removing the motion must
+   not remove the fact that something is in progress. */
+html[data-motion="reduce"] .booking-run {
+  animation: none !important;
+  width: 100%;
+  opacity: 0.5;
 }
 
 /* The meter keeps its reading; it simply arrives at it. */

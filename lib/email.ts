@@ -1,15 +1,18 @@
 import type { LeadInput } from "@/lib/leads/schema";
 
 /**
- * Transactional email over Resend's REST API.
+ * Transactional email over SMTP, via nodemailer.
  *
- * A plain `fetch` rather than the SDK: one endpoint, one shape, and nothing the
- * SDK adds is used here. Kept free of `server-only` so the message builder can
- * be tested directly.
+ * Kept free of `server-only` so the message builder below can be tested
+ * directly, and nodemailer itself is imported lazily inside the sender so that
+ * `node --test` never loads it to check a string.
+ *
+ * Gmail rewrites `From:` to whichever account authenticated, so `LEAD_FROM_EMAIL`
+ * is only honoured on a host that permits it — the default matches the account
+ * rather than pretending otherwise.
  */
-const ENDPOINT = "https://api.resend.com/emails";
-const DEFAULT_FROM = "HashMetrik <leads@hashmetrik.in>";
-const DEFAULT_TO = "info@hashmetrik.in";
+const DEFAULT_FROM = "HashMetrik <hashmetrik@gmail.com>";
+const DEFAULT_TO = "hashmetrik@gmail.com";
 
 export type SendResult =
   | { ok: true }
@@ -65,40 +68,54 @@ export function buildLeadEmail(
 /**
  * Sends the team notification.
  *
- * Never throws. The lead is already saved by the time this runs, so a missing
- * key or a bad response is a degraded notification, not a failed submission —
- * the caller records that and moves on.
+ * Never throws. The lead is already saved by the time this runs, so missing
+ * credentials or a refused connection is a degraded notification, not a failed
+ * submission — the caller records that and moves on.
  */
 export async function sendLeadNotification(
   lead: LeadInput,
   wording: LeadEmailWording = {},
 ): Promise<SendResult> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return { ok: false, reason: "unconfigured" };
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) return { ok: false, reason: "unconfigured" };
 
   const { subject, text } = buildLeadEmail(lead, wording);
 
   try {
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.LEAD_FROM_EMAIL || DEFAULT_FROM,
-        to: [process.env.LEAD_NOTIFY_EMAIL || DEFAULT_TO],
-        /* So hitting reply in the inbox answers the person who wrote in. */
-        reply_to: lead.email,
-        subject,
-        text,
-      }),
-      signal: AbortSignal.timeout(8_000),
+    /* Lazily, and inside the try: this module is imported by `tests/email.ts`
+       for `buildLeadEmail` alone, and a top-level import would drag nodemailer's
+       CommonJS tree into a test that never sends anything. */
+    const { createTransport } = await import("nodemailer");
+
+    /* 465 is implicit TLS and 587 is STARTTLS, which is the whole difference —
+       deriving `secure` from the port removes a second variable that can only
+       ever be set wrong. */
+    const port = Number(process.env.SMTP_PORT) || 465;
+
+    /* A transport per send rather than a pooled module-level one. These run on
+       serverless invocations that are frozen between requests, where a pooled
+       socket is a connection the far end closed while nobody was looking. */
+    const transport = createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+      connectionTimeout: 8_000,
+      greetingTimeout: 8_000,
+      socketTimeout: 8_000,
     });
 
-    if (!res.ok) {
-      return { ok: false, reason: "failed", detail: `${res.status} ${await res.text()}` };
-    }
+    await transport.sendMail({
+      from: process.env.LEAD_FROM_EMAIL || DEFAULT_FROM,
+      to: process.env.LEAD_NOTIFY_EMAIL || DEFAULT_TO,
+      /* So hitting reply in the inbox answers the person who wrote in. */
+      replyTo: lead.email,
+      subject,
+      text,
+    });
+
     return { ok: true };
   } catch (error) {
     return { ok: false, reason: "failed", detail: String(error) };

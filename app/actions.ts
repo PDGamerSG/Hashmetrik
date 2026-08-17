@@ -11,6 +11,7 @@
 
 import { headers } from "next/headers";
 import { sendLeadNotification } from "@/lib/email";
+import { appendLeadRow } from "@/lib/sheets/store";
 import { createLead, markNotified } from "@/lib/leads/store";
 import { normalizeLead, validateLead, type LeadInput } from "@/lib/leads/schema";
 import { consume } from "@/lib/rate-limit/store";
@@ -23,13 +24,19 @@ export type Lead = LeadInput;
 export type LeadResult = { ok: true } | { ok: false; error: string };
 
 /**
- * Saves the lead, then tries to tell the team.
+ * Saves the lead, then tries to tell the team — by email, and by appending a
+ * row to the shared Google Sheet.
  *
- * The write is the part that must not be lost, so it happens first and alone.
- * The email is best-effort: an unconfigured or unreachable Resend leaves
- * `notifiedAt` null on a row that is already safe, which is a state the
- * dashboard can show and somebody can act on. Failing the whole submission
- * because a mail API blinked would throw away the lead instead.
+ * The database write is the part that must not be lost, so it happens first and
+ * alone. Both notifications are best-effort: an unconfigured or unreachable SMTP
+ * host leaves `notifiedAt` null on a row that is already safe, which is a state
+ * the dashboard can show and somebody can act on, and a sheet that refused the
+ * append is a copy missing a line rather than a lost enquiry. Failing the whole
+ * submission because a third party blinked would throw the lead away instead.
+ *
+ * The two run together rather than in sequence. Neither can throw and neither
+ * depends on the other, so the visitor waits for the slower one instead of the
+ * sum of both — on a form submission that difference is visible.
  */
 async function deliver(lead: LeadInput) {
   const saved = await createLead(lead);
@@ -44,7 +51,11 @@ async function deliver(lead: LeadInput) {
     }))
     .catch(() => ({}));
 
-  const sent = await sendLeadNotification(lead, wording);
+  const [sent, appended] = await Promise.all([
+    sendLeadNotification(lead, wording),
+    appendLeadRow(lead),
+  ]);
+
   if (sent.ok) {
     /* Best-effort too: if this update fails the lead is still recorded, and the
        worst case is a notified lead that looks un-notified in the dashboard. */
@@ -54,17 +65,27 @@ async function deliver(lead: LeadInput) {
   } else if (sent.reason === "failed") {
     console.error("[lead] notification email failed", saved.id, sent.detail);
   }
+
+  /* `unconfigured` is silent for both — it is the ordinary state of an
+     environment where the credentials have not been pasted in yet, and logging
+     it on every submission would bury the failures that mean something. */
+  if (!appended.ok && appended.reason === "failed") {
+    console.error("[lead] sheet append failed", saved.id, appended.detail);
+  }
 }
 
 /**
  * Enquiries per connection per hour.
  *
- * Higher than the login limit because a real person genuinely might send two —
- * the booking form and then the contact form — and low enough that a script
- * cannot fill the pipeline with rubbish and every one of them an email to the
- * team.
+ * Deliberately loose. `clientKey` buckets by IP, and an office, a campus or a
+ * phone network behind CGNAT is one address to us — a tight cap there refuses
+ * real enquiries from everyone sharing it after the first few, which costs more
+ * than the abuse it prevents. What the number still has to do is stop a script
+ * from turning one endpoint into an unbounded number of rows, emails and sheet
+ * appends; 150 an hour is far above any genuine shared connection and far below
+ * Gmail's daily sending ceiling.
  */
-const LEADS_PER_HOUR = 8;
+const LEADS_PER_HOUR = 150;
 
 export async function submitLead(input: Lead): Promise<LeadResult> {
   const lead = normalizeLead(input);
