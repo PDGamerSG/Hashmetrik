@@ -5,7 +5,7 @@ import { fontVariables } from "@/lib/fonts";
 /**
  * The admin root layout.
  *
- * Deliberately bare next to the site's: no smooth scroll, no intro, no
+ * Deliberately bare next to the site's: no scroll-driven motion, no intro, no
  * masthead, no chat bubble. This is a working surface that somebody keeps open
  * while they call people back, and every piece of marketing motion in the way
  * of that is a cost with no return.

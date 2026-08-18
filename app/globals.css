@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "lenis/dist/lenis.css";
 
 /* ==========================================================================
    Hashmetrik — design tokens
@@ -69,11 +68,11 @@
 
 @layer base {
   html {
-    /* Lenis animates the scroll position itself; leaving `scroll-behavior`
-       smooth here would have the browser easing towards a target that Lenis
-       is already easing towards, and the two curves fight. The native
-       behaviour is restored under `prefers-reduced-motion`, below, where
-       Lenis is never mounted. */
+    /* Instant, not smooth. The page scrolls natively, and this property is
+       document-wide: turning it on would ease every programmatic scroll,
+       including the one Next.js performs to send an arriving route to the top.
+       In-page section links ask for their own easing instead — see
+       `scrollToElement` in `components/motion/motion-root.tsx`. */
     scroll-behavior: auto;
     /* the sticky masthead must not cover an anchored section head */
     scroll-padding-top: 6rem;
@@ -140,6 +139,45 @@
   line-height: 1.1;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Navigation
+   The one recipe every primary link in the masthead is set in.
+
+   These used to take `label` — the mono, uppercase, 0.15em recipe above. That
+   is the face this system reserves for *readings*: ticks, codes, captions,
+   things you compare rather than read. Spent on the six links a visitor
+   actually navigates with, it put the nav in exactly the same voice as the
+   eyebrow sitting an inch below it in the hero, and "WHO WE HELP" at eleven
+   pixels and 0.15em stopped being three words and became eleven letters.
+
+   It is the argument the call to action already won — see the note at the top
+   of `components/site/button.tsx`. A thing that is read as words is set in the
+   text face, in the case the words are written in.
+
+   Sixteen pixels, and seventeen once the bar is wide enough to spend it — two
+   steps up from the fourteen this was first cut at. Fourteen is the size a
+   navigation takes in an application, where the chrome is meant to disappear
+   behind the work; the bar over a marketing page is the page's own furniture,
+   it stands under a 26px wordmark across eighty pixels of paper, and at
+   fourteen it read as a caption to the logo rather than as the six places you
+   can go. Sixteen is the size the site sets its body copy at, which is the
+   honest floor for a word that is meant to be read and pressed.
+
+   Weight comes back down as the size goes up. 500 is what a 14px label needs
+   to hold its colour; at 17 the same weight thickens into something that
+   competes with the wordmark, and 450 is the stroke a face this size is drawn
+   for. Tracking a hair negative: Geist sets a touch loose here, and a row of
+   six short labels has to read as one object rather than six.
+   ========================================================================== */
+
+@utility nav-link {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 450;
+  line-height: 1;
+  letter-spacing: -0.012em;
 }
 
 /* ==========================================================================
@@ -788,7 +826,7 @@
 /* ==========================================================================
    Motion preferences
 
-   Keyed off an attribute rather than the media query directly. `SmoothScroll`
+   Keyed off an attribute rather than the media query directly. `MotionRoot`
    writes `data-motion="reduce"` onto the document only when the site's policy
    — `RESPECT_REDUCED_MOTION` in `lib/motion.ts` — is on *and* the visitor has
    asked for less movement, so CSS and JavaScript are governed by the same
@@ -798,12 +836,6 @@
    and the site animates for everyone. Flip the constant back and every rule
    here comes into force again untouched.
    ========================================================================== */
-
-html[data-motion="reduce"] {
-  /* Lenis is not mounted in this mode, so the browser's own smoothing is the
-     best available behaviour for in-page anchors. */
-  scroll-behavior: smooth;
-}
 
 html[data-motion="reduce"] .intro {
   display: none;
@@ -855,14 +887,67 @@ html[data-motion="reduce"] *::after {
 }
 
 /* ==========================================================================
-   Lenis
-   Lenis blanks pointer events on every iframe so a wheel event over one is
-   never swallowed. The studio map is the exception: it is there to be panned,
-   and it stops its own wheel events from reaching the page anyway.
+   Aspect-ratio fallback
+
+   Every photograph on the site is a `next/image` with `fill` — absolutely
+   positioned, so it contributes no height of its own — inside a box whose only
+   height comes from `aspect-ratio`. On an engine that does not implement that
+   property the box collapses to zero and the photograph disappears while its
+   heading and caption stay exactly where they were, which reads as a broken
+   page rather than an old browser. That is Safari 14 and earlier, Chrome 87
+   and earlier, and the Android WebViews shipped alongside them: the audience
+   grid, the hero plates, the pillar plates and the studio map all go blank.
+
+   So the ratio is restated as percentage padding — the technique that predates
+   `aspect-ratio`, understood by every engine ever shipped — and it is hung off
+   the utility classes rather than off the components, so a photograph added
+   later is covered without anyone having to remember this exists.
+
+   Guarded by `@supports`, so no engine that implements `aspect-ratio` ever
+   sees a padding box it would have to reconcile with the real thing.
    ========================================================================== */
 
-.lenis.lenis-smooth [data-lenis-prevent] iframe {
-  pointer-events: auto;
+@supports not (aspect-ratio: 1) {
+  .aspect-square::before,
+  .aspect-4\/3::before,
+  .aspect-3\/4::before,
+  .aspect-4\/5::before {
+    content: "";
+    display: block;
+  }
+
+  .aspect-square::before {
+    padding-top: 100%;
+  }
+
+  .aspect-4\/3::before {
+    padding-top: 75%;
+  }
+
+  .aspect-3\/4::before {
+    padding-top: 133.3333%;
+  }
+
+  .aspect-4\/5::before {
+    padding-top: 125%;
+  }
+
+  /* The two plates that change ratio at the breakpoint. Written after the base
+     rules and at the same specificity, so where both classes sit on one box the
+     wider screen's value is the one that lands. */
+  @media (min-width: 48rem) {
+    .md\:aspect-3\/4::before {
+      content: "";
+      display: block;
+      padding-top: 133.3333%;
+    }
+
+    .md\:aspect-4\/5::before {
+      content: "";
+      display: block;
+      padding-top: 125%;
+    }
+  }
 }
 
 /* ==========================================================================

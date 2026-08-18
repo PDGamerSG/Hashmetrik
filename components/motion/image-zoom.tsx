@@ -14,7 +14,7 @@ import { X } from "lucide-react";
 import { useIsMounted, usePrefersReducedMotion } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { PlateVideo } from "@/components/motion/plate-video";
-import { setScrollLocked } from "@/components/motion/smooth-scroll";
+import { setScrollLocked } from "@/components/motion/motion-root";
 
 /**
  * An image that magnifies under the pointer and opens to full size on click.
@@ -86,9 +86,9 @@ export function ImageZoom({
   const close = useCallback(() => setOpen(false), []);
 
   /* The lightbox owns the viewport while it is up: the page behind must not
-     scroll — `setScrollLocked` stops the scroller and clamps the root together,
-     which is the only pairing that leaves sticky elements alone — and Escape
-     must always be the way out. */
+     scroll — `setScrollLocked` clamps the root, which is the one place to write
+     that lock without dislodging every sticky element — and Escape must always
+     be the way out. */
   useEffect(() => {
     if (!open) return;
     setScrollLocked(true);

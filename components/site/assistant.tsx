@@ -206,13 +206,12 @@ export function Assistant() {
             />
           </header>
 
-          {/* `data-lenis-prevent` keeps the smooth scroller off this panel.
-              Without it a wheel over the transcript scrolls the page behind
-              the assistant instead of the conversation inside it. */}
+          {/* `overscroll-contain` keeps a wheel over the transcript on the
+              transcript: at either end of it the scroll stops rather than
+              chaining out to the page behind the assistant. */}
           <div
             ref={transcriptRef}
-            data-lenis-prevent
-            className="max-h-[22rem] min-h-[12rem] overflow-y-auto px-5 py-5"
+            className="max-h-[22rem] min-h-[12rem] overflow-y-auto overscroll-contain px-5 py-5"
           >
             {messages.length === 0 && (
               <div>

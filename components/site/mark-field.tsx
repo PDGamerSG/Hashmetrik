@@ -21,8 +21,8 @@ import { cn } from "@/lib/utils";
  * Written to be affordable on a page that carries ten of these:
  *
  * - One canvas per surface, one `fillRect` per mark, no DOM node per mark.
- * - Painted from GSAP's ticker, the same loop that drives Lenis and every
- *   ScrollTrigger, so the page never runs two schedulers against one frame.
+ * - Painted from GSAP's ticker, the same loop that drives every ScrollTrigger
+ *   on the page, so it never runs two schedulers against one frame.
  * - Suspended *and freed* by IntersectionObserver. Stopping the paint is not
  *   enough at this count: a full-width backing store at DPR 2 is tens of
  *   megabytes, so a field that scrolls out of view drops its bitmap to 0×0

@@ -6,8 +6,8 @@ import { fontVariables } from "@/lib/fonts";
  * The root layout for everything behind a sign-in, and for the two forms that
  * get you there.
  *
- * Deliberately bare next to the marketing site's: no smooth scroll, no intro,
- * no masthead, no chat bubble. These are working surfaces somebody keeps open
+ * Deliberately bare next to the marketing site's: no scroll-driven motion, no
+ * intro, no masthead, no chat bubble. These are working surfaces somebody keeps open
  * while they do a job, and every piece of marketing motion in the way of that
  * is a cost with no return.
  *

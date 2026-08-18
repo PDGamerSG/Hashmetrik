@@ -16,9 +16,9 @@ import { MOTION_QUERY, REDUCED_QUERY, useIsomorphicLayoutEffect } from "@/lib/mo
  * It is written to be cheap enough to leave running:
  *
  * - One canvas, one 2D context, no DOM nodes per mark.
- * - Painted from GSAP's ticker, the same loop that drives Lenis and every
- *   ScrollTrigger, so the page never has two animation loops competing for
- *   the same frame.
+ * - Painted from GSAP's ticker, the same loop that drives every ScrollTrigger
+ *   on the page, so there are never two animation loops competing for the
+ *   same frame.
  * - Suspended by IntersectionObserver the moment the hero leaves the
  *   viewport. The rest of the page is long, and there is no reason to keep
  *   compositing a background nobody can see.

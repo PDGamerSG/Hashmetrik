@@ -5,7 +5,7 @@ import { Masthead } from "@/components/site/masthead";
 import { Footer } from "@/components/site/footer";
 import { Assistant } from "@/components/site/assistant";
 import { Intro } from "@/components/site/intro";
-import { SmoothScroll } from "@/components/motion/smooth-scroll";
+import { MotionRoot } from "@/components/motion/motion-root";
 import { SITE } from "@/lib/content";
 import { fontVariables } from "@/lib/fonts";
 
@@ -13,8 +13,8 @@ import { fontVariables } from "@/lib/fonts";
  * The public site's root layout.
  *
  * A group root rather than `app/layout.tsx` because `/admin` needs a document
- * of its own: the intro animation, Lenis, the masthead and the chat bubble are
- * all right for a marketing page and all wrong over a table of leads. Two root
+ * of its own: the intro animation, the masthead and the chat bubble are all
+ * right for a marketing page and all wrong over a table of leads. Two root
  * layouts is how Next.js does that; the cost is a full page load when crossing
  * between them, which is a boundary nobody crosses mid-task.
  *
@@ -59,10 +59,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <Intro />
-        {/* Lenis wraps the whole document rather than the main column: the
-            masthead's scroll readout, every ScrollTrigger and the overslide
-            stack all have to be reading the same scroll position. */}
-        <SmoothScroll>
+        {/* Wraps the whole document rather than the main column: the motion
+            policy it publishes is read off `<html>`, and the masthead and the
+            footer animate under it as much as the page body does. */}
+        <MotionRoot>
           <Masthead />
           {/* Only the page body crossfades between routes. The masthead is
               held still by name — see `::view-transition-group(masthead)`. */}
@@ -72,7 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
           </ViewTransition>
           <Footer />
-        </SmoothScroll>
+        </MotionRoot>
         <Assistant />
       </body>
     </html>

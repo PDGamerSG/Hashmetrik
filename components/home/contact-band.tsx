@@ -94,14 +94,8 @@ export function ContactBand() {
                   bearing: an embed that is slow, blocked or offline otherwise
                   leaves a black rectangle sitting in the middle of the
                   section. This way the worst case is a blank sheet with the
-                  address still legible beneath it.
-
-                  `data-lenis-prevent` hands the wheel back to the map: Lenis
-                  disables pointer events on every iframe by default so a
-                  scroll over one is never swallowed, and this is the one
-                  iframe on the site that is meant to be panned. */}
+                  address still legible beneath it. */}
               <div
-                data-lenis-prevent
                 className="relative aspect-square overflow-hidden rounded-sheet border border-ash-ink bg-bone"
               >
                 <iframe

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { ComponentProps, MouseEvent, ReactNode } from "react";
-import { scrollToElement } from "@/components/motion/smooth-scroll";
+import { scrollToElement } from "@/components/motion/motion-root";
 
 /**
  * A link to a section of the home page that does not put a fragment in the
@@ -26,19 +26,15 @@ function sectionOf(href: string) {
 
 function scrollToSection(id: string) {
   /* Deferred by two frames: the click that closes the mobile menu also
-     releases the scroll lock, and scrolling a locked scroller does nothing
-     at all. */
+     releases the scroll lock, and a clamped root cannot be scrolled at all. */
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       const target = document.getElementById(id);
-      /* Routed through the smooth scroller rather than `scrollIntoView`, or
-         the browser's jump and Lenis's easing would fight over the page.
-
-         No masthead clearance is passed. That number is already declared once,
-         as `scroll-padding-top` in `globals.css`, and both scrollers read it
-         off the document themselves — Lenis subtracts it when it resolves an
-         element, exactly as the browser does for a native anchor. Passing it
-         again here landed every section a second masthead below the bar. */
+      /* No masthead clearance is passed. That number is declared once, as
+         `scroll-padding-top` in `globals.css`, and the browser subtracts it
+         when it resolves an element — exactly as it does for a native anchor.
+         Passing it again here landed every section a second masthead below
+         the bar. */
       if (target) scrollToElement(target);
     }),
   );

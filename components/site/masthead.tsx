@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NAV, SOCIALS } from "@/lib/content";
 import { cn } from "@/lib/utils";
-import { setScrollLocked } from "@/components/motion/smooth-scroll";
+import { setScrollLocked } from "@/components/motion/motion-root";
 import { Magnetic } from "@/components/motion/magnetic";
 import { ActionLink } from "./button";
 import { Facebook, Instagram, Linkedin, Youtube } from "./brand-icons";
@@ -29,6 +30,7 @@ const SOCIAL_ICON = {
 } as const;
 
 export function Masthead() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [lifted, setLifted] = useState(false);
@@ -43,8 +45,8 @@ export function Masthead() {
    * as soon as there is content to give it to.
    *
    * Both are compared before being written, because this fires on every
-   * frame of a Lenis scroll and a `setState` per frame would re-render the
-   * nav sixty times a second for a value that changes twice.
+   * scroll frame and a `setState` per frame would re-render the nav sixty
+   * times a second for a value that changes twice.
    */
   useEffect(() => {
     const onScroll = () => {
@@ -60,10 +62,20 @@ export function Masthead() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /**
+   * Whether a nav entry is the page being read.
+   *
+   * Only the two entries that are pages of their own can be. The rest are
+   * sections of the home page, and where the reader is inside a page is
+   * answered by the scroll position rather than by the address bar — which is
+   * the whole point of `SectionLink` keeping the fragment out of it.
+   */
+  const isCurrent = (href: string) => !href.includes("#") && pathname.startsWith(href);
+
   /* A menu that covers the page must not leave the page scrolling behind it.
-     `setScrollLocked` is the whole lock — the scroller and the CSS both. It
-     deliberately does not touch `<body>`; see the note there for why writing
-     the lock onto the body is what used to shunt this very bar off-screen. */
+     `setScrollLocked` deliberately does not touch `<body>`; see the note there
+     for why writing the lock onto the body is what used to shunt this very bar
+     off-screen. */
   useEffect(() => {
     setScrollLocked(open);
     return () => setScrollLocked(false);
@@ -109,30 +121,54 @@ export function Masthead() {
               )}
               priority
             />
-            <span className="font-display text-xl leading-[1.02] font-medium tracking-[-0.022em] md:text-[1.375rem]">
+            <span className="font-display text-[1.375rem] leading-[1.02] font-medium tracking-[-0.022em] md:text-[1.625rem]">
               Hashmetrik
             </span>
           </Link>
 
-          {/* `gap-6` until there is room for more: the sixth entry and the
-              sign-in link together overrun the bar at exactly 1024px. */}
-          <nav aria-label="Primary" className="hidden items-center gap-6 lg:flex xl:gap-8">
-            {NAV.map((item) => (
-              <SectionLink
-                key={item.label}
-                href={item.href}
-                /* The rule wipes in from the left on hover and out to the right
-                   on release, so the gesture has a direction rather than just
-                   appearing and vanishing. */
-                className="group relative py-1 label text-slate transition-colors hover:text-ink"
-              >
-                {item.label}
-                <span
-                  aria-hidden
-                  className="absolute inset-x-0 -bottom-0.5 h-px origin-right scale-x-0 bg-coral transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:origin-left group-hover:scale-x-100"
-                />
-              </SectionLink>
-            ))}
+          {/* Set in sentence case, the six entries take about a hundred pixels
+              less than they did as tracked capitals, and the gaps are spent on
+              that: `gap-7` is the tightest these words separate cleanly, and
+              `gap-9` is what the bar can afford once it is wider than the
+              content. Still `lg`, because below it the sign-in link and the
+              sixth entry together overrun. */}
+          <nav aria-label="Primary" className="hidden items-center gap-7 lg:flex xl:gap-9">
+            {NAV.map((item) => {
+              const current = isCurrent(item.href);
+
+              return (
+                <SectionLink
+                  key={item.label}
+                  href={item.href}
+                  aria-current={current ? "page" : undefined}
+                  /* Ink at 85%, not `slate`. Slate is the colour of secondary
+                     text — a caption, a note under a figure — and at this size
+                     it left six links looking greyed out beside a black
+                     wordmark. These are the primary controls on the page; they
+                     are ink, stepped back just far enough that the wordmark
+                     still leads. 11:1 on paper. */
+                  className={cn(
+                    "group relative py-1.5 nav-link transition-colors duration-300 ease-[var(--ease-out-quint)] xl:text-[1.0625rem]",
+                    current ? "text-ink" : "text-ink/85 hover:text-ink",
+                  )}
+                >
+                  {item.label}
+                  {/* The rule wipes in from the left on hover and out to the
+                      right on release, so the gesture has a direction rather
+                      than just appearing and vanishing. On the page you are
+                      already on it is simply drawn, and stays. */}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "absolute inset-x-0 bottom-0 h-px bg-coral transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      current
+                        ? "origin-left scale-x-100"
+                        : "origin-right scale-x-0 group-hover:origin-left group-hover:scale-x-100",
+                    )}
+                  />
+                </SectionLink>
+              );
+            })}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -152,7 +188,11 @@ export function Masthead() {
                 carries it instead. */}
             <Link
               href="/login"
-              className="hidden label text-slate transition-colors hover:text-ink md:inline-block"
+              /* The nav's recipe, not the label's: this is the seventh link in
+                 the row, and it was the one place where the bar spoke in two
+                 voices at once — mono capitals hard against a sentence-case
+                 sans pill. */
+              className="hidden nav-link text-ink/85 transition-colors duration-300 ease-[var(--ease-out-quint)] hover:text-ink md:inline-block xl:text-[1.0625rem]"
             >
               Sign in
             </Link>
@@ -161,7 +201,12 @@ export function Masthead() {
                 lands, and hiding the only conversion behind a hamburger costs
                 more than the few pixels it saves. */}
             <Magnetic strength={5}>
-              <ActionLink href="/book" size="sm">
+              {/* Set at the nav's size rather than the `sm` pill's own 13px:
+                  the links beside it read at 15, and the one thing on the bar
+                  a visitor is meant to press should not be the smallest type
+                  on it. The height goes up with the type — an `h-10` cap round
+                  a 15px label leaves four pixels of air over the ascenders. */}
+              <ActionLink href="/book" size="sm" className="h-11 text-[1rem]">
                 <span className="sm:hidden">Book</span>
                 <span className="hidden sm:inline">Book a call</span>
               </ActionLink>
@@ -172,11 +217,11 @@ export function Masthead() {
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
               aria-controls="site-menu"
-              /* `size-10` rather than 11: it stands next to the `sm` action
-                 pill, which is `h-10`, and a toggle a notch taller than the
-                 button beside it reads as a misalignment rather than as
-                 emphasis. */
-              className="grid size-10 place-items-center rounded-full border border-ink/25 text-ink transition-colors hover:border-ink hover:bg-ink hover:text-bone active:bg-ink active:text-bone lg:hidden"
+              /* Sized off the action pill beside it, whatever that is — a
+                 toggle a notch taller or shorter than the button next to it
+                 reads as a misalignment rather than as emphasis. The pill is
+                 `h-11` here, so this is `size-11`. */
+              className="grid size-11 place-items-center rounded-full border border-ink/25 text-ink transition-colors hover:border-ink hover:bg-ink hover:text-bone active:bg-ink active:text-bone lg:hidden"
             >
               <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -203,10 +248,9 @@ export function Masthead() {
       {open && (
         <div
           id="site-menu"
-          /* The page behind is frozen while this is open, which also means
-             Lenis is stopped and swallowing wheel events. `data-lenis-prevent`
-             excludes the menu, so a long nav still scrolls on a short screen. */
-          data-lenis-prevent
+          /* The page behind is frozen while this is open. `overflow-y-auto`
+             plus `overscroll-contain` below is what still lets a long nav
+             scroll on a short screen without the freeze leaking through. */
           /* Starts exactly under the bar, which is two heights depending on
              whether the page has been scrolled. Above the assistant launcher's
              `z-50`: a chat bubble floating on top of an open menu is a second
@@ -227,26 +271,39 @@ export function Masthead() {
                 themselves the last one trailed under "Contact" with nothing
                 beneath it to separate. */}
             <ul className="divide-y divide-ash border-y border-ash">
-              {NAV.map((item, i) => (
-                <li key={item.label}>
-                  <SectionLink
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    /* Set at the size of a heading in running text rather than
-                        of a page title. Six entries at display size is a menu
-                        that has to be scrolled to be read, and the answer to
-                        "where can I go" should fit on the screen at once. */
-                    className="flex items-center gap-4 py-3.5 font-display text-[1.375rem] leading-[1.2] font-medium tracking-[-0.018em] transition-colors active:text-coral"
-                  >
-                    {/* A fixed column, so the words start on one edge rather
-                        than each one where its own number happened to end. */}
-                    <span className="w-5 shrink-0 label-sm tabular text-slate">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    {item.label}
-                  </SectionLink>
-                </li>
-              ))}
+              {NAV.map((item, i) => {
+                const current = isCurrent(item.href);
+
+                return (
+                  <li key={item.label}>
+                    <SectionLink
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      aria-current={current ? "page" : undefined}
+                      /* Set at the size of a heading in running text rather than
+                          of a page title. Six entries at display size is a menu
+                          that has to be scrolled to be read, and the answer to
+                          "where can I go" should fit on the screen at once.
+
+                          The page you are already on is marked in the accent
+                          rather than by a rule: there is no row of six to run a
+                          rule along here, and a coral word in a column of ink
+                          ones is read before it is looked for. */
+                      className={cn(
+                        "flex items-center gap-4 py-3.5 font-display text-[1.375rem] leading-[1.2] font-medium tracking-[-0.018em] transition-colors active:text-coral",
+                        current && "text-coral",
+                      )}
+                    >
+                      {/* A fixed column, so the words start on one edge rather
+                          than each one where its own number happened to end. */}
+                      <span className="w-5 shrink-0 label-sm tabular text-slate">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      {item.label}
+                    </SectionLink>
+                  </li>
+                );
+              })}
             </ul>
 
             {/* `md`, not `lg`. The bar above already carries a Book pill; a
