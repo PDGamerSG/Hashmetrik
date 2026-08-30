@@ -3,11 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Menu, X } from "lucide-react";
 import { NAV, SOCIALS } from "@/lib/content";
 import { cn } from "@/lib/utils";
-import { setScrollLocked } from "@/components/motion/motion-root";
+import { setScrollLocked, scrollToTop } from "@/components/motion/motion-root";
 import { Magnetic } from "@/components/motion/magnetic";
 import { ActionLink } from "./button";
 import { Facebook, Instagram, Linkedin, Youtube } from "./brand-icons";
@@ -72,6 +72,35 @@ export function Masthead() {
    */
   const isCurrent = (href: string) => !href.includes("#") && pathname.startsWith(href);
 
+  /**
+   * The wordmark, pressed on the page it already points at.
+   *
+   * `<Link href="/">` clicked from `/` is a no-op for the router — same URL, no
+   * navigation, and so nothing resets the scroll: press the mark halfway down
+   * the home page and you stay exactly where you were, which reads as a dead
+   * control. The `href` is left as it is, so every other page, a middle-click
+   * and a visitor with no JavaScript all still navigate normally; only the
+   * click that would do nothing is taken over, and answered with the scroll to
+   * the top that the navigation would have performed.
+   */
+  function goHome(event: MouseEvent<HTMLAnchorElement>) {
+    setOpen(false);
+
+    if (pathname !== "/") return;
+    /* Leave modified clicks alone — those are "open in a new tab", and the new
+       tab wants the address, not a scroll in this one. */
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    event.preventDefault();
+    /* The open menu is the one thing that could swallow this: the lock it
+       holds clamps the root, and a clamped root cannot be scrolled at all.
+       Released here rather than waited for — the effect that mirrors `open`
+       only gets to it after the next commit, and it will simply set the same
+       value again when it does. */
+    setScrollLocked(false);
+    scrollToTop();
+  }
+
   /* A menu that covers the page must not leave the page scrolling behind it.
      `setScrollLocked` deliberately does not touch `<body>`; see the note there
      for why writing the lock onto the body is what used to shunt this very bar
@@ -109,7 +138,7 @@ export function Masthead() {
           {/* The mark is a dark tile, so it is sized against the cap height of
               the wordmark rather than the height of the bar — at the old size
               it read as a black block with a caption next to it. */}
-          <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
+          <Link href="/" className="flex items-center gap-2.5" onClick={goHome}>
             <Image
               src="/logo-hm.png"
               alt=""

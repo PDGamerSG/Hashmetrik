@@ -36,11 +36,30 @@ import { RESPECT_REDUCED_MOTION, usePrefersReducedMotion } from "@/lib/motion";
  * so no clearance is passed in.
  */
 export function scrollToElement(target: Element) {
+  target.scrollIntoView({ behavior: scrollBehaviour(), block: "start" });
+}
+
+/**
+ * Scroll the page back to its top.
+ *
+ * Eased like a section link rather than jumped, because it is the same gesture
+ * — a control on the bar moving the reader somewhere on the page they are
+ * already on — and the two would otherwise answer the same press in two
+ * different ways.
+ */
+export function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: scrollBehaviour() });
+}
+
+/**
+ * Smooth, unless the visitor asked for less motion and the site is honouring
+ * that. `scroll-behavior` in `globals.css` is deliberately `auto`, since it is
+ * document-wide and would ease Next.js's own scroll-to-top on every arriving
+ * route; the scrolls this site asks for ask for their easing here instead.
+ */
+function scrollBehaviour(): ScrollBehavior {
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  target.scrollIntoView({
-    behavior: RESPECT_REDUCED_MOTION && reduced ? "auto" : "smooth",
-    block: "start",
-  });
+  return RESPECT_REDUCED_MOTION && reduced ? "auto" : "smooth";
 }
 
 /**
